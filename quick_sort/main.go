@@ -8,65 +8,51 @@ import (
 func main() {
 	cnt := 20
 	list := make([]int, cnt)
-
 	for i := 0; i < cnt; i++ {
-		list[i] = rand.Intn(9)
+		list[i] = rand.Intn(1000)
 	}
 
-	list = sort(list)
+	list = quickSort(list)
 	fmt.Println(list)
 }
 
-type lr struct {
-	left  int
-	right int
-}
-
-func sort(list []int) []int {
+func quickSort(list []int) []int {
+	var curIndex int
+	counter := 1
 	cnt := len(list)
 
 	q := []lr{{left: 0, right: cnt - 1}}
-	curIndex := 0
-	counter := 1
-
-	//list = []int{669, 65, 838, 579, 324, 266, 801, 912, 823, 249, 670, 659, 452, 421, 886, 598, 956, 905, 929, 77}
-
-	fmt.Println(list)
-
 loop:
-	for counter != 0 {
+	for counter > 0 {
 		counter--
+		curLR := q[curIndex]
+		left := curLR.left
+		right := curLR.right
 
-		val := q[curIndex]
-		fmt.Println(val)
-		fmt.Println(list)
+		curIndex++
 
-		if val.left >= val.right {
-			curIndex++
+		if left >= right {
 			continue loop
 		}
 
-		if val.left == val.right-1 && list[val.left] > list[val.right] {
-			list[val.left], list[val.right] = list[val.right], list[val.left]
-			curIndex++
+		if left == right-1 && list[left] > list[right] {
+			list[left], list[right] = list[right], list[left]
 			continue loop
 		}
 
-		if val.left == val.right-1 {
-			curIndex++
+		if left == right-1 {
 			continue loop
 		}
 
-		fix := val.left
-		left := val.left + 1
-		right := val.right
+		fix := left
+		left++
 
 		for left <= right {
-			for left <= val.right && list[fix] >= list[left] {
+			for left <= curLR.right && list[left] <= list[fix] {
 				left++
 			}
 
-			for right > fix && list[right] >= list[fix] {
+			for right > fix && list[fix] <= list[right] {
 				right--
 			}
 
@@ -82,13 +68,13 @@ loop:
 		q = append(q, lr{left: fix, right: right - 1})
 		counter++
 
-		q = append(q, lr{left: right + 1, right: val.right})
+		q = append(q, lr{left: right + 1, right: curLR.right})
 		counter++
-
-		curIndex++
 	}
 
-	fmt.Println(q)
-
 	return list
+}
+
+type lr struct {
+	left, right int
 }
