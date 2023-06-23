@@ -25,50 +25,50 @@ func quickSort(list []int) []int {
 loop:
 	for counter > 0 {
 		counter--
-		curLR := q[curIndex]
-		left := curLR.left
-		right := curLR.right
+		v := q[curIndex]
+		l := v.left
+		r := v.right
 
 		curIndex++
 
-		if left >= right {
+		if l >= r {
 			continue loop
 		}
 
-		if left == right-1 && list[left] > list[right] {
-			list[left], list[right] = list[right], list[left]
+		if l == r-1 && list[l] > list[r] {
+			list[l], list[r] = list[r], list[l]
 			continue loop
 		}
 
-		if left == right-1 {
+		if l == r-1 {
 			continue loop
 		}
 
-		fix := left
-		left++
+		fix := l
+		l++
 
-		for left <= right {
-			for left <= curLR.right && list[left] <= list[fix] {
-				left++
+		for l <= r {
+			for l <= v.right && list[l] <= list[fix] {
+				l++
 			}
 
-			for right > fix && list[fix] <= list[right] {
-				right--
+			for r > fix && list[fix] <= list[r] {
+				r--
 			}
 
-			if left < right {
-				list[left], list[right] = list[right], list[left]
-				left++
-				right--
+			if l < r {
+				list[l], list[r] = list[r], list[l]
+				l++
+				r--
 			}
 		}
 
-		list[fix], list[right] = list[right], list[fix]
+		list[fix], list[r] = list[r], list[fix]
 
-		q = append(q, lr{left: fix, right: right - 1})
+		q = append(q, lr{left: fix, right: r - 1})
 		counter++
 
-		q = append(q, lr{left: right + 1, right: curLR.right})
+		q = append(q, lr{left: r + 1, right: v.right})
 		counter++
 	}
 
@@ -76,5 +76,6 @@ loop:
 }
 
 type lr struct {
-	left, right int
+	left  int
+	right int
 }
