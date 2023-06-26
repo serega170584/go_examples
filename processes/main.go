@@ -18,71 +18,63 @@ type Stage int
 type job struct {
 	num   int
 	value int
-	state Stage
+	stage Stage
 }
 
 func main() {
 	cnt := 20
 	in := make(chan job, cnt)
-
 	for i := 0; i < cnt; i++ {
-		var j job
-		j.num = i
-		j.value = rand.Intn(1000)
-		in <- j
+		var val job
+		val.num, val.value = i, i
+		in <- val
 	}
 	close(in)
-
 	out := ThirdProcessing(SecondProcessing(FirstProcessing(in)))
 
-	for range out {
+	for val := range out {
+		fmt.Println(val)
 	}
 }
 
 func FirstProcessing(in chan job) chan job {
 	out := make(chan job)
-
 	go func() {
 		for val := range in {
 			fmt.Println(val)
-			val.value = int(float64(val.value) / math.Pi)
-			val.state = FirstStage
+			val.stage = FirstStage
+			val.value = rand.Intn(1000) + rand.Intn(1000)*val.value
 			out <- val
 		}
 		close(out)
 	}()
-
 	return out
 }
 
 func SecondProcessing(in chan job) chan job {
 	out := make(chan job)
-
 	go func() {
 		for val := range in {
 			fmt.Println(val)
-			val.value = int(float64(val.value) * math.E)
-			val.state = SecondStage
+			val.stage = SecondStage
+			val.value = rand.Intn(800) + int(float64(rand.Intn(val.value))*math.Pi)
 			out <- val
 		}
 		close(out)
 	}()
-
 	return out
 }
 
 func ThirdProcessing(in chan job) chan job {
 	out := make(chan job)
-
 	go func() {
 		for val := range in {
 			fmt.Println(val)
-			val.value = val.value - 13
-			val.state = ThirdStage
+			val.stage = ThirdStage
+			val.value = rand.Intn(600) + int(float64(rand.Intn(val.value))*math.E)
 			out <- val
 		}
 		close(out)
 	}()
-
 	return out
 }
