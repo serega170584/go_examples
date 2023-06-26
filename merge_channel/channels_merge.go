@@ -4,52 +4,54 @@ import "fmt"
 
 func main() {
 	ch1 := make(chan int, 3)
-	ch1 <- 123
-	ch1 <- 456
-	ch1 <- 789
+	ch1 <- 1
+	ch1 <- 2
+	ch1 <- 3
 	ch2 := make(chan int, 3)
-	ch2 <- 1234
-	ch2 <- 5678
-	ch2 <- 9012
+	ch2 <- 4
+	ch2 <- 5
+	ch2 <- 6
 	ch3 := make(chan int, 3)
-	ch3 <- 12340
-	ch3 <- 67890
-	ch3 <- 12345
+	ch3 <- 7
+	ch3 <- 8
+	ch3 <- 9
 
-	ch := mergeChannels(ch1, ch2, ch3)
+	output := mergeChannels(ch1, ch2, ch3)
 
-	for val := range ch {
+	for val := range output {
 		fmt.Println(val)
 	}
 }
 
-func mergeChannels(chList ...chan int) chan int {
-	length := 0
-	counter := make(chan int)
-	for _, ch := range chList {
-		length = length + len(ch)
+func mergeChannels(in ...chan int) chan int {
+	var cnt int
+	for _, vals := range in {
+		cnt += len(vals)
 	}
 
-	res := make(chan int, length)
-
-	for _, chVals := range chList {
-		chVals := chVals
+	counter := make(chan struct{})
+	output := make(chan int)
+	for _, vals := range in {
+		vals := vals
 		go func() {
-			for val := range chVals {
-				res <- val
-				length--
-				counter <- length
+			for val := range vals {
+				output <- val
+				counter <- struct{}{}
 			}
 		}()
 	}
 
 	go func() {
-		for cnt := range counter {
+	loop:
+		for {
+			<-counter
+			cnt--
 			if cnt == 0 {
-				close(res)
+				break loop
 			}
 		}
+		close(output)
 	}()
 
-	return res
+	return output
 }
