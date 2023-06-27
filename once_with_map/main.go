@@ -8,34 +8,43 @@ import (
 
 func main() {
 	cnt := 1000
-	items := make([]int, cnt)
-	existed := make(map[int]int, cnt)
+	doubles := make([]int, cnt)
+	existed := make(map[int]int)
 	unique := make(chan int, cnt)
+	counter := make(chan struct{})
 
-	for i := range items {
-		items[i] = rand.Intn(20)
+	for i := 0; i < cnt; i++ {
+		doubles[i] = rand.Intn(10)
 	}
 
 	mu := sync.Mutex{}
 
-	for _, double := range items {
-		double := double
+	go func() {
+	loop:
+		for range counter {
+			cnt--
+			if cnt == 0 {
+				break loop
+			}
+		}
+		close(counter)
+		close(unique)
+	}()
+
+	for _, val := range doubles {
+		val := val
 		go func() {
 			mu.Lock()
 			defer mu.Unlock()
-			if _, ok := existed[double]; !ok {
-				existed[double] = double
-				unique <- double
+			if _, ok := existed[val]; !ok {
+				existed[val] = val
+				unique <- val
 			}
-
-			cnt--
-			if cnt == 0 {
-				close(unique)
-			}
+			counter <- struct{}{}
 		}()
 	}
 
-	for un := range unique {
-		fmt.Println(un)
+	for val := range unique {
+		fmt.Println(val)
 	}
 }
