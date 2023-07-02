@@ -3,78 +3,76 @@ package main
 import (
 	"fmt"
 	"math"
-	"math/rand"
 )
 
+type State int
+
 const (
-	InitialStage Stage = iota
+	InitialStage State = iota
 	FirstStage
 	SecondStage
 	ThirdStage
 )
 
-type Stage int
-
 type job struct {
 	num   int
-	value int
-	stage Stage
+	state State
+	value int64
 }
 
 func main() {
 	cnt := 20
 	in := make(chan job, cnt)
 	for i := 0; i < cnt; i++ {
-		var val job
-		val.num, val.value = i, i
-		in <- val
+		job := job{num: i, value: int64(i)}
+		in <- job
 	}
 	close(in)
-	out := ThirdProcessing(SecondProcessing(FirstProcessing(in)))
 
-	for val := range out {
-		fmt.Println(val)
+	output := ThirdProcessing(SecondProcessing(FirstProcessing(in)))
+	for job := range output {
+		fmt.Println(job)
 	}
 }
 
 func FirstProcessing(in chan job) chan job {
-	out := make(chan job)
+	output := make(chan job)
 	go func() {
-		for val := range in {
-			fmt.Println(val)
-			val.stage = FirstStage
-			val.value = rand.Intn(1000) + rand.Intn(1000)*val.value
-			out <- val
+		for job := range in {
+			fmt.Println(job)
+			job.state = FirstStage
+			job.value = job.value + 1000
+			output <- job
 		}
-		close(out)
+		close(output)
 	}()
-	return out
+	return output
 }
 
 func SecondProcessing(in chan job) chan job {
-	out := make(chan job)
+	output := make(chan job)
 	go func() {
-		for val := range in {
-			fmt.Println(val)
-			val.stage = SecondStage
-			val.value = rand.Intn(800) + int(float64(rand.Intn(val.value))*math.Pi)
-			out <- val
+		for job := range in {
+			fmt.Println(job)
+			job.state = SecondStage
+			job.value = int64(float64(job.value) * math.Pi)
+			output <- job
 		}
-		close(out)
+		close(output)
 	}()
-	return out
+	return output
 }
 
 func ThirdProcessing(in chan job) chan job {
-	out := make(chan job)
+	output := make(chan job)
 	go func() {
-		for val := range in {
-			fmt.Println(val)
-			val.stage = ThirdStage
-			val.value = rand.Intn(600) + int(float64(rand.Intn(val.value))*math.E)
-			out <- val
+		for job := range in {
+			fmt.Println(job)
+			job.state = ThirdStage
+			job.value = int64(float64(job.value) * math.E)
+			output <- job
 		}
-		close(out)
+		close(output)
 	}()
-	return out
+	return output
 }
