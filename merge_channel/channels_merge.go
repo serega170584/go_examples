@@ -1,6 +1,8 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func main() {
 	ch1 := make(chan int, 3)
@@ -16,41 +18,35 @@ func main() {
 	ch3 <- 8
 	ch3 <- 9
 
-	output := mergeChannels(ch1, ch2, ch3)
-
-	for val := range output {
+	ch := mergeChannels(ch1, ch2, ch3)
+	for val := range ch {
 		fmt.Println(val)
 	}
 }
 
-func mergeChannels(in ...chan int) chan int {
+func mergeChannels(chList ...chan int) chan int {
 	var cnt int
-	for _, vals := range in {
+	for _, vals := range chList {
 		cnt += len(vals)
 	}
+	tmp := make(chan int, cnt)
+	output := make(chan int, cnt)
 
-	counter := make(chan struct{})
-	output := make(chan int)
-	for _, vals := range in {
-		vals := vals
+	for _, ch := range chList {
+		ch := ch
 		go func() {
-			for val := range vals {
-				output <- val
-				counter <- struct{}{}
+			for val := range ch {
+				tmp <- val
 			}
 		}()
 	}
 
 	go func() {
-	loop:
-		for {
-			<-counter
-			cnt--
-			if cnt == 0 {
-				break loop
-			}
+		for i := 0; i < cnt; i++ {
+			output <- <-tmp
 		}
 		close(output)
+		close(tmp)
 	}()
 
 	return output
