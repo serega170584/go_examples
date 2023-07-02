@@ -2,17 +2,21 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 func main() {
+	ch := make(chan os.Signal)
 	ctx, cancel := context.WithCancel(context.Background())
-	sigCh := make(chan os.Signal)
-	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	signal.Notify(ch, os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	go func() {
-		<-sigCh
+		<-ch
+		fmt.Println("123123123")
+		time.Sleep(3 * time.Second)
 		cancel()
 	}()
 	<-ctx.Done()
