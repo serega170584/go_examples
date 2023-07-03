@@ -3,21 +3,20 @@ package main
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 )
 
 func main() {
-	ch := make(chan os.Signal)
 	ctx, cancel := context.WithCancel(context.Background())
-	signal.Notify(ch, os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-	go func() {
+	ch := make(chan os.Signal)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT, os.Interrupt)
+	go func(ctx context.Context) {
 		<-ch
-		fmt.Println("123123123")
-		time.Sleep(3 * time.Second)
+		fmt.Println(rand.Intn(1000))
 		cancel()
-	}()
+	}(ctx)
 	<-ctx.Done()
 }
