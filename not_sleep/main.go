@@ -9,12 +9,12 @@ import (
 
 func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
 	res, err := Run(ctx)
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println(res)
-	cancel()
 }
 
 func Run(ctx context.Context) (int, error) {
