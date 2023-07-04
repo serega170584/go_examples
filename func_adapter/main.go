@@ -8,30 +8,30 @@ import (
 )
 
 func main() {
-	ch := make(chan struct{})
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-	num, err := adapter(ctx, ch)
+	val, err := adapter(ctx)
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(num)
+	fmt.Println(val)
+	cancel()
 }
 
 func something() {
 	time.Sleep(time.Duration(rand.Intn(5)) * time.Second)
 }
 
-func adapter(ctx context.Context, ch chan struct{}) (int, error) {
+func adapter(ctx context.Context) (int, error) {
+	ch := make(chan struct{})
 	go func() {
 		something()
 		ch <- struct{}{}
 	}()
 
 	select {
-	case <-ctx.Done():
-		return 0, ctx.Err()
 	case <-ch:
 		return rand.Intn(1000), nil
+	case <-ctx.Done():
+		return 0, ctx.Err()
 	}
 }
