@@ -8,22 +8,22 @@ import (
 )
 
 func main() {
-	ctx := context.Background()
-	err := Run(ctx)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	res, err := Run(ctx)
 	if err != nil {
 		fmt.Println(err)
 	}
+	fmt.Println(res)
+	cancel()
 }
 
-func Run(ctx context.Context) error {
+func Run(ctx context.Context) (int, error) {
 	for {
-		a := rand.Intn(100)
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
-		case <-time.After(3 * time.Second):
-			b := rand.Intn(1000)
+			return 0, ctx.Err()
+		case <-time.After(time.Duration(rand.Intn(5)) * time.Second):
+			return rand.Intn(1000), nil
 		}
 	}
-	return nil
 }
