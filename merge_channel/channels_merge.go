@@ -29,11 +29,11 @@ func main() {
 
 func mergeChannels(chList ...chan int) chan int {
 	var cnt int
-	for _, values := range chList {
-		cnt += len(values)
+	for _, val := range chList {
+		cnt += len(val)
 	}
-
 	output := make(chan int, cnt)
+
 	go func() {
 		for _, vals := range chList {
 			for val := range vals {

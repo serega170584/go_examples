@@ -7,22 +7,40 @@ import (
 )
 
 func main() {
-	time.NewTicker(time.Second)
 	cnt := 50
 	batchSize := 10
-	batches := make(chan struct{}, batchSize)
+	resCh := make(chan int, batchSize)
+	interval := make(chan struct{}, batchSize)
 
 	go func() {
+		ticker := time.NewTicker(3 * time.Second)
 		for {
-			for i := 0; i < batchSize; i++ {
-				batches <- struct{}{}
+			select {
+			case <-ticker.C:
+				for i := 0; i < batchSize; i++ {
+					interval <- struct{}{}
+				}
 			}
-			time.Sleep(3 * time.Second)
 		}
 	}()
 
-	for i := 0; i < cnt; i++ {
-		<-batches
-		fmt.Println(rand.Int())
+	go func() {
+		for i := 0; i < cnt; i++ {
+			resCh <- RPCCallWithInterval(interval)
+		}
+		close(resCh)
+	}()
+
+	for val := range resCh {
+		fmt.Println(val)
 	}
+}
+
+func RPCCallWithInterval(interval chan struct{}) int {
+	<-interval
+	return RPCCall()
+}
+
+func RPCCall() int {
+	return rand.Intn(1000)
 }
