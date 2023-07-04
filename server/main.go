@@ -11,30 +11,29 @@ type Server interface {
 	Stop()
 }
 
-func main() {
-	var s Serv
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	RunServer(ctx, s)
-	cancel()
-}
+type ServerInst struct{}
 
-type Serv struct{}
-
-func (serv Serv) Start() {
+func (server ServerInst) Start() {
 	fmt.Println("Start")
 }
 
-func (serv Serv) Stop() {
+func (server ServerInst) Stop() {
 	fmt.Println("Stop")
 }
 
-func RunServer(ctx context.Context, serv Server) {
+func Run(ctx context.Context, server Server) {
 	ch := make(chan struct{})
-	serv.Start()
-	go func(ctx context.Context) {
+	server.Start()
+	go func() {
 		<-ctx.Done()
-		serv.Stop()
+		server.Stop()
 		ch <- struct{}{}
-	}(ctx)
+	}()
 	<-ch
+}
+
+func main() {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	Run(ctx, ServerInst{})
 }
