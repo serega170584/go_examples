@@ -10,9 +10,11 @@ func main() {
 	doubles := make([]int, cnt)
 	storage := make(map[int]int, cnt)
 	unique := make(chan int, cnt)
+
 	for i := 0; i < cnt; i++ {
 		doubles[i] = rand.Intn(20)
 	}
+
 	go func() {
 		for _, double := range doubles {
 			if _, ok := storage[double]; !ok {
