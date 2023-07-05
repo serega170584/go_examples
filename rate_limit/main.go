@@ -9,11 +9,10 @@ import (
 func main() {
 	cnt := 50
 	batchSize := 10
-	resCh := make(chan int, batchSize)
 	interval := make(chan struct{}, batchSize)
-
+	res := make(chan int, batchSize)
 	go func() {
-		ticker := time.NewTicker(3 * time.Second)
+		ticker := time.NewTicker(5 * time.Second)
 		for {
 			select {
 			case <-ticker.C:
@@ -26,17 +25,18 @@ func main() {
 
 	go func() {
 		for i := 0; i < cnt; i++ {
-			resCh <- RPCCallWithInterval(interval)
+			res <- RPCWithInterval(interval)
 		}
-		close(resCh)
+		close(res)
+		close(interval)
 	}()
 
-	for val := range resCh {
+	for val := range res {
 		fmt.Println(val)
 	}
 }
 
-func RPCCallWithInterval(interval chan struct{}) int {
+func RPCWithInterval(interval chan struct{}) int {
 	<-interval
 	return RPCCall()
 }
