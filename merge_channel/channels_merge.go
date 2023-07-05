@@ -21,7 +21,6 @@ func main() {
 	ch3 <- 9
 	close(ch3)
 	ch := mergeChannels(ch1, ch2, ch3)
-
 	for val := range ch {
 		fmt.Println(val)
 	}
@@ -42,6 +41,5 @@ func mergeChannels(chList ...chan int) chan int {
 		}
 		close(output)
 	}()
-
 	return output
 }
