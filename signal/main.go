@@ -1,22 +1,25 @@
 package main
 
 import (
-	"context"
 	"fmt"
-	"math/rand"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 func main() {
-	ctx, cancel := context.WithCancel(context.Background())
 	ch := make(chan os.Signal)
-	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT, os.Interrupt)
+	quit := make(chan struct{})
+	signal.Notify(ch, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT, os.Interrupt)
 	go func() {
 		<-ch
-		fmt.Println(rand.Intn(1000))
-		cancel()
+		quit <- struct{}{}
 	}()
-	<-ctx.Done()
+	select {
+	case <-time.After(10 * time.Second):
+		fmt.Println("Good")
+	case <-quit:
+		fmt.Println("interrupt")
+	}
 }
