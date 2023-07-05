@@ -10,20 +10,14 @@ import (
 func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	res, err := Run(ctx)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(res)
+	Run(ctx)
 }
 
-func Run(ctx context.Context) (int, error) {
-	for {
-		select {
-		case <-ctx.Done():
-			return 0, ctx.Err()
-		case <-time.After(time.Duration(rand.Intn(5)) * time.Second):
-			return rand.Intn(1000), nil
-		}
+func Run(ctx context.Context) {
+	select {
+	case <-ctx.Done():
+		fmt.Println(ctx.Err())
+	case <-time.After(time.Duration(rand.Intn(5)) * time.Second):
+		fmt.Println(rand.Intn(1000))
 	}
 }
