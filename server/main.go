@@ -13,27 +13,28 @@ type Server interface {
 
 type ServerInst struct{}
 
-func (server ServerInst) Start() {
+func (s ServerInst) Start() {
 	fmt.Println("Start")
 }
 
-func (server ServerInst) Stop() {
+func (s ServerInst) Stop() {
 	fmt.Println("Stop")
-}
-
-func Run(ctx context.Context, server Server) {
-	ch := make(chan struct{})
-	server.Start()
-	go func() {
-		<-ctx.Done()
-		server.Stop()
-		ch <- struct{}{}
-	}()
-	<-ch
 }
 
 func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	Run(ctx, ServerInst{})
+	ch := make(chan struct{})
+	s := ServerInst{}
+	Run(ctx, s, ch)
+	<-ch
+}
+
+func Run(ctx context.Context, s Server, ch chan struct{}) {
+	s.Start()
+	go func() {
+		<-ctx.Done()
+		s.Stop()
+		ch <- struct{}{}
+	}()
 }
