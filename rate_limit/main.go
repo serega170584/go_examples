@@ -10,9 +10,9 @@ func main() {
 	cnt := 50
 	batchSize := 10
 	interval := make(chan struct{}, batchSize)
-	res := make(chan int, batchSize)
+	res := make(chan int, cnt)
 	go func() {
-		ticker := time.NewTicker(5 * time.Second)
+		ticker := time.NewTicker(3 * time.Second)
 		for {
 			select {
 			case <-ticker.C:
@@ -25,10 +25,9 @@ func main() {
 
 	go func() {
 		for i := 0; i < cnt; i++ {
-			res <- RPCWithInterval(interval)
+			res <- RPCCallWithInterval(interval)
 		}
 		close(res)
-		close(interval)
 	}()
 
 	for val := range res {
@@ -36,11 +35,11 @@ func main() {
 	}
 }
 
-func RPCWithInterval(interval chan struct{}) int {
-	<-interval
-	return RPCCall()
-}
-
 func RPCCall() int {
 	return rand.Intn(1000)
+}
+
+func RPCCallWithInterval(interval chan struct{}) int {
+	<-interval
+	return RPCCall()
 }
