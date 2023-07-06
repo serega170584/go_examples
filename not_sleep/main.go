@@ -15,9 +15,9 @@ func main() {
 
 func Run(ctx context.Context) {
 	select {
-	case <-ctx.Done():
-		fmt.Println(ctx.Err())
 	case <-time.After(time.Duration(rand.Intn(5)) * time.Second):
 		fmt.Println(rand.Intn(1000))
+	case <-ctx.Done():
+		fmt.Println(ctx.Err())
 	}
 }
