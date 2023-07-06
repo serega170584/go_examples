@@ -3,7 +3,7 @@ package main
 import "fmt"
 
 func main() {
-	cnt := 10
+	cnt := 50
 	ch := make(chan int)
 	quit := make(chan struct{})
 	go func() {
@@ -20,7 +20,7 @@ func fibonacci(ch chan int, quit chan struct{}) {
 	for {
 		select {
 		case ch <- x:
-			x, y = y, y+x
+			x, y = y, x+y
 		case <-quit:
 			return
 		}
