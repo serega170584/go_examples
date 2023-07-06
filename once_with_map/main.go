@@ -8,7 +8,7 @@ import (
 func main() {
 	cnt := 1000
 	doubles := make([]int, cnt)
-	storage := make(map[int]int, cnt)
+	storage := make(map[int]struct{}, cnt)
 	unique := make(chan int, cnt)
 
 	for i := 0; i < cnt; i++ {
@@ -18,7 +18,7 @@ func main() {
 	go func() {
 		for _, double := range doubles {
 			if _, ok := storage[double]; !ok {
-				storage[double] = double
+				storage[double] = struct{}{}
 				unique <- double
 			}
 		}
