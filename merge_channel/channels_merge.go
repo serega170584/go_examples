@@ -18,28 +18,21 @@ func main() {
 	ch3 <- 8
 	ch3 <- 9
 	close(ch3)
-
-	output := mergeChannels(ch1, ch2, ch3)
-	for val := range output {
+	res := mergeChannels(ch1, ch2, ch3)
+	for val := range res {
 		fmt.Println(val)
 	}
 }
 
 func mergeChannels(chList ...chan int) chan int {
-	var cnt int
-	for _, ch := range chList {
-		cnt += len(ch)
-	}
-
-	output := make(chan int, cnt)
+	res := make(chan int)
 	go func() {
-		for _, vals := range chList {
-			for val := range vals {
-				output <- val
+		for _, chValues := range chList {
+			for val := range chValues {
+				res <- val
 			}
 		}
-		close(output)
+		close(res)
 	}()
-
-	return output
+	return res
 }
