@@ -10,10 +10,10 @@ import (
 func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	Run(ctx)
+	notSleep(ctx)
 }
 
-func Run(ctx context.Context) {
+func notSleep(ctx context.Context) {
 	select {
 	case <-time.After(time.Duration(rand.Intn(5)) * time.Second):
 		fmt.Println(rand.Intn(1000))
