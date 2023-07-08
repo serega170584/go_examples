@@ -10,7 +10,6 @@ func main() {
 	doubles := make([]int, cnt)
 	storage := make(map[int]struct{}, cnt)
 	unique := make(chan int, cnt)
-
 	for i := 0; i < cnt; i++ {
 		doubles[i] = rand.Intn(20)
 	}
