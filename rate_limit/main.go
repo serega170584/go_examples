@@ -7,12 +7,11 @@ import (
 )
 
 func main() {
-	cnt := 50
 	batchSize := 10
-	interval := make(chan struct{}, batchSize)
-	res := make(chan int, cnt)
+	cnt := 50
+	interval := make(chan struct{})
 	go func() {
-		ticker := time.NewTicker(3 * time.Second)
+		ticker := time.NewTicker(5 * time.Second)
 		for {
 			select {
 			case <-ticker.C:
@@ -23,15 +22,8 @@ func main() {
 		}
 	}()
 
-	go func() {
-		for i := 0; i < cnt; i++ {
-			res <- RPCCallWithInterval(interval)
-		}
-		close(res)
-	}()
-
-	for val := range res {
-		fmt.Println(val)
+	for i := 0; i < cnt; i++ {
+		fmt.Println(RPCCallWithInterval(interval))
 	}
 }
 
