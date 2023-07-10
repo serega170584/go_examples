@@ -8,6 +8,12 @@ import (
 
 type State int
 
+type job struct {
+	num   int
+	state State
+	value int
+}
+
 const (
 	InitialStage State = iota
 	FirstStage
@@ -15,66 +21,60 @@ const (
 	ThirdStage
 )
 
-type job struct {
-	num   int
-	state State
-	value int
-}
-
 func main() {
 	cnt := 20
 	in := make(chan job, cnt)
 	go func() {
 		for i := 0; i < cnt; i++ {
-			in <- job{num: i, value: rand.Intn(1000)}
+			in <- job{num: i, value: i}
 		}
 		close(in)
 	}()
 
 	res := ThirdProcessing(SecondProcessing(FirstProcessing(in)))
-	for val := range res {
-		fmt.Println(val)
+	for job := range res {
+		fmt.Println(job)
 	}
 }
 
 func FirstProcessing(in chan job) chan job {
-	output := make(chan job)
+	out := make(chan job)
 	go func() {
 		for job := range in {
 			fmt.Println(job)
 			job.state = FirstStage
-			job.value = int(float64(job.value) * math.Pi)
-			output <- job
+			job.value = int(float64(job.value+1000) * math.Pi)
+			out <- job
 		}
-		close(output)
+		close(out)
 	}()
-	return output
+	return out
 }
 
 func SecondProcessing(in chan job) chan job {
-	output := make(chan job)
+	out := make(chan job)
 	go func() {
 		for job := range in {
 			fmt.Println(job)
 			job.state = SecondStage
-			job.value = int(float64(job.value) / math.E)
-			output <- job
+			job.value = int(float64(job.value) * math.E)
+			out <- job
 		}
-		close(output)
+		close(out)
 	}()
-	return output
+	return out
 }
 
 func ThirdProcessing(in chan job) chan job {
-	output := make(chan job)
+	out := make(chan job)
 	go func() {
 		for job := range in {
 			fmt.Println(job)
 			job.state = ThirdStage
-			job.value *= 10
-			output <- job
+			job.value = job.value / (rand.Intn(5) + 1)
+			out <- job
 		}
-		close(output)
+		close(out)
 	}()
-	return output
+	return out
 }
