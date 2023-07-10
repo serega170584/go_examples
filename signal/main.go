@@ -5,21 +5,16 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 )
 
 func main() {
-	ch := make(chan os.Signal)
-	quit := make(chan struct{})
-	signal.Notify(ch, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT, os.Interrupt)
+	sign := make(chan os.Signal)
+	res := make(chan struct{})
+	signal.Notify(sign, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT, os.Interrupt)
 	go func() {
-		<-ch
-		quit <- struct{}{}
+		<-sign
+		fmt.Println("Close")
+		res <- struct{}{}
 	}()
-	select {
-	case <-time.After(10 * time.Second):
-		fmt.Println("Good")
-	case <-quit:
-		fmt.Println("interrupt")
-	}
+	<-res
 }
