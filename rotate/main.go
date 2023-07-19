@@ -3,49 +3,54 @@ package main
 import (
 	"fmt"
 	"log"
+	"strings"
 )
 
 func main() {
-	//var cnt int
-	//fmt.Println("Enter count")
-	//_, err := fmt.Scan(&cnt)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	x := make([]int, 3)
-	y := make([]interface{}, 3)
-	for i := range x {
-		y[i] = &x[i]
-	}
-	_, err := fmt.Scanln(y...)
+	var cnt int
+	fmt.Println("Enter count")
+	_, err := fmt.Scan(&cnt)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(x)
 
-	//formatString := make([]string, cnt)
-	//for i := 0; i < cnt; i++ {
-	//	formatString[i] = "%d"
-	//}
-	//format := strings.Join(formatString, " ")
-	//
-	//a := make([][]int, cnt)
-	//for i := range a {
-	//	a[i] = make([]int, cnt)
-	//	for j := range a[i] {
-	//		x := a[i]
-	//		_, err := fmt.Scanf(format, x...)
-	//		if err != nil {
-	//			log.Fatal(err)
-	//		}
-	//	}
-	//}
-	//fmt.Println("Input is done")
-	//scanner := bufio.NewScanner(os.Stdin)
-	//scanner.Split(bufio.ScanWords)
-	//var words []string
-	//for scanner.Scan() {
-	//	words = append(words, scanner.Text())
-	//}
-	//fmt.Println(words)
+	x := make([]interface{}, cnt)
+
+	fmt.Println("Enter array")
+
+	a := make([][]string, cnt)
+	for i := range a {
+		a[i] = make([]string, cnt)
+		for j := range a[i] {
+			x[j] = &a[i][j]
+		}
+		_, err = fmt.Scanln(x...)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	for i := 0; i < cnt; i++ {
+		for j := 0; j < i; j++ {
+			a[i][j], a[j][i] = a[j][i], a[i][j]
+		}
+	}
+
+	fmt.Println(a)
+
+	middleCnt := cnt / 2
+	fmt.Println(middleCnt)
+	for i := 0; i < cnt; i++ {
+		for j := 0; j < middleCnt; j++ {
+			a[i][j], a[i][cnt-j-1] = a[i][cnt-j-1], a[i][j]
+		}
+	}
+
+	for i := 0; i < cnt; i++ {
+		y := make([]string, cnt)
+		for j := 0; j < cnt; j++ {
+			y[j] = fmt.Sprintf("%02s", a[i][j])
+		}
+		fmt.Println(strings.Join(y, " "))
+	}
 }
