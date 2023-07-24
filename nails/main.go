@@ -1,20 +1,24 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"log"
-	"math"
 )
 
+// 1 2 3
+// 1 2 3 4
+// 1 2 5 4
+// 1 2
+// 1 3 5 6
+// 1 3 5 10
+// 1 3 5 7 12
+// 1 3 5 7 9 14
+// 1 4 7 10 12 15
+// 1 4 7 10 12 14
+// 1 4 7 10 13 15 17
 func main() {
 	var cnt int
-	fmt.Println("Enter count")
 	_, err := fmt.Scanln(&cnt)
-
-	if cnt < 2 {
-		log.Fatal(errors.New("Invalid count"))
-	}
 
 	if err != nil {
 		log.Fatal(err)
@@ -26,56 +30,43 @@ func main() {
 		x[i] = &nails[i]
 	}
 
-	fmt.Println("Enter nails")
 	_, err = fmt.Scanln(x...)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	nails = sort(nails)
+	fmt.Println(nails)
 
-	fmt.Printf("Min length: %d", minLength(nails))
-
+	fmt.Printf("%d", minLength(nails))
 }
 
 func minLength(nails []int) int {
-	var minLength int
 	cnt := len(nails)
-
-	weights := make([]int, cnt-1)
 
 	if len(nails) == 2 {
 		return nails[1] - nails[0]
 	}
 
-	for i := 1; i < cnt; i++ {
-		weights[i-1] = nails[i] - nails[i-1]
+	if len(nails) == 3 {
+		return nails[2] - nails[0]
 	}
 
-	weights = append(weights, math.MaxInt)
+	if len(nails) == 4 {
+		return nails[3] - nails[2] + nails[1] - nails[0]
+	}
 
-	cmpIdx := 0
-	minLength, prevLength := weights[0], weights[0]
-loop:
-	for i := 1; i < cnt; i++ {
-		curLength := weights[i]
-
-		if i == cmpIdx+1 {
-			prevLength = curLength
-			continue loop
-		}
-
-		if curLength < prevLength {
-			cmpIdx = i
-			minLength += curLength
+	minLength := make([]int, cnt)
+	minLength[2] = nails[2] - nails[0]
+	minLength[3] = nails[3] - nails[2] + nails[1] - nails[0]
+	for i := 4; i < cnt; i++ {
+		if minLength[i-1] < minLength[i-2] {
+			minLength[i] = minLength[i-1] + nails[i] - nails[i-1]
 		} else {
-			minLength += prevLength
+			minLength[i] = minLength[i-2] + nails[i] - nails[i-1]
 		}
-
-		prevLength = curLength
 	}
-
-	return minLength
+	return minLength[cnt-1]
 }
 
 func sort(nails []int) []int {
