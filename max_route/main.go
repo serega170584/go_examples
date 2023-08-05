@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"strings"
 )
 
 func main() {
@@ -33,7 +34,31 @@ func main() {
 
 	filledWeights = longestRoute(weights, filledWeights, rowsCnt-1, colsCnt-1)
 
-	fmt.Println(filledWeights)
+	route := make([]string, rowsCnt+colsCnt-2)
+	i := rowsCnt - 1
+	j := colsCnt - 1
+	for !(i == 0 && j == 0) {
+		upWeight := -1
+		if i != 0 {
+			upWeight = filledWeights[i-1][j]
+		}
+
+		leftWeight := -1
+		if j != 0 {
+			leftWeight = filledWeights[i][j-1]
+		}
+
+		if upWeight > leftWeight {
+			route[i+j-1] = "D"
+			i--
+		} else {
+			route[i+j-1] = "R"
+			j--
+		}
+	}
+
+	fmt.Println(filledWeights[rowsCnt-1][colsCnt-1])
+	fmt.Println(strings.Join(route, " "))
 }
 
 func longestRoute(weights, filledWeights [][]int, rowInd, colInd int) [][]int {
