@@ -39,7 +39,7 @@ func main() {
 	minBaseFreeDinnerIndexOrder := 0
 	minSecondaryFreeDinnerIndexOrder := 0
 
-	var priceSum, freeDinnerSum, secondaryFreeDinnerSum, expensiveDinnerCnt, startInd, notUsedCouponsCnt, secondaryNotUsedCouponsCnt, usedCouponsCnt, secondaryUsedCouponsCnt int
+	var priceSum, freeDinnerSum, secondaryFreeDinnerSum, startInd, notUsedCouponsCnt, secondaryNotUsedCouponsCnt, usedCouponsCnt, secondaryUsedCouponsCnt int
 
 	resultFreeIndexes := make([]string, 0)
 	resultSecondaryFreeIndexes := make([]string, 0)
@@ -48,83 +48,104 @@ func main() {
 		priceSum += dinnerPrice
 		startInd = ind + 1
 
-		if dinnerPrice == 0 {
-			continue
-		}
-
-		if dinnerPrice < 101 && expensiveDinnerCnt == 1 && (minBaseFreeDinnerIndex == -1 || dinners[minBaseFreeDinnerIndex] < dinnerPrice) {
-			baseFreeDinnerIndexes[0] = ind
-			secondaryFreeDinnerIndexes[0] = ind
-			minBaseFreeDinnerIndex = ind
-			continue
-		}
-
 		if dinnerPrice > 100 {
-			expensiveDinnerCnt++
-		}
-
-		if dinnerPrice > 100 && expensiveDinnerCnt == 1 {
 			baseFreeDinnerIndexes = append(baseFreeDinnerIndexes, -1)
 			secondaryFreeDinnerIndexes = append(secondaryFreeDinnerIndexes, -1)
-		}
-
-		if expensiveDinnerCnt == 2 {
-			baseFreeDinnerIndexes = append(baseFreeDinnerIndexes, -1)
-			secondaryFreeDinnerIndexes[0] = ind
-			minSecondaryFreeDinnerIndex = ind
 			break
 		}
 	}
 
-	prevInd := -1
+	for ind := startInd; ind < cnt; ind++ {
+		priceSum += dinners[ind]
+		startInd = ind + 1
+
+		if dinners[ind] == 0 {
+			continue
+		}
+
+		minSecondaryFreeDinnerPrice := 0
+		if minSecondaryFreeDinnerIndex != -1 {
+			minSecondaryFreeDinnerPrice = dinners[minSecondaryFreeDinnerIndex]
+		}
+
+		if minSecondaryFreeDinnerPrice < dinners[ind] {
+			minSecondaryFreeDinnerIndex = ind
+			secondaryFreeDinnerIndexes[0] = minSecondaryFreeDinnerIndex
+		}
+
+		if dinners[ind] > 100 {
+			baseFreeDinnerIndexes = append(baseFreeDinnerIndexes, -1)
+			minBaseFreeDinnerIndex = -1
+			minBaseFreeDinnerIndexOrder++
+
+			break
+		}
+
+		minBaseFreeDinnerPrice := 0
+		if minBaseFreeDinnerIndex != -1 {
+			minBaseFreeDinnerPrice = dinners[minBaseFreeDinnerIndex]
+		}
+
+		if minBaseFreeDinnerPrice < dinners[ind] {
+			minBaseFreeDinnerIndex = ind
+			baseFreeDinnerIndexes[0] = minBaseFreeDinnerIndex
+		}
+	}
+
 	for ind := startInd; ind < cnt; ind++ {
 		priceSum += dinners[ind]
 
-		if prevInd == -1 {
-			baseFreeDinnerIndexes = append(baseFreeDinnerIndexes, ind)
+		if dinners[ind] == 0 {
+			continue
 		}
 
-		if prevInd == -1 && minBaseFreeDinnerIndex != -1 && dinners[ind] < dinners[minBaseFreeDinnerIndex] {
-			minBaseFreeDinnerIndex = ind
-			minBaseFreeDinnerIndexOrder++
+		minSecondaryFreeDinnerPrice := 0
+		if minSecondaryFreeDinnerIndex != -1 {
+			minSecondaryFreeDinnerPrice = dinners[minSecondaryFreeDinnerIndex]
 		}
 
-		if prevInd != -1 && minBaseFreeDinnerIndex != -1 && dinners[minBaseFreeDinnerIndex] < dinners[ind] {
-			baseFreeDinnerIndexes[minBaseFreeDinnerIndexOrder] = ind
-			for order, baseFreeDinnerIndex := range baseFreeDinnerIndexes {
-				if baseFreeDinnerIndex == -1 {
-					minBaseFreeDinnerIndexOrder = order
-					minBaseFreeDinnerIndex = -1
-				} else if baseFreeDinnerIndex < minBaseFreeDinnerIndex {
-					minBaseFreeDinnerIndexOrder = order
-					minBaseFreeDinnerIndex = baseFreeDinnerIndex
+		if minSecondaryFreeDinnerPrice < dinners[ind] {
+			secondaryFreeDinnerIndexes[minSecondaryFreeDinnerIndexOrder] = ind
+			for order, secondaryFreeDinnerIndex := range secondaryFreeDinnerIndexes {
+				if secondaryFreeDinnerIndex == -1 {
+					minSecondaryFreeDinnerIndexOrder = order
+					minSecondaryFreeDinnerIndex = -1
+				} else if minSecondaryFreeDinnerIndex != -1 && dinners[secondaryFreeDinnerIndex] < dinners[minSecondaryFreeDinnerIndex] {
+					minSecondaryFreeDinnerIndexOrder = order
+					minSecondaryFreeDinnerIndex = secondaryFreeDinnerIndex
 				}
 			}
 		}
 
 		if dinners[ind] > 100 {
-			if dinners[minSecondaryFreeDinnerIndex] < dinners[ind] {
-				for order, secondaryFreeDinnerIndex := range secondaryFreeDinnerIndexes {
-					if secondaryFreeDinnerIndex == -1 {
-						minSecondaryFreeDinnerIndexOrder = order
-						minSecondaryFreeDinnerIndex = -1
-					} else if secondaryFreeDinnerIndex < minSecondaryFreeDinnerIndex {
-						minSecondaryFreeDinnerIndexOrder = order
-						minSecondaryFreeDinnerIndex = secondaryFreeDinnerIndex
-					}
-				}
-			}
+			baseFreeDinnerIndexes = append(baseFreeDinnerIndexes, -1)
+			minBaseFreeDinnerIndex = -1
+			minBaseFreeDinnerIndexOrder++
 
 			baseFreeDinnerIndexes, secondaryFreeDinnerIndexes = secondaryFreeDinnerIndexes, baseFreeDinnerIndexes
 			minBaseFreeDinnerIndexOrder, minSecondaryFreeDinnerIndexOrder = minSecondaryFreeDinnerIndexOrder, minBaseFreeDinnerIndexOrder
 			minBaseFreeDinnerIndex, minSecondaryFreeDinnerIndex = minSecondaryFreeDinnerIndex, minBaseFreeDinnerIndex
 
-			prevInd = -1
-
-			break
+			continue
 		}
 
-		prevInd = ind
+		minBaseFreeDinnerPrice := 0
+		if minBaseFreeDinnerIndex != -1 {
+			minBaseFreeDinnerPrice = dinners[minBaseFreeDinnerIndex]
+		}
+
+		if minBaseFreeDinnerPrice < dinners[ind] {
+			baseFreeDinnerIndexes[minBaseFreeDinnerIndexOrder] = ind
+			for order, baseFreeDinnerIndex := range baseFreeDinnerIndexes {
+				if baseFreeDinnerIndex == -1 {
+					minBaseFreeDinnerIndexOrder = order
+					minBaseFreeDinnerIndex = -1
+				} else if minBaseFreeDinnerIndex != -1 && dinners[baseFreeDinnerIndex] < dinners[minBaseFreeDinnerIndex] {
+					minBaseFreeDinnerIndexOrder = order
+					minBaseFreeDinnerIndex = baseFreeDinnerIndex
+				}
+			}
+		}
 	}
 
 	for _, baseFreeDinnerIndex := range baseFreeDinnerIndexes {
