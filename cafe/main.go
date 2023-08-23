@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
+	"strconv"
+	"strings"
 )
 
 // 5 35 40 101 59 63
@@ -53,7 +55,7 @@ func main() {
 	minPrice := getPrice(cnt, 0, prices, dayPrices, cnt)
 	for couponInd := 1; couponInd < cnt+2; couponInd++ {
 		price := getPrice(cnt, couponInd, prices, dayPrices, cnt)
-		if price < minPrice {
+		if price <= minPrice {
 			minCouponInd = couponInd
 			minPrice = price
 		}
@@ -61,9 +63,14 @@ func main() {
 
 	usedDays := getUsedDays(cnt, minCouponInd, prices, dayPrices, cnt)
 
-	fmt.Println(prices)
-	fmt.Println(minCouponInd)
-	fmt.Println(usedDays)
+	fmt.Println(minPrice)
+	fmt.Printf("%d %d\n", minCouponInd, len(usedDays))
+
+	usedDaysStr := make([]string, 0)
+	for _, usedDay := range usedDays {
+		usedDaysStr = append(usedDaysStr, strconv.Itoa(usedDay))
+	}
+	fmt.Println(strings.Join(usedDaysStr, " "))
 }
 
 func getPrice(day int, couponInd int, prices [][]int, dayPrices []int, cnt int) int {
@@ -73,13 +80,11 @@ func getPrice(day int, couponInd int, prices [][]int, dayPrices []int, cnt int) 
 		return prices[day][couponInd]
 	}
 
-	if day == 0 && day < couponInd {
-		prices[day][couponInd] = 300
-		return 300
+	if day < couponInd {
+		return 300 * (day + 1)
 	}
 
 	if day == 0 {
-		prices[day][couponInd] = 0
 		return 0
 	}
 
