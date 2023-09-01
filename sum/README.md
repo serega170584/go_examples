@@ -1,5 +1,5 @@
 
-#Algorithm
+# Algorithm
 
 Firstly we need order and work strategy when given values have different types
 It seems obvious that if we take int64 and float64 values the sum has to be casted to float64 becauseof more wide range of complex
