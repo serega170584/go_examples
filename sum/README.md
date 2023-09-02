@@ -43,13 +43,13 @@ If component 2 is complex and component 1 is complex obviously we cover case 9
 
 If component 1 is complex and component 2 is float we cover case 8
 
-After get worked conditions above we can easily check if component 1 is complex so we cover case 7
+After getting worked conditions above we can easily check if component 1 is complex so we cover case 7
 
-After get worked conditions above we check if component 1 and component 2 are floats and sum these one in this case. Therefore we cover case 5
+After getting worked conditions above we check if component 1 and component 2 are floats and sum these one in this case. Therefore we cover case 5
 
-After get worked conditions above we check component 1 is float so we cover case 4
+After getting worked conditions above we check component 1 is float so we cover case 4
 
-After get worked conditions above we check component 1 is int and component 2 is float so we cover case 2
+After getting worked conditions above we check component 1 is int and component 2 is float so we cover case 2
 
 Case 1 is handled when we couldn't visit conditions above
 
