@@ -97,6 +97,7 @@ import (
 // Testing
 // 16:25 - 16:33
 // 18:18 - 18:56
+// 18:58 - 19:49
 
 func main() {
 
@@ -190,7 +191,6 @@ func getDefaultNum(romNum []byte) int {
 
 		// case 12
 		if states[stInd][i] == 3 {
-			stInd++
 			startInd = i + 1
 			continue
 		}
@@ -207,7 +207,7 @@ func getDefaultNum(romNum []byte) int {
 			continue
 		}
 
-		if corners[i] && prevInd != -1 {
+		if prevInd != -1 && states[stInd][prevInd] != 0 {
 			stInd++
 		}
 
