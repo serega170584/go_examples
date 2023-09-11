@@ -28,6 +28,10 @@ import (
 // 3. next
 // 4. exclusedSyms
 // 08:16 - 08:43
+// abcdDeEfFgGCB
+// abcdGHRLkuopPOUKlrhgDCBA
+// abcdGHRLkuopPOUKlrhgDCBABnNtTb
+// abcdGHRLkuopPOUKlrhgDCBAOVDBnNtTRrFfyYbdvo
 func main() {
 	//1
 	var str string
@@ -41,9 +45,11 @@ func main() {
 	//next := 0
 	//4
 	exclusedSyms := make([]bool, len(str))
+	prevState := make([]int, len(str))
 	for next := range str {
 		if prev == -1 {
 			prev = next
+			prevState[next] = prev
 			continue
 		}
 
@@ -56,10 +62,11 @@ func main() {
 		if diff == 32 {
 			exclusedSyms[prev] = true
 			exclusedSyms[next] = true
-			prev--
+			prev = prevState[prev]
 			continue
 		}
 
+		prevState[next] = prev
 		prev = next
 	}
 
