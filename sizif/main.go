@@ -454,6 +454,10 @@ func getEnergyForUnion(stones []int, cnt int) int {
 
 	energySum := make([]int, cnt)
 
+	for i := range energySum {
+		energySum[i] = -1
+	}
+
 	for cornerSumInd != 0 {
 		if sumInd == -1 {
 			sum := stones[termInd] + stones[termInd-1]
@@ -475,6 +479,7 @@ func getEnergyForUnion(stones []int, cnt int) int {
 			sum := stones[prevTermInd] + energySum[minSumInd]
 			min += sum
 			sumInd++
+			minSumInd++
 			energySum[sumInd] = sum
 
 			cnt = sumInd + 1
@@ -483,10 +488,15 @@ func getEnergyForUnion(stones []int, cnt int) int {
 
 			stones, energySum = energySum, stones
 
-			prevTermInd = 0
-			termInd = 1
+			prevTermInd = minSumInd
+			termInd = minSumInd + 1
 			sumInd = -1
 			minSumInd = -1
+
+			for i := range energySum {
+				energySum[i] = -1
+			}
+
 			continue
 		}
 
@@ -495,14 +505,34 @@ func getEnergyForUnion(stones []int, cnt int) int {
 
 			cnt = sumInd + 1
 
-			prevTermInd = 0
+			prevTermInd = minSumInd
 			termInd = minSumInd + 1
 			sumInd = -1
 			minSumInd = -1
+
+			for i := range energySum {
+				energySum[i] = -1
+			}
+
 			continue
 		}
 
 		prevTerm := stones[termInd-1]
+
+		energyElSum := 0
+		if energySum[minSumInd+1] != -1 {
+			energyElSum = energySum[minSumInd] + energySum[minSumInd+1]
+		}
+
+		if energyElSum != 0 && energySum[minSumInd]+prevTerm > energyElSum && energyElSum < prevTerm+stones[termInd] {
+			sum := energyElSum
+			min += sum
+			sumInd++
+			energySum[sumInd] = sum
+			minSumInd += 2
+			cornerSumInd--
+			continue
+		}
 
 		if energySum[minSumInd]+prevTerm > prevTerm+stones[termInd] {
 			sum := prevTerm + stones[termInd]
