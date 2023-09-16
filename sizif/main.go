@@ -293,6 +293,58 @@ import (
 // 4 + 5 = 9
 // 6 + 7 = 13
 
+// 3 4 5 6 10
+// 3 + 4 = 7
+// 5 + 6 = 11
+
+// 1 1 1 1
+// 1 + 1
+// 1 + 1
+// 2 + 2
+
+// 2 1 1 1 1 1 1 1 1 1
+// 2 + 1 = 3
+// 1 + 1 = 2
+// 1 + 1 = 2
+// 1 + 1 = 2
+// 1 + 1 = 2
+// 2 + 2 = 4
+// 2 + 2 = 4
+// 3 + 4 = 7
+// 7 + 4 = 11
+// 3 + 2 + 2 + 2 + 2 + 4 + 4 + 7 + 11 = 37
+
+// 1 1 1 1
+// 1 + 1
+// 1 + 1
+// 2 + 2
+
+// 1 1 1
+// 1 + 1 = 2
+// 2 + 1 = 3
+
+// 2 4 6
+// 6 12
+
+// 6 12
+// 18
+
+// 1 1 1 1
+// 2 2
+// 4
+
+// 1 1 1
+// 2
+
+// 1 1 1 1
+// 2 2
+// 4
+
+// 1 1 1 1 1
+// 2 2 3
+// 4 7
+// 11
+
 func main() {
 	var cnt int
 	_, err := fmt.Scan(&cnt)
@@ -330,21 +382,92 @@ func getEnergyForUnion(stones []int, cnt int) int {
 		return 0
 	}
 
-	i := 1
-	min := 0
-	for i < cnt {
-		stones[i] = stones[i-1] + stones[i]
-		k := i
-		min += stones[i]
-		for j := i + 1; j < cnt; j++ {
-			if stones[j] > stones[k] {
-				break
-			} else {
-				stones[j], stones[k] = stones[k], stones[j]
-				k = j
-			}
+	var min int
+
+	cornerSumInd := cnt - 1
+
+	termInd := 1
+
+	sumInd := -1
+
+	minSumInd := -1
+
+	prevTermInd := 0
+
+	energySum := make([]int, cnt)
+
+	for cornerSumInd != 0 {
+		if sumInd == -1 {
+			sum := stones[termInd] + stones[termInd-1]
+			min += sum
+			sumInd++
+			minSumInd++
+			prevTermInd = termInd
+			energySum[sumInd] = sum
+			termInd += 2
+			cornerSumInd--
+			continue
 		}
-		i++
+
+		if termInd == cnt && termInd-prevTermInd == 2 {
+			prevTermInd++
+		}
+
+		if termInd == cnt {
+			sum := stones[prevTermInd] + energySum[minSumInd]
+			min += sum
+			sumInd++
+			energySum[sumInd] = sum
+
+			cnt = sumInd + 1
+
+			cornerSumInd--
+
+			stones, energySum = energySum, stones
+
+			prevTermInd = 0
+			termInd = 1
+			sumInd = -1
+			minSumInd = -1
+			continue
+		}
+
+		if termInd == cnt+1 {
+			stones, energySum = energySum, stones
+
+			cnt = sumInd + 1
+
+			prevTermInd = 0
+			termInd = minSumInd + 1
+			sumInd = -1
+			minSumInd = -1
+			continue
+		}
+
+		prevTerm := stones[termInd-1]
+
+		if energySum[minSumInd]+prevTerm > prevTerm+stones[termInd] {
+			sum := prevTerm + stones[termInd]
+			min += sum
+			sumInd++
+			energySum[sumInd] = sum
+			prevTermInd = termInd
+			termInd += 2
+			cornerSumInd--
+			continue
+		}
+
+		if energySum[minSumInd]+prevTerm <= prevTerm+stones[termInd] {
+			sum := energySum[minSumInd] + prevTerm
+			min += sum
+			sumInd++
+			minSumInd++
+			energySum[sumInd] = sum
+			prevTermInd = termInd
+			termInd++
+			cornerSumInd--
+			continue
+		}
 	}
 
 	return min
