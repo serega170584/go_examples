@@ -107,6 +107,21 @@ import (
 // 1 [2] [3] [4] [5] [6]
 // 1 3 [3 4] [4 5]
 
+// 0 0 0 0
+// 0 0 0 0
+// 0 0 0 0
+// 0 0 0 0
+
+// 1 1 1 1
+// 1 1 0 0
+// 1 0 1 0
+// 1 0 0 1
+
+// 1 1 1 1
+// 1 1 1 1
+// 1 1 1 1
+// 1 0 1 1
+
 func main() {
 	var cnt int
 	_, err := fmt.Scan(&cnt)
@@ -202,6 +217,20 @@ func generateDisposition(busyPositions, dispositionBusyPositions [][]bool, rowIn
 		}
 
 		getExcludedBeatingPositions(dispositionBusyPositions, rowInd, colInd, cnt)
+
+		validFreePositionsCnt := cnt - rowInd - 1
+		freePositionsCnt := 0
+		for i := rowInd + 1; i < cnt; i++ {
+			for _, val := range dispositionBusyPositions[i] {
+				if !val {
+					freePositionsCnt += 1
+				}
+			}
+		}
+
+		if freePositionsCnt < validFreePositionsCnt {
+			continue
+		}
 
 		generateDisposition(busyPositions, dispositionBusyPositions, rowInd+1, cnt, disposition, generatedDispositions, dispositionInd)
 	}
