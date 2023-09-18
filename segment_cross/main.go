@@ -1,12 +1,9 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"log"
-	"os"
 	"strconv"
-	"strings"
 )
 
 // main segment and secondary segment
@@ -43,6 +40,21 @@ import (
 // mostStartSegment
 // cross array
 // min segment end
+
+// [1 2]
+// [3 4]
+// 1 - 3 < 0, 1 - 4 < 0, 2 - 3 <= 0, 2 - 4 < 0 0000 0
+// 3 - 1 > 0, 3 - 2 > 0, 4 - 1 > 0, 4 - 2 > 0 1111 15
+
+// [1 3]
+// [2 4]
+// 1 - 2 < 0, 1 - 4 < 0, 3 - 2 > 0, 3 - 4 < 0 0010 2
+// 2 - 1 > 0, 2 - 3 < 0, 4 - 1 > 0, 4 - 3 > 0 1011 11
+
+// [2 3]
+// [1 4]
+// 2 - 1 > 0, 2 - 4 < 0, 3 - 1 > 0, 3 - 4 < 0 1010 10
+// 1 - 2 < 0, 1 - 3 < 0, 4 - 2 > 0, 4 - 3 > 0 0011 3
 func main() {
 	var mainCnt, secondaryCnt int
 
@@ -51,16 +63,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-	scanner := makeScanner()
+	segments := make([][]int, 2)
 
-	mainSegment := make([][]int, mainCnt)
+	segments[0] = make([]int, 2*mainCnt)
 
-	for i := range mainSegment {
-		scanner.Scan()
-		mainStr := strings.Split(scanner.Text(), " ")
-		mainSegment[i] = make([]int, 2)
-		mainSegment[i][0], _ = strconv.Atoi(mainStr[0])
-		mainSegment[i][1], _ = strconv.Atoi(mainStr[1])
+	for i := 0; i < mainCnt; i++ {
+		var start, finish string
+		_, _ = fmt.Scan(&start, &finish)
+		segments[0][2*i], _ = strconv.Atoi(start)
+		segments[0][2*i+1], _ = strconv.Atoi(finish)
 	}
 
 	_, err = fmt.Scan(&secondaryCnt)
@@ -68,59 +79,106 @@ func main() {
 		log.Fatal(err)
 	}
 
-	secondary := make([][]int, secondaryCnt)
+	segments[1] = make([]int, 2*secondaryCnt)
 
-	for i := range secondary {
-		scanner.Scan()
-		secondaryStr := strings.Split(scanner.Text(), " ")
-		secondary[i] = make([]int, 2)
-		secondary[i][0], _ = strconv.Atoi(secondaryStr[0])
-		secondary[i][1], _ = strconv.Atoi(secondaryStr[1])
+	for i := 0; i < secondaryCnt; i++ {
+		var start, finish string
+		_, _ = fmt.Scan(&start, &finish)
+		segments[1][2*i], _ = strconv.Atoi(start)
+		segments[1][2*i+1], _ = strconv.Atoi(finish)
 	}
 
-	mainInd := 0
-	secondaryInd := 0
-	result := make([][]int, 0)
-	for mainInd != mainCnt && secondaryInd != secondaryCnt {
-		least := mainSegment[mainInd]
-		most := secondary[secondaryInd]
-		leastInd := &mainInd
-		mostInd := &secondaryInd
-		if least[0] > most[0] {
-			least, most = most, least
-			leastInd, mostInd = mostInd, leastInd
+	segmentPointer := make([]int, 2)
+
+	segmentInd := 0
+
+	prevFinish := segments[segmentInd][0]
+	finish := segments[segmentInd][1]
+
+	segmentInd = 1
+
+	for mainCnt != segmentPointer[0] && segmentPointer[1] != secondaryCnt {
+		pointerInd := segmentPointer[segmentInd]
+
+		isContinue := false
+
+		for segments[segmentInd][2*pointerInd+1] < prevFinish {
+			segmentPointer[segmentInd]++
+
+			if mainCnt == segmentPointer[segmentInd] || segmentPointer[segmentInd] == secondaryCnt {
+				isContinue = true
+				break
+			}
 		}
 
-		if least[1] < most[0] {
-			*leastInd++
+		if isContinue {
 			continue
 		}
 
-		if least[1] > most[1] {
-			*mostInd++
-			el := make([]int, 2)
-			el[0] = most[0]
-			el[1] = most[1]
-			result = append(result, el)
+		for segments[segmentInd][2*pointerInd] > finish {
+			isContinue = true
+			prevFinish = segments[segmentInd][2*pointerInd]
+			finish = segments[segmentInd][2*pointerInd+1]
+			segmentInd = (segmentInd + 1) % 2
+			segmentPointer[segmentInd]++
+			if mainCnt == segmentPointer[segmentInd] || segmentPointer[segmentInd] == secondaryCnt {
+				break
+			}
+		}
+
+		if isContinue {
 			continue
 		}
 
-		el := make([]int, 2)
-		el[0] = most[0]
-		el[1] = least[1]
-		result = append(result, el)
-		*leastInd++
-	}
+		maxStart := prevFinish
+		if segments[segmentInd][2*pointerInd] > maxStart {
+			maxStart = segments[segmentInd][2*pointerInd]
+		}
 
-	for _, val := range result {
-		fmt.Printf("%d %d\n", val[0], val[1])
-	}
-}
+		minFinish := finish
+		if segments[segmentInd][2*pointerInd+1] < minFinish {
+			minFinish = segments[segmentInd][2*pointerInd+1]
+		}
 
-func makeScanner() *bufio.Scanner {
-	const maxCapacity = 3 * 1024 * 1024
-	scanner := bufio.NewScanner(os.Stdin)
-	buf := make([]byte, maxCapacity)
-	scanner.Buffer(buf, maxCapacity)
-	return scanner
+		for minFinish == segments[segmentInd][2*pointerInd+1] && maxStart == segments[segmentInd][2*pointerInd] {
+			isContinue = true
+
+			if minFinish > maxStart {
+				fmt.Printf("%d %d\n", maxStart, minFinish)
+			}
+
+			segmentPointer[segmentInd]++
+
+			if mainCnt == segmentPointer[segmentInd] || segmentPointer[segmentInd] == secondaryCnt {
+				break
+			}
+
+			prevFinish = minFinish
+
+			maxStart = prevFinish
+			if segments[segmentInd][2*pointerInd] > maxStart {
+				maxStart = segments[segmentInd][2*pointerInd]
+			}
+
+			minFinish = finish
+			if segments[segmentInd][2*pointerInd+1] < minFinish {
+				minFinish = segments[segmentInd][2*pointerInd+1]
+			}
+		}
+
+		if isContinue {
+			continue
+		}
+
+		for minFinish != segments[segmentInd][2*pointerInd+1] && segments[segmentInd][2*pointerInd] <= minFinish {
+			prevFinish = finish
+			finish = segments[segmentInd][2*pointerInd+1]
+			segmentInd = (segmentInd + 1) % 2
+			segmentPointer[segmentInd]++
+
+			if mainCnt == segmentPointer[segmentInd] || segmentPointer[segmentInd] == secondaryCnt {
+				break
+			}
+		}
+	}
 }
