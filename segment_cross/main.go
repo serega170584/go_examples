@@ -97,7 +97,7 @@ func main() {
 
 	segmentInd = 1
 
-	for mainCnt != segmentPointer[0] && segmentPointer[1] != secondaryCnt {
+	for (segmentInd == 0 && mainCnt != segmentPointer[0]) || (segmentInd == 1 && segmentPointer[1] != secondaryCnt) {
 		pointerInd := segmentPointer[segmentInd]
 
 		isContinue := false
@@ -105,7 +105,9 @@ func main() {
 		for segments[segmentInd][2*pointerInd+1] < prevFinish {
 			segmentPointer[segmentInd]++
 
-			if mainCnt == segmentPointer[segmentInd] || segmentPointer[segmentInd] == secondaryCnt {
+			pointerInd = segmentPointer[segmentInd]
+
+			if (segmentInd == 0 && mainCnt == segmentPointer[0]) || (segmentInd == 1 && segmentPointer[1] == secondaryCnt) {
 				isContinue = true
 				break
 			}
@@ -121,7 +123,10 @@ func main() {
 			finish = segments[segmentInd][2*pointerInd+1]
 			segmentInd = (segmentInd + 1) % 2
 			segmentPointer[segmentInd]++
-			if mainCnt == segmentPointer[segmentInd] || segmentPointer[segmentInd] == secondaryCnt {
+
+			pointerInd = segmentPointer[segmentInd]
+
+			if (segmentInd == 0 && mainCnt == segmentPointer[0]) || (segmentInd == 1 && segmentPointer[1] == secondaryCnt) {
 				break
 			}
 		}
@@ -130,39 +135,24 @@ func main() {
 			continue
 		}
 
-		maxStart := prevFinish
-		if segments[segmentInd][2*pointerInd] > maxStart {
-			maxStart = segments[segmentInd][2*pointerInd]
-		}
-
-		minFinish := finish
-		if segments[segmentInd][2*pointerInd+1] < minFinish {
-			minFinish = segments[segmentInd][2*pointerInd+1]
-		}
-
-		for minFinish == segments[segmentInd][2*pointerInd+1] && maxStart == segments[segmentInd][2*pointerInd] {
-			isContinue = true
-
-			if minFinish > maxStart {
-				fmt.Printf("%d %d\n", maxStart, minFinish)
-			}
-
-			segmentPointer[segmentInd]++
-
-			if mainCnt == segmentPointer[segmentInd] || segmentPointer[segmentInd] == secondaryCnt {
-				break
-			}
-
-			prevFinish = minFinish
-
-			maxStart = prevFinish
+		for prevFinish < segments[segmentInd][2*pointerInd+1] && segments[segmentInd][2*pointerInd+1] < finish {
+			maxStart := prevFinish
 			if segments[segmentInd][2*pointerInd] > maxStart {
 				maxStart = segments[segmentInd][2*pointerInd]
 			}
 
-			minFinish = finish
-			if segments[segmentInd][2*pointerInd+1] < minFinish {
-				minFinish = segments[segmentInd][2*pointerInd+1]
+			isContinue = true
+
+			prevFinish = segments[segmentInd][2*pointerInd+1]
+
+			fmt.Printf("%d %d\n", maxStart, segments[segmentInd][2*pointerInd+1])
+
+			segmentPointer[segmentInd]++
+
+			pointerInd = segmentPointer[segmentInd]
+
+			if (segmentInd == 0 && mainCnt == segmentPointer[0]) || (segmentInd == 1 && segmentPointer[1] == secondaryCnt) {
+				break
 			}
 		}
 
@@ -170,13 +160,21 @@ func main() {
 			continue
 		}
 
-		for minFinish != segments[segmentInd][2*pointerInd+1] && segments[segmentInd][2*pointerInd] <= minFinish {
+		for segments[segmentInd][2*pointerInd] < finish && finish < segments[segmentInd][2*pointerInd+1] {
+			maxStart := prevFinish
+			if segments[segmentInd][2*pointerInd] > maxStart {
+				maxStart = segments[segmentInd][2*pointerInd]
+			}
+			fmt.Printf("%d %d\n", maxStart, finish)
+
+			segmentPointer[segmentInd]++
 			prevFinish = finish
 			finish = segments[segmentInd][2*pointerInd+1]
 			segmentInd = (segmentInd + 1) % 2
-			segmentPointer[segmentInd]++
 
-			if mainCnt == segmentPointer[segmentInd] || segmentPointer[segmentInd] == secondaryCnt {
+			pointerInd = segmentPointer[segmentInd]
+
+			if (segmentInd == 0 && mainCnt == segmentPointer[0]) || (segmentInd == 1 && segmentPointer[1] == secondaryCnt) {
 				break
 			}
 		}
