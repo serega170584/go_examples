@@ -55,6 +55,13 @@ import (
 // [1 4]
 // 2 - 1 > 0, 2 - 4 < 0, 3 - 1 > 0, 3 - 4 < 0 1010 10
 // 1 - 2 < 0, 1 - 3 < 0, 4 - 2 > 0, 4 - 3 > 0 0011 3
+
+// 1 3
+// 2 4
+// 1 2 3 4
+// 1 - 2
+// 3 - 2
+// 3 - 4
 func main() {
 	var mainCnt, secondaryCnt int
 
@@ -63,15 +70,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-	segments := make([][]int, 2)
+	mainSegment := make([][]int, mainCnt)
 
-	segments[0] = make([]int, 2*mainCnt)
-
-	for i := 0; i < mainCnt; i++ {
-		var start, finish string
-		_, _ = fmt.Scan(&start, &finish)
-		segments[0][2*i], _ = strconv.Atoi(start)
-		segments[0][2*i+1], _ = strconv.Atoi(finish)
+	for i := range mainSegment {
+		var left, right string
+		_, _ = fmt.Scan(&left, &right)
+		mainSegment[i] = make([]int, 2)
+		mainSegment[i][0], _ = strconv.Atoi(left)
+		mainSegment[i][1], _ = strconv.Atoi(right)
 	}
 
 	_, err = fmt.Scan(&secondaryCnt)
@@ -79,104 +85,48 @@ func main() {
 		log.Fatal(err)
 	}
 
-	segments[1] = make([]int, 2*secondaryCnt)
+	secondary := make([][]int, secondaryCnt)
 
-	for i := 0; i < secondaryCnt; i++ {
-		var start, finish string
-		_, _ = fmt.Scan(&start, &finish)
-		segments[1][2*i], _ = strconv.Atoi(start)
-		segments[1][2*i+1], _ = strconv.Atoi(finish)
+	for i := range secondary {
+		var left, right string
+		_, _ = fmt.Scan(&left, &right)
+		secondary[i] = make([]int, 2)
+		secondary[i][0], _ = strconv.Atoi(left)
+		secondary[i][1], _ = strconv.Atoi(right)
 	}
 
-	segmentPointer := make([]int, 2)
+	mainInd := 0
+	secondaryInd := 0
+	intBoolMapping := make(map[bool]int, 2)
+	intBoolMapping[true] = 1
+	intBoolMapping[false] = 0
 
-	segmentInd := 0
+	for mainInd != mainCnt && secondaryInd != secondaryCnt {
+		diff := mainSegment[mainInd][1] - secondary[secondaryInd][0]
+		finishDiff := mainSegment[mainInd][1] - secondary[secondaryInd][1]
+		startDiff := mainSegment[mainInd][0] - secondary[secondaryInd][0]
 
-	prevFinish := segments[segmentInd][0]
-	finish := segments[segmentInd][1]
-
-	segmentInd = 1
-
-	for (segmentInd == 0 && mainCnt != segmentPointer[0]) || (segmentInd == 1 && segmentPointer[1] != secondaryCnt) {
-		pointerInd := segmentPointer[segmentInd]
-
-		isContinue := false
-
-		for segments[segmentInd][2*pointerInd+1] < prevFinish {
-			segmentPointer[segmentInd]++
-
-			pointerInd = segmentPointer[segmentInd]
-
-			if (segmentInd == 0 && mainCnt == segmentPointer[0]) || (segmentInd == 1 && segmentPointer[1] == secondaryCnt) {
-				isContinue = true
-				break
-			}
-		}
-
-		if isContinue {
+		mainInd = mainInd + intBoolMapping[diff < 0]
+		if diff < 0 {
 			continue
 		}
 
-		for segments[segmentInd][2*pointerInd] > finish {
-			isContinue = true
-			prevFinish = segments[segmentInd][2*pointerInd]
-			finish = segments[segmentInd][2*pointerInd+1]
-			segmentInd = (segmentInd + 1) % 2
-			segmentPointer[segmentInd]++
-
-			pointerInd = segmentPointer[segmentInd]
-
-			if (segmentInd == 0 && mainCnt == segmentPointer[0]) || (segmentInd == 1 && segmentPointer[1] == secondaryCnt) {
-				break
-			}
-		}
-
-		if isContinue {
+		if secondary[secondaryInd][1] < mainSegment[mainInd][0] {
+			secondaryInd++
 			continue
 		}
 
-		for prevFinish < segments[segmentInd][2*pointerInd+1] && segments[segmentInd][2*pointerInd+1] < finish {
-			maxStart := prevFinish
-			if segments[segmentInd][2*pointerInd] > maxStart {
-				maxStart = segments[segmentInd][2*pointerInd]
-			}
+		diff = diff - startDiff*intBoolMapping[startDiff > 0]
+		start := intBoolMapping[startDiff <= 0]*secondary[secondaryInd][0] + intBoolMapping[startDiff > 0]*mainSegment[mainInd][0]
 
-			isContinue = true
+		mainInd = mainInd + intBoolMapping[finishDiff == 0]
+		secondaryInd = secondaryInd + intBoolMapping[finishDiff == 0]
 
-			prevFinish = segments[segmentInd][2*pointerInd+1]
+		diff = diff - intBoolMapping[finishDiff > 0]*finishDiff
+		secondaryInd = secondaryInd + intBoolMapping[finishDiff > 0]
 
-			fmt.Printf("%d %d\n", maxStart, segments[segmentInd][2*pointerInd+1])
+		mainInd = mainInd + intBoolMapping[finishDiff < 0]
 
-			segmentPointer[segmentInd]++
-
-			pointerInd = segmentPointer[segmentInd]
-
-			if (segmentInd == 0 && mainCnt == segmentPointer[0]) || (segmentInd == 1 && segmentPointer[1] == secondaryCnt) {
-				break
-			}
-		}
-
-		if isContinue {
-			continue
-		}
-
-		for segments[segmentInd][2*pointerInd] < finish && finish < segments[segmentInd][2*pointerInd+1] {
-			maxStart := prevFinish
-			if segments[segmentInd][2*pointerInd] > maxStart {
-				maxStart = segments[segmentInd][2*pointerInd]
-			}
-			fmt.Printf("%d %d\n", maxStart, finish)
-
-			segmentPointer[segmentInd]++
-			prevFinish = finish
-			finish = segments[segmentInd][2*pointerInd+1]
-			segmentInd = (segmentInd + 1) % 2
-
-			pointerInd = segmentPointer[segmentInd]
-
-			if (segmentInd == 0 && mainCnt == segmentPointer[0]) || (segmentInd == 1 && segmentPointer[1] == secondaryCnt) {
-				break
-			}
-		}
+		fmt.Printf("%d %d\n", start, start+diff)
 	}
 }
