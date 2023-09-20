@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"sort"
 	"strconv"
 )
 
@@ -62,6 +63,27 @@ import (
 // 1 - 2
 // 3 - 2
 // 3 - 4
+
+//5
+//1 2
+//3 4
+//5 6
+//7 15
+//16 17
+//5
+//1 2
+//3 4
+//6 10
+//11 12
+//14 17
+//1 2
+//3 4
+//6 6
+//7 10
+//11 12
+//14 15
+//16 17
+
 func main() {
 	var mainCnt, secondaryCnt int
 
@@ -95,38 +117,63 @@ func main() {
 		secondary[i][1], _ = strconv.Atoi(right)
 	}
 
-	mainInd := 0
-	secondaryInd := 0
-	intBoolMapping := make(map[bool]int, 2)
-	intBoolMapping[true] = 1
-	intBoolMapping[false] = 0
+	segmentPointFinishes := make(map[int]bool, 2*mainCnt+2*secondaryCnt)
+	segmentPoints := make([]int, 2*mainCnt+2*secondaryCnt)
+	segmentPointsCnt := make(map[int]int, 2*mainCnt+2*secondaryCnt)
 
-	for mainInd != mainCnt && secondaryInd != secondaryCnt {
-		diff := mainSegment[mainInd][1] - secondary[secondaryInd][0]
-		finishDiff := mainSegment[mainInd][1] - secondary[secondaryInd][1]
-		startDiff := mainSegment[mainInd][0] - secondary[secondaryInd][0]
+	for i, val := range mainSegment {
+		segmentPointFinishes[val[0]] = false
+		segmentPointFinishes[val[1]] = true
+		segmentPoints[i*2] = val[0]
+		segmentPoints[i*2+1] = val[1]
+		segmentPointsCnt[val[0]]++
+		segmentPointsCnt[val[1]]++
+	}
 
-		mainInd = mainInd + intBoolMapping[diff < 0]
-		if diff < 0 {
-			continue
+	for i, val := range secondary {
+		segmentPoints[(i+mainCnt)*2] = 1000000001
+		segmentPoints[(i+mainCnt)*2+1] = 1000000001
+
+		if _, ok := segmentPointFinishes[val[0]]; !ok {
+			segmentPointFinishes[val[0]] = false
+			segmentPoints[(i+mainCnt)*2] = val[0]
 		}
 
-		if secondary[secondaryInd][1] < mainSegment[mainInd][0] {
-			secondaryInd++
-			continue
+		if _, ok := segmentPointFinishes[val[1]]; !ok {
+			segmentPoints[(i+mainCnt)*2+1] = val[1]
 		}
 
-		diff = diff - startDiff*intBoolMapping[startDiff > 0]
-		start := intBoolMapping[startDiff <= 0]*secondary[secondaryInd][0] + intBoolMapping[startDiff > 0]*mainSegment[mainInd][0]
+		segmentPointFinishes[val[1]] = true
 
-		mainInd = mainInd + intBoolMapping[finishDiff == 0]
-		secondaryInd = secondaryInd + intBoolMapping[finishDiff == 0]
+		segmentPointsCnt[val[0]]++
+		segmentPointsCnt[val[1]]++
+	}
 
-		diff = diff - intBoolMapping[finishDiff > 0]*finishDiff
-		secondaryInd = secondaryInd + intBoolMapping[finishDiff > 0]
+	sort.Ints(segmentPoints)
 
-		mainInd = mainInd + intBoolMapping[finishDiff < 0]
+	startCnt := 0
+	for i, val := range segmentPoints {
+		if val == 1000000000 {
+			break
+		}
 
-		fmt.Printf("%d %d\n", start, start+diff)
+		if segmentPointFinishes[val] {
+			startCnt -= segmentPointsCnt[val]
+		} else {
+			startCnt += segmentPointsCnt[val]
+		}
+
+		if segmentPointFinishes[val] && startCnt == 0 && segmentPointsCnt[val] == 2 {
+			fmt.Printf("%d %d\n", segmentPoints[i-1], val)
+		}
+
+		if segmentPointFinishes[val] && startCnt == 1 {
+			fmt.Printf("%d %d\n", segmentPoints[i-1], val)
+		}
+
+		if segmentPointFinishes[val] && startCnt == -1 {
+			startCnt = 1
+			fmt.Printf("%d %d\n", val, val)
+		}
 	}
 }
