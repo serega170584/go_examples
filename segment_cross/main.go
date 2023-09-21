@@ -1,9 +1,8 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"sort"
+	"bufio"
+	"os"
 	"strconv"
 )
 
@@ -84,96 +83,105 @@ import (
 //14 15
 //16 17
 
-func main() {
-	var mainCnt, secondaryCnt int
+//2
+//1 4
+//6 9
+//3
+//2 3
+//6 7
+//8 10
+//2 3
+//6 7
+//8 9
 
-	_, err := fmt.Scan(&mainCnt)
-	if err != nil {
-		log.Fatal(err)
-	}
+func main() {
+	//var mainCnt, secondaryCnt int
+
+	s := bufio.NewScanner(os.Stdin)
+	s.Split(bufio.ScanWords)
+	s.Scan()
+	mainCnt, _ := strconv.Atoi(s.Text())
 
 	mainSegment := make([][]int, mainCnt)
 
-	for i := range mainSegment {
-		var left, right string
-		_, _ = fmt.Scan(&left, &right)
+	for i := 0; i < mainCnt; i++ {
 		mainSegment[i] = make([]int, 2)
-		mainSegment[i][0], _ = strconv.Atoi(left)
-		mainSegment[i][1], _ = strconv.Atoi(right)
+		s.Scan()
+		mainSegment[i][0], _ = strconv.Atoi(s.Text())
+		s.Scan()
+		mainSegment[i][1], _ = strconv.Atoi(s.Text())
 	}
 
-	_, err = fmt.Scan(&secondaryCnt)
-	if err != nil {
-		log.Fatal(err)
+	s.Scan()
+	secondaryCnt, _ := strconv.Atoi(s.Text())
+
+	for i := 0; i < secondaryCnt; i++ {
+		mainSegment[i] = make([]int, 2)
+		s.Scan()
+		mainSegment[i][0], _ = strconv.Atoi(s.Text())
+		s.Scan()
+		mainSegment[i][1], _ = strconv.Atoi(s.Text())
 	}
 
-	secondary := make([][]int, secondaryCnt)
-
-	for i := range secondary {
-		var left, right string
-		_, _ = fmt.Scan(&left, &right)
-		secondary[i] = make([]int, 2)
-		secondary[i][0], _ = strconv.Atoi(left)
-		secondary[i][1], _ = strconv.Atoi(right)
-	}
-
-	segmentPointFinishes := make(map[int]bool, 2*mainCnt+2*secondaryCnt)
-	segmentPoints := make([]int, 2*mainCnt+2*secondaryCnt)
-	segmentPointsCnt := make(map[int]int, 2*mainCnt+2*secondaryCnt)
-
-	for i, val := range mainSegment {
-		segmentPointFinishes[val[0]] = false
-		segmentPointFinishes[val[1]] = true
-		segmentPoints[i*2] = val[0]
-		segmentPoints[i*2+1] = val[1]
-		segmentPointsCnt[val[0]]++
-		segmentPointsCnt[val[1]]++
-	}
-
-	for i, val := range secondary {
-		segmentPoints[(i+mainCnt)*2] = 1000000001
-		segmentPoints[(i+mainCnt)*2+1] = 1000000001
-
-		if _, ok := segmentPointFinishes[val[0]]; !ok {
-			segmentPointFinishes[val[0]] = false
-			segmentPoints[(i+mainCnt)*2] = val[0]
-		}
-
-		if _, ok := segmentPointFinishes[val[1]]; !ok {
-			segmentPoints[(i+mainCnt)*2+1] = val[1]
-		}
-
-		segmentPointFinishes[val[1]] = true
-
-		segmentPointsCnt[val[0]]++
-		segmentPointsCnt[val[1]]++
-	}
-
-	sort.Ints(segmentPoints)
-
-	startCnt := 0
-	for i, val := range segmentPoints {
-		if val == 1000000000 {
-			break
-		}
-
-		if segmentPointFinishes[val] {
-			startCnt -= segmentPointsCnt[val]
-		} else {
-			startCnt += segmentPointsCnt[val]
-		}
-
-		if segmentPointFinishes[val] && startCnt == 0 && segmentPointsCnt[val] == 2 {
-			fmt.Printf("%d %d\n", segmentPoints[i-1], val)
-		}
-
-		if segmentPointFinishes[val] && startCnt == 1 {
-			fmt.Printf("%d %d\n", segmentPoints[i-1], val)
-		}
-
-		if segmentPointFinishes[val] && startCnt == -1 {
-			startCnt = 1
-			fmt.Printf("%d %d\n", val, val)
-		}
-	}
+	//_, err := fmt.Scan(&mainCnt)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//mainSegment := make([][]int, mainCnt)
+	//
+	//for i := range mainSegment {
+	//	var left, right string
+	//	_, _ = fmt.Scan(&left, &right)
+	//	mainSegment[i] = make([]int, 2)
+	//	mainSegment[i][0], _ = strconv.Atoi(left)
+	//	mainSegment[i][1], _ = strconv.Atoi(right)
+	//}
+	//
+	//_, err = fmt.Scan(&secondaryCnt)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//secondary := make([][]int, secondaryCnt)
+	//
+	//for i := range secondary {
+	//	var left, right string
+	//	_, _ = fmt.Scan(&left, &right)
+	//	secondary[i] = make([]int, 2)
+	//	secondary[i][0], _ = strconv.Atoi(left)
+	//	secondary[i][1], _ = strconv.Atoi(right)
+	//}
+	//
+	//if mainCnt == 0 || secondaryCnt == 0 {
+	//	return
+	//}
+	//
+	//movePointer := 0
+	//persistentPointer := 0
+	//moveSegment := mainSegment
+	//persistentSegment := secondary
+	//moveCnt := mainCnt
+	//persistentCnt := secondaryCnt
+	//
+	//for movePointer != moveCnt {
+	//
+	//	if persistentSegment[persistentPointer][1] < moveSegment[movePointer][1] {
+	//		moveSegment, persistentSegment = persistentSegment, moveSegment
+	//		movePointer, persistentPointer = persistentPointer, movePointer
+	//		moveCnt, persistentCnt = persistentCnt, moveCnt
+	//	}
+	//
+	//	if moveSegment[movePointer][0] >= persistentSegment[persistentPointer][0] {
+	//		println(moveSegment[movePointer][0], moveSegment[movePointer][1])
+	//		movePointer++
+	//		continue
+	//	}
+	//
+	//	if moveSegment[movePointer][1] >= persistentSegment[persistentPointer][0] {
+	//		println(persistentSegment[persistentPointer][0], moveSegment[movePointer][1])
+	//	}
+	//
+	//	movePointer++
+	//}
 }
