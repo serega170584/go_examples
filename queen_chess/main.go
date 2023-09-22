@@ -156,21 +156,21 @@ import (
 // [1] [1 2] [1 3] [1 4] [1 5] [1 6]
 
 // 2
-// [2] [2 1] []
+// [2] [2]
 
 // position
 // positions
 // cnt
 
+// 0 0 1 0
 // 1 1 1 1
-// 1 1 0 0
+// 1 1 1 1
 // 1 0 1 0
-// 1 0 0 1
 
+// 0 0 0 1
+// 0 0 1 1
 // 1 1 1 1
-// 1 1 1 1
-// 1 1 1 1
-// 1 0 1 1
+// 1 1 0 1
 
 func main() {
 	s := bufio.NewScanner(os.Stdin)
@@ -212,87 +212,62 @@ func main() {
 		return
 	}
 
-	writer := bufio.NewWriter(os.Stdout)
-
-	rowBusyPositions := busyPositions[0]
-	for colInd := range rowBusyPositions {
+	for i := 0; i < cnt; i++ {
 		copyDispositions := make([]int, cnt)
 		copy(copyDispositions, dispositions)
+		copyDispositions[0] = i + 1
 
-		func(dispositions []int, colInd int, busyPositions [][]bool, writer *bufio.Writer) {
-			dispositions[0] = colInd + 1
+		copyBusyPositions := make([][]bool, cnt)
+		for j := 1; j < cnt; j++ {
+			copyBusyPositions[j] = make([]bool, cnt)
+			copy(copyBusyPositions[j], busyPositions[j])
 
-			copyBusyPositions := make([][]bool, cnt)
-			for i, val := range busyPositions {
-				copyBusyPositions[i] = make([]bool, cnt)
-				copy(copyBusyPositions[i], val)
+			copyBusyPositions[j][i] = true
+			if i-j > -1 {
+				copyBusyPositions[j][i-j] = true
 			}
+			if i+j < cnt {
+				copyBusyPositions[j][i+j] = true
+			}
+		}
 
-			getExcludedBeatingPositions(copyBusyPositions, 0, colInd, cnt)
-
-			generateDisposition(copyBusyPositions, 1, cnt, dispositions, writer)
-
-		}(copyDispositions, colInd, busyPositions, writer)
+		generateDisposition(copyBusyPositions, 1, cnt, copyDispositions)
 	}
-
-	_ = writer.Flush()
 }
 
-func generateDisposition(busyPositions [][]bool, rowInd, cnt int, dispositions []int, writer *bufio.Writer) {
-	rowBusyPositions := busyPositions[rowInd]
-	for colInd, colBusyPosition := range rowBusyPositions {
-		if colBusyPosition {
+func generateDisposition(busyPositions [][]bool, rowInd, cnt int, dispositions []int) {
+	for i := 0; i < cnt; i++ {
+		if busyPositions[rowInd][i] {
 			continue
 		}
 
-		dispositions[rowInd] = colInd + 1
+		copyDispositions := make([]int, cnt)
+		copy(copyDispositions, dispositions)
+		copyDispositions[rowInd] = i + 1
 
 		if rowInd == cnt-1 {
 			str := make([]string, cnt)
-			for i, val := range dispositions {
-				str[i] = strconv.Itoa(val)
+			for dispInd, val := range copyDispositions {
+				str[dispInd] = strconv.Itoa(val)
 			}
-			_, _ = writer.WriteString(strings.Join(str, " "))
-			_, _ = writer.WriteString("\n")
+			fmt.Println(strings.Join(str, " "))
 			continue
 		}
 
 		copyBusyPositions := make([][]bool, cnt)
-		for i, val := range busyPositions {
-			copyBusyPositions[i] = make([]bool, cnt)
-			copy(copyBusyPositions[i], val)
+		for j := rowInd + 1; j < cnt; j++ {
+			copyBusyPositions[j] = make([]bool, cnt)
+			copy(copyBusyPositions[j], busyPositions[j])
+
+			copyBusyPositions[j][i] = true
+			if i-j+rowInd > -1 {
+				copyBusyPositions[j][i-j+rowInd] = true
+			}
+			if i+j-rowInd < cnt {
+				copyBusyPositions[j][i+j-rowInd] = true
+			}
 		}
 
-		getExcludedBeatingPositions(copyBusyPositions, rowInd, colInd, cnt)
-
-		generateDisposition(copyBusyPositions, rowInd+1, cnt, dispositions, writer)
-	}
-}
-
-func getExcludedBeatingPositions(busyPositions [][]bool, rowInd, colInd, cnt int) {
-	leftExcludeCnt := colInd + 1
-	downExcludeCnt := cnt - rowInd
-	rightExcludeCnt := cnt - colInd
-
-	leftDiagonalCnt := leftExcludeCnt
-	if leftExcludeCnt > downExcludeCnt {
-		leftDiagonalCnt = downExcludeCnt
-	}
-
-	rightDiagonalCnt := rightExcludeCnt
-	if rightExcludeCnt > downExcludeCnt {
-		rightDiagonalCnt = downExcludeCnt
-	}
-
-	for i := 1; i < leftDiagonalCnt; i++ {
-		busyPositions[rowInd+i][colInd-i] = true
-	}
-
-	for i := 1; i < downExcludeCnt; i++ {
-		busyPositions[rowInd+i][colInd] = true
-	}
-
-	for i := 1; i < rightDiagonalCnt; i++ {
-		busyPositions[rowInd+i][colInd+i] = true
+		generateDisposition(copyBusyPositions, rowInd+1, cnt, copyDispositions)
 	}
 }
