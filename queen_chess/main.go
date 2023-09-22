@@ -1,8 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
-	"log"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -117,17 +118,57 @@ import (
 // 1 0 1 0
 // 1 0 0 1
 
+// [1] [2] [3] [4]
+// 1
+// [1 2] [1 3] [1 4]
+
+// 0 0 0 0
+// 0 0 0 0
+// 0 0 0 0
+// 0 0 0 0
+
+// 1 1 1 1
+// 1 1 1 0
+// 0 1 0 1
+// 0 1 0 0
+
+// 1 1 1 1
+// 1 1 1 1
+// 0 1 1 1
+// 0 1 0 1
+
+// 0 0 1 0 0 0
+// 0 1 1 1 1 0
+// 1 0 1 1 1 1
+// 0 0 1 0 1 1
+// 0 1 1 0 1 0
+// 1 0 1 0 1 0
+
+// 1
+// [1] [1 2] [1 3] [1 4] [1 5] [1 6]
+
+// 2
+// [2] [2 1] []
+
+// position
+// positions
+// cnt
+
+// 1 1 1 1
+// 1 1 0 0
+// 1 0 1 0
+// 1 0 0 1
+
 // 1 1 1 1
 // 1 1 1 1
 // 1 1 1 1
 // 1 0 1 1
 
 func main() {
-	var cnt int
-	_, err := fmt.Scan(&cnt)
-	if err != nil {
-		log.Fatal(err)
-	}
+	s := bufio.NewScanner(os.Stdin)
+	s.Split(bufio.ScanWords)
+	s.Scan()
+	cnt, _ := strconv.Atoi(s.Text())
 
 	cntMap := make([]int, 14)
 	cntMap[0] = 0
@@ -145,48 +186,17 @@ func main() {
 	cntMap[12] = 14200
 	cntMap[13] = 73712
 
-	busyPositions := make([][]bool, cnt*cnt)
+	busyPositions := make([][]bool, cnt)
 	for i := range busyPositions {
 		busyPositions[i] = make([]bool, cnt)
 	}
 
-	dispositionBusyPositions := make([][]bool, cnt)
-	for i := range dispositionBusyPositions {
-		dispositionBusyPositions[i] = make([]bool, cnt)
-	}
+	dispositions := make([]int, cnt)
 
-	disposition := make([]int, cnt)
-
-	generatedDispositionsCnt := cntMap[cnt]
-	generatedDispositions := make([][]int, generatedDispositionsCnt)
-	for i := range generatedDispositions {
-		generatedDispositions[i] = make([]int, cnt)
-	}
-
-	var dispositionInd int
-
-	generateDisposition(busyPositions, dispositionBusyPositions, 0, cnt, disposition, generatedDispositions, &dispositionInd)
-
-	fmt.Println(generatedDispositionsCnt)
-
-	for _, disposition := range generatedDispositions {
-		dispositionStr := make([]string, cnt)
-		for i, val := range disposition {
-			dispositionStr[i] = strconv.Itoa(val)
-		}
-		fmt.Println(strings.Join(dispositionStr, " "))
-	}
-}
-
-func generateDisposition(busyPositions, dispositionBusyPositions [][]bool, rowInd, cnt int, disposition []int, generatedDispositions [][]int, dispositionInd *int) {
-	for i, positions := range dispositionBusyPositions {
-		for j, position := range positions {
-			busyPositions[rowInd*cnt+i][j] = position
-		}
-	}
+	fmt.Println(cntMap[cnt])
 
 	if cnt == 1 {
-		generatedDispositions[0][0] = 1
+		fmt.Println("1")
 		return
 	}
 
@@ -194,45 +204,66 @@ func generateDisposition(busyPositions, dispositionBusyPositions [][]bool, rowIn
 		return
 	}
 
-	rowBusyPositions := busyPositions[rowInd*cnt+rowInd]
+	counterCh := make(chan struct{}, cnt)
+
+	rowBusyPositions := busyPositions[0]
+	for colInd := range rowBusyPositions {
+		copyDispositions := make([]int, cnt)
+		copy(copyDispositions, dispositions)
+
+		go func(dispositions []int, colInd int, busyPositions [][]bool, counterCh chan struct{}) {
+			dispositions[0] = colInd + 1
+
+			copyBusyPositions := make([][]bool, cnt)
+			for i, val := range busyPositions {
+				copyBusyPositions[i] = make([]bool, cnt)
+				copy(copyBusyPositions[i], val)
+			}
+
+			getExcludedBeatingPositions(copyBusyPositions, 0, colInd, cnt)
+
+			generateDisposition(copyBusyPositions, 1, cnt, dispositions)
+
+			counterCh <- struct{}{}
+		}(copyDispositions, colInd, busyPositions, counterCh)
+	}
+
+	handledCnt := 0
+	for range counterCh {
+		handledCnt++
+		if handledCnt == cnt {
+			close(counterCh)
+		}
+	}
+}
+
+func generateDisposition(busyPositions [][]bool, rowInd, cnt int, dispositions []int) {
+	rowBusyPositions := busyPositions[rowInd]
 	for colInd, colBusyPosition := range rowBusyPositions {
 		if colBusyPosition {
 			continue
 		}
 
-		disposition[rowInd] = colInd + 1
+		dispositions[rowInd] = colInd + 1
 
 		if rowInd == cnt-1 {
-			for i := range disposition {
-				generatedDispositions[*dispositionInd][i] = disposition[i]
+			str := make([]string, cnt)
+			for i, val := range dispositions {
+				str[i] = strconv.Itoa(val)
 			}
-			*dispositionInd++
+			fmt.Println(strings.Join(str, " "))
 			continue
 		}
 
-		for i, positions := range dispositionBusyPositions {
-			for j := range positions {
-				dispositionBusyPositions[i][j] = busyPositions[rowInd*cnt+i][j]
-			}
+		copyBusyPositions := make([][]bool, cnt)
+		for i, val := range busyPositions {
+			copyBusyPositions[i] = make([]bool, cnt)
+			copy(copyBusyPositions[i], val)
 		}
 
-		getExcludedBeatingPositions(dispositionBusyPositions, rowInd, colInd, cnt)
+		getExcludedBeatingPositions(copyBusyPositions, rowInd, colInd, cnt)
 
-		validFreePositionsCnt := cnt - rowInd - 1
-		freePositionsCnt := 0
-		for i := rowInd + 1; i < cnt; i++ {
-			for _, val := range dispositionBusyPositions[i] {
-				if !val {
-					freePositionsCnt += 1
-				}
-			}
-		}
-
-		if freePositionsCnt < validFreePositionsCnt {
-			continue
-		}
-
-		generateDisposition(busyPositions, dispositionBusyPositions, rowInd+1, cnt, disposition, generatedDispositions, dispositionInd)
+		generateDisposition(copyBusyPositions, rowInd+1, cnt, dispositions)
 	}
 }
 
@@ -261,9 +292,5 @@ func getExcludedBeatingPositions(busyPositions [][]bool, rowInd, colInd, cnt int
 
 	for i := 1; i < rightDiagonalCnt; i++ {
 		busyPositions[rowInd+i][colInd+i] = true
-	}
-
-	for i := 0; i < cnt; i++ {
-		busyPositions[rowInd][i] = true
 	}
 }

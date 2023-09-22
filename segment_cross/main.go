@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"strconv"
 )
@@ -115,73 +116,45 @@ func main() {
 	s.Scan()
 	secondaryCnt, _ := strconv.Atoi(s.Text())
 
+	secondary := make([][]int, secondaryCnt)
+
 	for i := 0; i < secondaryCnt; i++ {
-		mainSegment[i] = make([]int, 2)
+		secondary[i] = make([]int, 2)
 		s.Scan()
-		mainSegment[i][0], _ = strconv.Atoi(s.Text())
+		secondary[i][0], _ = strconv.Atoi(s.Text())
 		s.Scan()
-		mainSegment[i][1], _ = strconv.Atoi(s.Text())
+		secondary[i][1], _ = strconv.Atoi(s.Text())
 	}
 
-	//_, err := fmt.Scan(&mainCnt)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//
-	//mainSegment := make([][]int, mainCnt)
-	//
-	//for i := range mainSegment {
-	//	var left, right string
-	//	_, _ = fmt.Scan(&left, &right)
-	//	mainSegment[i] = make([]int, 2)
-	//	mainSegment[i][0], _ = strconv.Atoi(left)
-	//	mainSegment[i][1], _ = strconv.Atoi(right)
-	//}
-	//
-	//_, err = fmt.Scan(&secondaryCnt)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//
-	//secondary := make([][]int, secondaryCnt)
-	//
-	//for i := range secondary {
-	//	var left, right string
-	//	_, _ = fmt.Scan(&left, &right)
-	//	secondary[i] = make([]int, 2)
-	//	secondary[i][0], _ = strconv.Atoi(left)
-	//	secondary[i][1], _ = strconv.Atoi(right)
-	//}
-	//
-	//if mainCnt == 0 || secondaryCnt == 0 {
-	//	return
-	//}
-	//
-	//movePointer := 0
-	//persistentPointer := 0
-	//moveSegment := mainSegment
-	//persistentSegment := secondary
-	//moveCnt := mainCnt
-	//persistentCnt := secondaryCnt
-	//
-	//for movePointer != moveCnt {
-	//
-	//	if persistentSegment[persistentPointer][1] < moveSegment[movePointer][1] {
-	//		moveSegment, persistentSegment = persistentSegment, moveSegment
-	//		movePointer, persistentPointer = persistentPointer, movePointer
-	//		moveCnt, persistentCnt = persistentCnt, moveCnt
-	//	}
-	//
-	//	if moveSegment[movePointer][0] >= persistentSegment[persistentPointer][0] {
-	//		println(moveSegment[movePointer][0], moveSegment[movePointer][1])
-	//		movePointer++
-	//		continue
-	//	}
-	//
-	//	if moveSegment[movePointer][1] >= persistentSegment[persistentPointer][0] {
-	//		println(persistentSegment[persistentPointer][0], moveSegment[movePointer][1])
-	//	}
-	//
-	//	movePointer++
-	//}
+	if mainCnt == 0 || secondaryCnt == 0 {
+		return
+	}
+
+	movePointer := 0
+	persistentPointer := 0
+	moveSegment := mainSegment
+	persistentSegment := secondary
+	moveCnt := mainCnt
+	persistentCnt := secondaryCnt
+
+	for movePointer != moveCnt {
+
+		if persistentSegment[persistentPointer][1] < moveSegment[movePointer][1] {
+			moveSegment, persistentSegment = persistentSegment, moveSegment
+			movePointer, persistentPointer = persistentPointer, movePointer
+			moveCnt, persistentCnt = persistentCnt, moveCnt
+		}
+
+		if moveSegment[movePointer][0] >= persistentSegment[persistentPointer][0] {
+			fmt.Println(moveSegment[movePointer][0], moveSegment[movePointer][1])
+			movePointer++
+			continue
+		}
+
+		if moveSegment[movePointer][1] >= persistentSegment[persistentPointer][0] {
+			fmt.Println(persistentSegment[persistentPointer][0], moveSegment[movePointer][1])
+		}
+
+		movePointer++
+	}
 }
