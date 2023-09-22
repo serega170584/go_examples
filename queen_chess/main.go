@@ -137,12 +137,20 @@ import (
 // 0 1 1 1
 // 0 1 0 1
 
-// 0 0 1 0 0 0
-// 0 1 1 1 1 0
-// 1 0 1 1 1 1
-// 0 0 1 0 1 1
-// 0 1 1 0 1 0
-// 1 0 1 0 1 0
+// 1 1 1 1 1 1
+// 1 1 1 1 1 1
+// 1 1 1 1 1 1
+// 1 1 1 1 1 1
+// 1 1 1 1 1 1
+// 1 1 1 1 1 1
+
+// 1 1 1 1
+// 1 1 1 1
+// 1 1 1 1
+// 1 0 0 1
+
+// [1] [1 2] [1 3] [1 4]
+// [1 2 3] [1 3 4 2]
 
 // 1
 // [1] [1 2] [1 3] [1 4] [1 5] [1 6]
@@ -204,14 +212,14 @@ func main() {
 		return
 	}
 
-	counterCh := make(chan struct{}, cnt)
+	writer := bufio.NewWriter(os.Stdout)
 
 	rowBusyPositions := busyPositions[0]
 	for colInd := range rowBusyPositions {
 		copyDispositions := make([]int, cnt)
 		copy(copyDispositions, dispositions)
 
-		go func(dispositions []int, colInd int, busyPositions [][]bool, counterCh chan struct{}) {
+		func(dispositions []int, colInd int, busyPositions [][]bool, writer *bufio.Writer) {
 			dispositions[0] = colInd + 1
 
 			copyBusyPositions := make([][]bool, cnt)
@@ -222,22 +230,15 @@ func main() {
 
 			getExcludedBeatingPositions(copyBusyPositions, 0, colInd, cnt)
 
-			generateDisposition(copyBusyPositions, 1, cnt, dispositions)
+			generateDisposition(copyBusyPositions, 1, cnt, dispositions, writer)
 
-			counterCh <- struct{}{}
-		}(copyDispositions, colInd, busyPositions, counterCh)
+		}(copyDispositions, colInd, busyPositions, writer)
 	}
 
-	handledCnt := 0
-	for range counterCh {
-		handledCnt++
-		if handledCnt == cnt {
-			close(counterCh)
-		}
-	}
+	_ = writer.Flush()
 }
 
-func generateDisposition(busyPositions [][]bool, rowInd, cnt int, dispositions []int) {
+func generateDisposition(busyPositions [][]bool, rowInd, cnt int, dispositions []int, writer *bufio.Writer) {
 	rowBusyPositions := busyPositions[rowInd]
 	for colInd, colBusyPosition := range rowBusyPositions {
 		if colBusyPosition {
@@ -251,7 +252,8 @@ func generateDisposition(busyPositions [][]bool, rowInd, cnt int, dispositions [
 			for i, val := range dispositions {
 				str[i] = strconv.Itoa(val)
 			}
-			fmt.Println(strings.Join(str, " "))
+			_, _ = writer.WriteString(strings.Join(str, " "))
+			_, _ = writer.WriteString("\n")
 			continue
 		}
 
@@ -263,7 +265,7 @@ func generateDisposition(busyPositions [][]bool, rowInd, cnt int, dispositions [
 
 		getExcludedBeatingPositions(copyBusyPositions, rowInd, colInd, cnt)
 
-		generateDisposition(copyBusyPositions, rowInd+1, cnt, dispositions)
+		generateDisposition(copyBusyPositions, rowInd+1, cnt, dispositions, writer)
 	}
 }
 
