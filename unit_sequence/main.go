@@ -1,31 +1,40 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
-	"math/rand"
+	"os"
+	"strconv"
 )
 
 func main() {
-	cnt := 20
-	a := make([]int, cnt)
-	counter := 0
-	maxLength := 0
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Split(bufio.ScanWords)
+
+	scanner.Scan()
+	cntStr := scanner.Text()
+	cnt, _ := strconv.Atoi(cntStr)
+
+	arr := make([]string, cnt+1)
+
 	for i := 0; i < cnt; i++ {
-		a[i] = rand.Intn(2)
+		scanner.Scan()
+		arr[i] = scanner.Text()
 	}
 
-	fmt.Println(a)
-
-	a = append(a, 3)
-	for _, val := range a {
-		if val == 1 {
-			counter++
-		} else if counter > maxLength {
-			maxLength = counter
+	singleCnt := 0
+	startPointerInd := 0
+	lastPointerInd := 0
+	for startPointerInd < cnt+1 {
+		for arr[lastPointerInd] == "1" {
+			lastPointerInd++
 		}
-		if val != 1 {
-			counter = 0
+		if singleCnt < lastPointerInd-startPointerInd {
+			singleCnt = lastPointerInd - startPointerInd
 		}
+		lastPointerInd++
+		startPointerInd = lastPointerInd
 	}
-	fmt.Println(maxLength)
+
+	fmt.Println(singleCnt)
 }
