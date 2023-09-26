@@ -1,32 +1,36 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
-	"math/rand"
+	"os"
 )
 
 func main() {
-	cnt := 10
-	a := make([]int, cnt)
-	b := make([]int, cnt)
-	uniqueA := make(map[int]struct{}, cnt)
-	intersection := make(map[int]int, cnt)
-	for i := 0; i < cnt; i++ {
-		a[i] = rand.Intn(20)
-		b[i] = rand.Intn(20) + 10
-	}
-	fmt.Println(a)
-	fmt.Println(b)
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Split(bufio.ScanWords)
+	var j, s string
 
-	for _, val := range a {
-		uniqueA[val] = struct{}{}
+	scanner.Scan()
+	j = scanner.Text()
+
+	scanner.Scan()
+	s = scanner.Text()
+
+	dict := make(map[string]struct{}, len(j))
+	for _, val := range j {
+		str := fmt.Sprintf("%c", val)
+		dict[str] = struct{}{}
 	}
 
-	for _, val := range b {
-		if _, ok := uniqueA[val]; ok {
-			intersection[val] = val
+	var cnt int
+	for _, val := range s {
+		str := fmt.Sprintf("%c", val)
+		if _, ok := dict[str]; ok {
+			cnt++
 		}
 	}
 
-	fmt.Println(intersection)
+	fmt.Println(cnt)
+
 }
