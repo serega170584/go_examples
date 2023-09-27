@@ -1,65 +1,102 @@
 package main
 
-import "fmt"
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"sort"
+	"strconv"
+)
+
+type MinStorage struct {
+	list    []int
+	pointer int
+}
+
+func createMinStorage(cnt int) *MinStorage {
+	m := &MinStorage{}
+	m.pointer = cnt
+	m.list = make([]int, cnt+1)
+	m.list[cnt] = 1000000
+	return m
+}
+
+func (m *MinStorage) add(num int) {
+	m.pointer--
+	m.list[m.pointer] = num
+}
+
+func (m *MinStorage) min() int {
+	min := m.list[m.pointer]
+	m.pointer++
+	return min
+}
+
+func (m *MinStorage) sortArr() {
+	sort.Ints(m.list)
+}
 
 func main() {
-	a := []int{1, 3, 4, 7, 10, 14, 17, 20, 23, 30}
-	b := []int{2, 7, 8, 9, 13, 15, 16, 21, 25, 27, 28, 29, 31, 33, 34}
-	cnt := len(a) + len(b)
-	chanA := make(chan int)
-	chanB := make(chan int)
-	chanMerge := make(chan int)
-	go func() {
-		defer close(chanA)
-		for _, val := range a {
-			chanA <- val
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Split(bufio.ScanWords)
+
+	scanner.Scan()
+	cntStr := scanner.Text()
+	cnt, _ := strconv.Atoi(cntStr)
+
+	arr := make([][]int, cnt)
+	cnts := make([]int, cnt)
+	pointers := make([]int, cnt)
+	totalCnt := 0
+	for i := 0; i < cnt; i++ {
+		scanner.Scan()
+		curCnt, _ := strconv.Atoi(scanner.Text())
+
+		cnts[i] = curCnt
+		arr[i] = make([]int, curCnt+1)
+
+		totalCnt += curCnt
+
+		for j := 0; j < curCnt; j++ {
+			scanner.Scan()
+			arr[i][j], _ = strconv.Atoi(scanner.Text())
 		}
-	}()
-
-	go func() {
-		defer close(chanB)
-		for _, val := range b {
-			chanB <- val
-		}
-	}()
-
-	go func() {
-		valA, okA := <-chanA
-		valB, okB := <-chanB
-	loop:
-		for i := 0; i < cnt; i++ {
-			if !(okA || okB) {
-				return
-			}
-
-			if !okA {
-				chanMerge <- valB
-				valB, okB = <-chanB
-				continue loop
-			}
-
-			if !okB {
-				chanMerge <- valA
-				valA, okA = <-chanA
-				continue loop
-			}
-
-			if valA <= valB {
-				chanMerge <- valA
-				valA, okA = <-chanA
-				continue loop
-			}
-
-			if valA > valB {
-				chanMerge <- valB
-				valB, okB = <-chanB
-				continue loop
-			}
-		}
-		close(chanMerge)
-	}()
-
-	for val := range chanMerge {
-		fmt.Println(val)
+		arr[i][curCnt] = 1000000
 	}
+
+	result := make([]int, totalCnt)
+	resultPointer := 0
+
+	m := createMinStorage(cnt)
+
+	for i := 0; i < cnt; i++ {
+		m.add(arr[i][0])
+	}
+
+	m.sortArr()
+
+	min := m.min()
+
+	var currentArrPointer int
+	for min != 1000000 {
+		for i := 0; i < cnt; i++ {
+			if arr[i][pointers[i]] == min {
+				pointers[i]++
+				currentArrPointer = i
+				result[resultPointer] = min
+				resultPointer++
+				break
+			}
+		}
+
+		if pointers[currentArrPointer] != cnts[currentArrPointer] {
+			el := arr[currentArrPointer][pointers[currentArrPointer]]
+			m.add(el)
+			m.sortArr()
+		}
+
+		min = m.min()
+	}
+
+	fmt.Println(result)
 }
