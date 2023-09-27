@@ -1,32 +1,71 @@
 package main
 
-import "fmt"
+import (
+	"bufio"
+	"fmt"
+	"os"
+)
 
 func main() {
-	a := "aaabbaaaccdddbbfffbbaaadd"
-	b := "aababbaaacdddbfffcbbaaadad"
-	cnt := len(a)
-	aCounts := make(map[int32]int, cnt)
-	for _, val := range a {
-		if _, ok := aCounts[val]; !ok {
-			aCounts[val] = 0
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Split(bufio.ScanWords)
+
+	scanner.Scan()
+	s1 := scanner.Text()
+
+	scanner.Scan()
+	s2 := scanner.Text()
+
+	dict1 := make(map[int32]int, len(s1))
+	dict2 := make(map[int32]int, len(s2))
+
+	valList := make([]int32, len(s1)+len(s2))
+	var valListPointer int
+
+	for _, val := range s1 {
+		if _, ok := dict1[val]; !ok {
+			dict1[val] = 0
+			valList[valListPointer] = val
+			valListPointer++
 		}
-		aCounts[val]++
+		dict1[val]++
 	}
 
-	bCounts := make(map[int32]int, cnt)
-	for _, val := range b {
-		if _, ok := bCounts[val]; !ok {
-			bCounts[val] = 0
+	for _, val := range s2 {
+		if _, ok := dict2[val]; !ok {
+			dict2[val] = 0
+			valList[valListPointer] = val
+			valListPointer++
 		}
-		bCounts[val]++
+		dict2[val]++
 	}
 
-	for key, val := range aCounts {
-		if val != bCounts[key] {
-			fmt.Println("a != b")
-			return
+	isNo := false
+	for _, val := range valList {
+		if val == 0 {
+			break
+		}
+
+		if _, ok := dict1[val]; !ok {
+			fmt.Println("NO")
+			isNo = true
+			break
+		}
+
+		if _, ok := dict2[val]; !ok {
+			fmt.Println("NO")
+			isNo = true
+			break
+		}
+
+		if dict1[val] != dict2[val] {
+			fmt.Println("NO")
+			isNo = true
+			break
 		}
 	}
-	fmt.Println("a = b")
+
+	if !isNo {
+		fmt.Println("YES")
+	}
 }
