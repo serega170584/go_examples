@@ -1,54 +1,43 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
-	"log"
+	"os"
+	"strconv"
+	"strings"
 )
 
 func main() {
-	var cnt int
-	_, err := fmt.Scan(&cnt)
-	if err != nil {
-		log.Fatal(err)
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Split(bufio.ScanWords)
+
+	scanner.Scan()
+	cntStr := scanner.Text()
+	cnt, _ := strconv.Atoi(cntStr)
+
+	arr := make([]string, 0)
+	generate(arr, 0, 0, cnt)
+}
+
+func generate(arr []string, open, close, cnt int) {
+	if len(arr) == 2*cnt {
+		fmt.Println(strings.Join(arr, ""))
 	}
 
-	if cnt == 1 {
-		fmt.Println("{}")
-		return
+	if open != cnt {
+		arrCnt := len(arr)
+		copyArr := make([]string, arrCnt)
+		copy(copyArr, arr)
+		copyArr = append(copyArr, "(")
+		generate(copyArr, open+1, close, cnt)
 	}
 
-	prev := []string{"{}"}
-	lastPrevIndex := 0
-	cur := make([]string, 0)
-	for i := 1; i < cnt; i++ {
-		curIndex := 0
-		for prevIndex, val := range prev {
-			if curIndex == len(cur) {
-				cur = append(cur, "")
-			}
-			cur[curIndex] = "{" + val + "}"
-			curIndex++
-			if curIndex == len(cur) {
-				cur = append(cur, "")
-			}
-			cur[curIndex] = val + "{}"
-			curIndex++
-			if prevIndex != lastPrevIndex {
-				if curIndex == len(cur) {
-					cur = append(cur, "")
-				}
-				cur[curIndex] = "{}" + val
-				curIndex++
-			}
-		}
-
-		for curI, val := range cur {
-			if curI == len(prev) {
-				prev = append(prev, val)
-			}
-			prev[curI] = val
-		}
-		lastPrevIndex = len(prev) - 1
+	if open > close {
+		arrCnt := len(arr)
+		copyArr := make([]string, arrCnt)
+		copy(copyArr, arr)
+		copyArr = append(copyArr, ")")
+		generate(copyArr, open, close+1, cnt)
 	}
-	fmt.Println(cur)
 }

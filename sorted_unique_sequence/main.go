@@ -1,19 +1,44 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"os"
+	"strconv"
 )
 
 func main() {
-	a := []int{1, 3, 4, 5, 6, 7, 8, 9, 10}
-	prev := 0
-	uniqueIndex := 0
-	for _, val := range a {
-		if prev != val {
-			a[uniqueIndex] = val
-			uniqueIndex++
-		}
-		prev = val
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Split(bufio.ScanWords)
+	scanner.Scan()
+
+	cntStr := scanner.Text()
+	cnt, _ := strconv.Atoi(cntStr)
+
+	arr := make([]string, cnt+1)
+	for i := 0; i < cnt; i++ {
+		scanner.Scan()
+		arr[i] = scanner.Text()
 	}
-	fmt.Println(a[:uniqueIndex])
+
+	startPointer := 0
+	finishPointer := 0
+	for finishPointer < cnt+1 {
+		for arr[startPointer] == arr[finishPointer] {
+			finishPointer++
+		}
+
+		if finishPointer == cnt {
+			break
+		}
+
+		startPointer++
+		arr[startPointer] = arr[finishPointer]
+		finishPointer++
+	}
+
+	for i := 0; i <= startPointer; i++ {
+		fmt.Println(arr[i])
+	}
+
 }
