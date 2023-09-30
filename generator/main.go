@@ -7,59 +7,41 @@ import (
 )
 
 func main() {
-	done := make(chan struct{}) // классический способ создания сигнализирущего канал для его использования в фоновых горутинах с целью получения сигнала останова и выполнения graceful shutdown
-	// структура занимает минимальный объем памяти и идеально подходит для передачи сигнала завершения горутины
 	wg := sync.WaitGroup{}
-	wg.Add(2) // количество вызовов done должно соответствовать счетчику waitgroup
-	// если вызовем done > чем значений в счетчике - получим панику, если < то вызов метода wait заблокирует выполнение go, runtime это поймет и выкинет
-	// ошибку deadlock
+	done := make(chan struct{})
+	gen := generator(&wg, done)
 
-	ch := makeGenerator(done, &wg)
+	wg.Add(2)
 
-	go func() {
+	go func(gen chan int) {
 		defer wg.Done()
-		// будет прочитан даже если закрыли done
-		for v := range ch {
-			fmt.Println("value: ", v)
+		for val := range gen {
+			fmt.Println(val)
 		}
-	}()
+	}(gen)
 
-	// нужен для демонстрации примера чтобы дать горутинам поработать
-	time.Sleep(time.Second)
-	// закрывая канал done мы сигнализируем горутинам что пора прерывать выполнение выполняя graceful shutdown
+	time.Sleep(3 * time.Second)
+	done <- struct{}{}
 	close(done)
+
 	wg.Wait()
 }
 
-// полезность паттерна - нужно читать сообщение из очереди и обрабатывать в отдельных герутинах, не блокируя чтение из очереди
-// запись в канал не будет блокироваться пока в буфере есть место под новые сообщения
-func makeGenerator(done <-chan struct{}, wg *sync.WaitGroup) <-chan int {
-	ch := make(chan int, 1) // запись в канал не блокируется если в нем есть незанятое место
-	// Однако если запишем сообщение, которое никто не прочитал, то повторная попытка записи будет заблокирована
-	// Также чтение в канал блокируется если в него никто не пишет и в буфере канала нет данных
-	// Таким образом канал может быть заблокирован на запись, ожидая чтения
-	// Либо заблокирован на чтение, ожидая запись
-	var i = 0
-
-	go func() {
+func generator(wg *sync.WaitGroup, done chan struct{}) chan int {
+	ch := make(chan int)
+	go func(wg *sync.WaitGroup, ch chan int, done chan struct{}) {
 		defer wg.Done()
-		// В реальной программе это может быть поток сообщений, получаемых через веб-сокет из браузера или с какого-то брокера очередей
+		var i int
 		for {
 			select {
 			case <-done:
-				// сигнал done - закрываем канал, в который ранее выполняли запись
 				close(ch)
-				fmt.Println("done")
 				return
-			default:
-				// имитация cpu bound операций
-				// позволяет при демонстрации примера не забивать консоль десятками тысяч строк вывода
-				time.Sleep(time.Millisecond * 250)
-				ch <- i
+			case <-time.After(500 * time.Millisecond):
 				i++
+				ch <- i
 			}
 		}
-	}()
-
+	}(wg, ch, done)
 	return ch
 }

@@ -26,6 +26,7 @@ func main() {
 	producers := make([]<-chan payload, 0, 3)
 	producers = append(producers, producer("Alice", done, &wg))
 	producers = append(producers, producer("Jack", done, &wg))
+	producers = append(producers, producer("Max", done, &wg))
 
 	fanIn := make(chan payload, 0)
 
@@ -47,6 +48,7 @@ func main() {
 	time.Sleep(time.Second)
 	close(done)
 	wg.Wait()
+	close(fanIn)
 }
 
 // возвращает канал, в который мы будем писать полезную нагрузку
