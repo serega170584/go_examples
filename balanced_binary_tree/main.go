@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"strconv"
 )
@@ -11,6 +12,14 @@ type TreeNode struct {
 	left  *TreeNode
 	right *TreeNode
 }
+
+//          1
+//     2            3
+// 4      5      6     nil
+//7  8 nil nil nil nil
+//9 10
+
+// 1 2 3 4 5 6 nil 7 8 nil nil nil nil 9 10
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
@@ -55,4 +64,33 @@ func main() {
 			curNode = tree[curPointerInd]
 		}
 	}
+
+	fmt.Println(isBalanced(tree[0]))
+}
+
+func isBalanced(root *TreeNode) (bool, int) {
+	if root == nil {
+		return true, 0
+	}
+
+	isBalancedNode, leftLen := isBalanced(root.left)
+	if !isBalancedNode {
+		return false, 0
+	}
+
+	isBalancedNode, rightLen := isBalanced(root.right)
+	if !isBalancedNode {
+		return false, 0
+	}
+
+	if leftLen-rightLen < -1 || 1 < leftLen-rightLen {
+		return false, 0
+	}
+
+	max := leftLen
+	if rightLen > max {
+		max = rightLen
+	}
+
+	return true, max
 }
