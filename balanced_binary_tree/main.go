@@ -62,6 +62,11 @@ func main() {
 		if i%2 == 0 {
 			curPointerInd++
 			curNode = tree[curPointerInd]
+
+			for curNode == nil {
+				curPointerInd++
+				curNode = tree[curPointerInd]
+			}
 		}
 	}
 
@@ -92,5 +97,5 @@ func isBalanced(root *TreeNode) (bool, int) {
 		max = rightLen
 	}
 
-	return true, max
+	return true, max + 1
 }
