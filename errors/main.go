@@ -54,6 +54,12 @@ func NewNewNew(err error) Error2 {
 }
 
 func main() {
+	fmt.Println(returnError() == nil)
+	fmt.Println(returnErrorPtr() == nil)
+	fmt.Println(returnCustomError() == nil)
+	fmt.Println(returnCustomErrorPtr() == nil)
+	fmt.Println(returnMyErr() == nil)
+
 	err := errors.New("Test")
 	err1 := New(err)
 	err2 := NewNew(err1)
@@ -158,3 +164,33 @@ func err4() error {
 //func (e NegativeError) Error() string {
 //	return fmt.Sprintf("%d", e)
 //}
+
+func returnError() error {
+	var err error
+	return err
+}
+
+func returnErrorPtr() *error {
+	var err *error
+	return err
+}
+
+func returnCustomError() error {
+	var customErr MyErr
+	return customErr
+}
+
+func returnCustomErrorPtr() error {
+	var customErr *MyErr
+	return customErr
+}
+
+func returnMyErr() *MyErr {
+	return nil
+}
+
+type MyErr struct{}
+
+func (me MyErr) Error() string {
+	return "my err string"
+}
