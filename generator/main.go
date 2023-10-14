@@ -7,41 +7,40 @@ import (
 )
 
 func main() {
-	wg := sync.WaitGroup{}
 	done := make(chan struct{})
-	gen := generator(&wg, done)
 
+	wg := sync.WaitGroup{}
 	wg.Add(2)
 
-	go func(gen chan int) {
+	res := generator(done, &wg)
+
+	go func() {
 		defer wg.Done()
-		for val := range gen {
+		for val := range res {
 			fmt.Println(val)
 		}
-	}(gen)
+	}()
 
 	time.Sleep(3 * time.Second)
-	done <- struct{}{}
 	close(done)
-
 	wg.Wait()
 }
 
-func generator(wg *sync.WaitGroup, done chan struct{}) chan int {
-	ch := make(chan int)
-	go func(wg *sync.WaitGroup, ch chan int, done chan struct{}) {
-		defer wg.Done()
-		var i int
+func generator(done chan struct{}, wg *sync.WaitGroup) <-chan int {
+	res := make(chan int)
+	defer wg.Done()
+	go func() {
+		i := 0
 		for {
 			select {
 			case <-done:
-				close(ch)
+				close(res)
 				return
 			case <-time.After(500 * time.Millisecond):
 				i++
-				ch <- i
+				res <- i
 			}
 		}
-	}(wg, ch, done)
-	return ch
+	}()
+	return res
 }
