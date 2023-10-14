@@ -8,71 +8,69 @@ import (
 
 type payload struct {
 	name string
-	num  int
+	val  int
 }
 
+// producer -> consumer -> fanIn
 func main() {
-	wg := sync.WaitGroup{}
-	cnt := 3
-	producers := make([]chan payload, cnt)
 	done := make(chan struct{})
+	producers := make([]<-chan payload, 3)
 	fanIn := make(chan payload)
 
-	wg.Add(cnt)
-	producers = append(producers, producer("Alice", &wg, done))
-	producers = append(producers, producer("Mark", &wg, done))
-	producers = append(producers, producer("Max", &wg, done))
+	wg := sync.WaitGroup{}
+	wg.Add(3) // для продюсеров
+	producers[0] = producer(done, &wg, "Alice")
+	producers[1] = producer(done, &wg, "Max")
+	producers[2] = producer(done, &wg, "Nick")
 
-	wg.Add(cnt)
-	consumer(producers, &wg, done, fanIn)
+	wg.Add(3) // для консумеров
+	consumer(&wg, fanIn, producers)
 
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		for val := range fanIn {
-			fmt.Printf("fan in got %v\n", val)
+			fmt.Println("Out from: ", val.name, ", val:", val.val)
 		}
 	}()
 
 	time.Sleep(3 * time.Second)
 	close(done)
-	wg.Wait()
 	close(fanIn)
+	wg.Wait() // в самом конце чтобы отработали все горутины
+
 }
 
-func producer(name string, wg *sync.WaitGroup, done chan struct{}) chan payload {
-	ch := make(chan payload)
+func producer(done <-chan struct{}, wg *sync.WaitGroup, name string) <-chan payload {
+	res := make(chan payload)
+
 	go func() {
 		defer wg.Done()
 		var i int
 		for {
 			select {
 			case <-done:
-				close(ch)
+				close(res)
 				return
 			case <-time.After(500 * time.Millisecond):
 				i++
-				p := payload{name: name, num: i}
-				ch <- p
+				fmt.Println("Producing of: ", name, ", value:", i)
+				res <- payload{name: name, val: i}
 			}
 		}
 	}()
-	return ch
+
+	return res
 }
 
-func consumer(producers []chan payload, wg *sync.WaitGroup, done chan struct{}, fanIn chan payload) {
-	for i, producer := range producers {
+func consumer(wg *sync.WaitGroup, fanIn chan<- payload, producers []<-chan payload) {
+	for _, producer := range producers {
 		producer := producer
-		i := i + 1
 		go func() {
 			defer wg.Done()
-			for {
-				select {
-				case <-done:
-					fmt.Println("Consume of producer", i, "completed")
-					return
-				case v := <-producer:
-					fmt.Println("Consumer of producer", i, "got value", v.num, "from", v.name)
-					fanIn <- v
-				}
+			for val := range producer {
+				fmt.Println("Consume ", val.name, ", got value:", val.val)
+				fanIn <- val
 			}
 		}()
 	}
