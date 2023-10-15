@@ -6,12 +6,22 @@ import (
 )
 
 func main() {
-	fmt.Println(convType(3))
+	//fmt.Println(convType(3))
 
-	//var i interface{} = "hello"
+	var i interface{} = "hello"
+	t, ok := i.(float64)
+	fmt.Println(t, ok)
 
-	//f, ok := i.(float64)
-	//fmt.Println(f, ok)
+	l := i.(float64)
+	fmt.Println(l)
+
+	r := "sadasdasdasd"
+	z := []rune(r)
+	y := string(z)
+	fmt.Println(y)
+	//for _, j := range y {
+	//	fmt.Print(j)
+	//}
 
 	//in := i.(int) panic
 	//fmt.Println(in)
