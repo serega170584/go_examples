@@ -41,6 +41,7 @@ func main() {
 		}(i)
 	}
 	<-done
+	close(done)
 }
 
 func process(id int) {
