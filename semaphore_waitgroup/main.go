@@ -6,31 +6,25 @@ import (
 	"time"
 )
 
-const DATA_SIZE = 10
+const N = 10
 
 func main() {
-	data := make([]int, 0, DATA_SIZE)
-	for i := 0; i < DATA_SIZE; i++ {
-		data = append(data, i+10)
-	}
-	results := make([]int, DATA_SIZE)
-	semaphore := make(chan int, DATA_SIZE)
+	semaphore := make(chan int, N)
+	results := make([]int, N)
 
-	fmt.Printf("Before: %v\n", data)
-	start := time.Now()
-
-	for i, xi := range data {
-		go func(i int, xi int) {
-			results[i] = calculate(xi)
-			semaphore <- results[i]
-		}(i, xi)
-	}
-	for i := 0; i < DATA_SIZE; i++ {
-		fmt.Printf(" one calculation completed: %d\n", <-semaphore)
+	for i := 0; i < N; i++ {
+		results[i] = i + 10
 	}
 
-	fmt.Printf(" After: %v\n", results)
-	fmt.Printf(" Elapsed: %s\n", time.Since(start))
+	go func() {
+		for i := 0; i < N; i++ {
+			semaphore <- calculate(results[i])
+		}
+	}()
+
+	for i := 0; i < N; i++ {
+		fmt.Println("Got value ", <-semaphore)
+	}
 }
 
 func calculate(val int) int {
