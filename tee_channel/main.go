@@ -7,49 +7,50 @@ import (
 )
 
 func main() {
-	in := make(chan string)
-	out1 := make(chan string)
-	out2 := make(chan string)
-	ctx, cancel := context.WithCancel(context.Background())
-	outputs := []chan<- string{out1, out2}
+	input := make(chan string)
+	output1 := make(chan string)
+	output2 := make(chan string)
+	outputs := []chan<- string{output1, output2}
 
 	go func() {
-		in <- "A"
-		in <- "B"
-		in <- "C"
-		close(in)
+		input <- "A"
+		input <- "B"
+		input <- "C"
+		close(input)
 	}()
 
-	tee(ctx, in, outputs)
+	ctx, cancel := context.WithCancel(context.Background())
 
 	go func() {
 		for {
 			select {
+			case elem := <-output1:
+				fmt.Println("Got value: ", elem)
+			case elem := <-output2:
+				fmt.Println("Got value ", elem)
 			case <-ctx.Done():
-				break
-			case v := <-out1:
-				fmt.Printf("out1 got value: %s\n", v)
-			case v := <-out2:
-				fmt.Printf("out2 got value: %s\n", v)
+				return
 			}
 		}
 	}()
+
+	teeChannel(ctx, input, outputs)
 
 	time.Sleep(time.Second)
 	cancel()
 }
 
-func tee(ctx context.Context, input <-chan string, outputs []chan<- string) {
+func teeChannel(ctx context.Context, input <-chan string, outputs []chan<- string) {
 	for elem := range input {
 		elem := elem
 		for _, out := range outputs {
 			out := out
 			go func() {
 				select {
-				case out <- elem:
-					break
 				case <-ctx.Done():
-					break
+					return
+				case out <- elem:
+					return
 				}
 			}()
 		}
