@@ -12,9 +12,8 @@ func newSemaphore(n int) semaphore {
 }
 
 func (s semaphore) Acquire(n int) {
-	e := struct{}{}
 	for i := 0; i < n; i++ {
-		s <- e
+		s <- struct{}{}
 	}
 }
 
@@ -28,23 +27,24 @@ const N = 3
 const TOTAL = 10
 
 func main() {
-	sem := newSemaphore(N)
-	done := make(chan bool)
-	for i := 1; i <= TOTAL; i++ {
-		sem.Acquire(1)
-		go func(v int) {
-			defer sem.Release(1)
-			process(v)
-			if v == TOTAL {
-				done <- true
+	s := newSemaphore(N)
+	done := make(chan struct{})
+
+	for i := 0; i < TOTAL; i++ {
+		s.Acquire(1)
+		go func(i int) {
+			defer s.Release(1)
+			process(i)
+			if i == TOTAL-1 {
+				done <- struct{}{}
 			}
 		}(i)
 	}
+
 	<-done
 	close(done)
 }
 
-func process(id int) {
-	fmt.Printf("[%s]: running task %d\n", time.Now().Format("15:04:05"), id)
-	time.Sleep(time.Second)
+func process(i int) {
+	fmt.Println("Got value ", i, " date: ", time.Now())
 }
