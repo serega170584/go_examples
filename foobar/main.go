@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"sync/atomic"
+	"time"
 )
 
 func printFoo(handledFooCnt *int64, handledBarCnt *int64) {
@@ -27,6 +28,7 @@ func printBar(handledFooCnt *int64, handledBarCnt *int64, ch <-chan struct{}) {
 }
 
 func main() {
+	t := time.Now()
 	var handledFooCnt, handledBarCnt *int64
 	var a, b int64
 	handledFooCnt = &a
@@ -36,4 +38,5 @@ func main() {
 	go printBar(handledFooCnt, handledBarCnt, ch)
 	ch <- struct{}{}
 	close(ch)
+	fmt.Println(time.Since(t))
 }
