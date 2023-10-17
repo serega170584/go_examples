@@ -1,31 +1,39 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"sync/atomic"
+)
 
-func printFoo(ch chan struct{}, exch chan struct{}, res chan struct{}) {
+func printFoo(handledFooCnt *int64, handledBarCnt *int64) {
 	for i := 0; i < 10; i++ {
-		<-ch
-		fmt.Print("Foo")
-		exch <- struct{}{}
+		for *handledFooCnt != *handledBarCnt {
+			continue
+		}
+		fmt.Println("Foo")
+		atomic.AddInt64(handledFooCnt, 1)
 	}
-	<-ch
-	<-res
 }
 
-func printBar(ch chan struct{}, exch chan struct{}) {
+func printBar(handledFooCnt *int64, handledBarCnt *int64, ch <-chan struct{}) {
 	for i := 0; i < 10; i++ {
-		<-exch
-		fmt.Print("Bar\n")
-		ch <- struct{}{}
+		for *handledFooCnt != *handledBarCnt+1 {
+			continue
+		}
+		fmt.Println("Bar")
+		atomic.AddInt64(handledBarCnt, 1)
 	}
+	<-ch
 }
 
 func main() {
+	var handledFooCnt, handledBarCnt *int64
+	var a, b int64
+	handledFooCnt = &a
+	handledBarCnt = &b
 	ch := make(chan struct{})
-	exch := make(chan struct{})
-	res := make(chan struct{})
-	go printFoo(ch, exch, res)
-	go printBar(ch, exch)
+	go printFoo(handledFooCnt, handledBarCnt)
+	go printBar(handledFooCnt, handledBarCnt, ch)
 	ch <- struct{}{}
-	res <- struct{}{}
+	close(ch)
 }
