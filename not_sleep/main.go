@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"math/rand"
 	"time"
 )
 
@@ -14,10 +13,12 @@ func main() {
 }
 
 func notSleep(ctx context.Context) {
-	select {
-	case <-time.After(time.Duration(rand.Intn(5)) * time.Second):
-		fmt.Println(rand.Intn(1000))
-	case <-ctx.Done():
-		fmt.Println(ctx.Err())
+	for {
+		select {
+		//case <-time.After(time.Duration(rand.Intn(5)) * time.Second):
+		//	fmt.Println(rand.Intn(1000))
+		case <-ctx.Done():
+			fmt.Println(ctx.Err())
+		}
 	}
 }
