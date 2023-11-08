@@ -76,18 +76,6 @@ func (h *Heap) heapify(i int) {
 	}
 }
 
-//5
-//3
-//1 4 8
-//3
-//2 5 9
-//2
-//3 7
-//2
-//6 10
-//1
-//11
-
 func main() {
 	s := bufio.NewScanner(os.Stdin)
 	s.Split(bufio.ScanWords)
