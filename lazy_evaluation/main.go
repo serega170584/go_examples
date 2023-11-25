@@ -2,19 +2,27 @@ package main
 
 import (
 	"fmt"
+	"sync"
 )
 
-func test() {
-	var x int
-	defer func() {
-		x++
-	}()
-
-	x = 1
-
-	return x
-}
+type LazyInt func() int
 
 func main() {
-	fmt.Println(test())
+	f := MakeLazyInt(func() int {
+		return 23
+	})
+	fmt.Println(f())
+	fmt.Println(f())
+}
+
+func MakeLazyInt(f LazyInt) LazyInt {
+	var v int
+	var once sync.Once
+	return func() int {
+		once.Do(func() {
+			v = f()
+			f = nil
+		})
+		return v
+	}
 }
