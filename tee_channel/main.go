@@ -3,56 +3,78 @@ package main
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 )
 
 func main() {
-	input := make(chan string)
-	output1 := make(chan string)
-	output2 := make(chan string)
-	outputs := []chan<- string{output1, output2}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
 
-	go func() {
-		input <- "A"
-		input <- "B"
-		input <- "C"
-		close(input)
-	}()
+	wg := sync.WaitGroup{}
 
-	ctx, cancel := context.WithCancel(context.Background())
+	input := make(chan int)
+	output := make([]chan int, 2)
+	output[0] = make(chan int)
+	output[1] = make(chan int)
 
-	go func() {
+	done := make(chan struct{})
+
+	wg.Add(4)
+	go func(ctx context.Context, wg *sync.WaitGroup) {
+		defer wg.Done()
+		i := 0
 		for {
 			select {
-			case elem := <-output1:
-				fmt.Println("Got value: ", elem)
-			case elem := <-output2:
-				fmt.Println("Got value ", elem)
 			case <-ctx.Done():
+				fmt.Println("Input closed")
+				close(input)
 				return
+			case <-time.After(500 * time.Millisecond):
+				fmt.Println("Put val to input ", i)
+				input <- i
+				i++
+				fmt.Println("Put val to input ", i)
+				input <- i
+				i++
+				fmt.Println("Put val to input ", i)
+				input <- i
 			}
 		}
-	}()
+	}(ctx, &wg)
 
-	teeChannel(ctx, input, outputs)
+	go teeChannel(input, output, done, &wg)
 
-	time.Sleep(time.Second)
-	cancel()
+	go func(wg *sync.WaitGroup) {
+		defer wg.Done()
+		<-done
+		for _, ch := range output {
+			close(ch)
+		}
+	}(&wg)
+
+	for ind, ch := range output {
+		ch := ch
+		ind := ind
+		go func(wg *sync.WaitGroup) {
+			defer wg.Done()
+			for val := range ch {
+				fmt.Println("Got from output index ", ind, " value ", val)
+			}
+		}(&wg)
+	}
+
+	wg.Wait()
 }
 
-func teeChannel(ctx context.Context, input <-chan string, outputs []chan<- string) {
-	for elem := range input {
-		elem := elem
-		for _, out := range outputs {
-			out := out
-			go func() {
-				select {
-				case <-ctx.Done():
-					return
-				case out <- elem:
-					return
-				}
-			}()
+func teeChannel(input chan int, output []chan int, done chan struct{}, wg *sync.WaitGroup) {
+	defer wg.Done()
+	for val := range input {
+		for ind, outCh := range output {
+			fmt.Println("Got from input val ", val, " to out ind ", ind)
+			outCh <- val
 		}
 	}
+
+	done <- struct{}{}
 }
