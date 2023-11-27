@@ -2,49 +2,49 @@ package main
 
 import (
 	"fmt"
+	"sync/atomic"
 	"time"
 )
 
-type semaphore chan struct{}
-
-func newSemaphore(n int) semaphore {
-	return make(semaphore, n)
-}
-
-func (s semaphore) Acquire(n int) {
-	for i := 0; i < n; i++ {
-		s <- struct{}{}
-	}
-}
-
-func (s semaphore) Release(n int) {
-	for i := 0; i < n; i++ {
-		<-s
-	}
-}
-
-const N = 3
 const TOTAL = 10
+const SemaphoreCnt = 3
+
+type Semaphore chan struct{}
+
+func NewSemaphore(cnt int) Semaphore {
+	return make(Semaphore, cnt)
+}
+
+func (s Semaphore) Acquire() {
+	s <- struct{}{}
+}
+
+func (s Semaphore) Release() {
+	<-s
+}
+
+func process(v int) {
+	fmt.Println(time.Now().Format("Mon Jan _2 15:04:04 2006"), " running task", v)
+}
 
 func main() {
-	s := newSemaphore(N)
+	s := NewSemaphore(SemaphoreCnt)
+
 	done := make(chan struct{})
 
+	var counter int64
+
 	for i := 0; i < TOTAL; i++ {
-		s.Acquire(1)
-		go func(i int) {
-			defer s.Release(1)
-			process(i)
-			if i == TOTAL-1 {
-				done <- struct{}{}
+		s.Acquire()
+		go func(val int) {
+			defer s.Release()
+			process(val)
+			atomic.AddInt64(&counter, 1)
+			if int(counter) == TOTAL {
+				close(done)
 			}
 		}(i)
 	}
 
 	<-done
-	close(done)
-}
-
-func process(i int) {
-	fmt.Println("Got value ", i, " date: ", time.Now())
 }
