@@ -2,52 +2,48 @@ package main
 
 import (
 	"fmt"
-	"sync"
+	"sync/atomic"
+	"time"
 )
 
-const totalJobs = 10
-const totalWorkers = 2
+const WorkerCnt = 3
+const MessagesCnt = 10
 
 func main() {
-	jobs := make(chan int, totalJobs)
-	results := make(chan int, totalJobs)
+	start := time.Now()
 
-	for w := 1; w <= totalWorkers; w++ {
-		go worker(w, jobs, results)
+	jobs := make(chan int, MessagesCnt)
+	go func() {
+		for i := 0; i < MessagesCnt; i++ {
+			jobs <- i
+		}
+		close(jobs)
+	}()
+
+	var counter int64
+
+	done := make(chan struct{})
+
+	for i := 0; i < WorkerCnt; i++ {
+		go worker(jobs, &counter)
 	}
 
-	for j := 1; j <= totalJobs; j++ {
-		jobs <- j
-	}
+	go func() {
+		for {
+			if int(counter) == MessagesCnt {
+				close(done)
+				return
+			}
+		}
+	}()
 
-	close(jobs)
-
-	for a := 1; a <= totalJobs; a++ {
-		<-results
-	}
-
-	close(results)
+	<-done
+	fmt.Println("Duration: ", time.Since(start))
 }
 
-func worker(id int, jobs <-chan int, results chan<- int) {
-	var wg sync.WaitGroup
-
-	for j := range jobs {
-		wg.Add(1)
-
-		go func(job int) {
-			defer wg.Done()
-
-			fmt.Printf("Worker %d started job %d\n", id, job)
-
-			result := job * 2
-
-			results <- result
-
-			fmt.Printf("Worker %d finished job %d\n", id, job)
-
-		}(j)
+func worker(jobs chan int, counter *int64) {
+	for val := range jobs {
+		fmt.Println(time.Now().Format("Mon Jan _2 15:04:04 2006"), " got value ", val)
+		atomic.AddInt64(counter, 1)
 	}
-
-	wg.Wait()
 }
