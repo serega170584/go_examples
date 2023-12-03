@@ -8,79 +8,77 @@ import (
 )
 
 type payload struct {
-	sender  string
-	message int
+	sender string
+	value  int
 }
 
 func main() {
-	wg := sync.WaitGroup{}
 	done := make(chan struct{})
+	producers := make([]chan payload, 2)
 
-	producers := make([]<-chan payload, 2)
+	wg := sync.WaitGroup{}
+
 	wg.Add(2)
-	producers[0] = makeProducer("Alice", &wg, done)
-	producers[1] = makeProducer("Jack", &wg, done)
+	producers[0] = makeProducer("Alice", done, &wg)
+	producers[1] = makeProducer("Max", done, &wg)
 
+	wg.Add(2)
 	fanIn := make(chan payload)
-	wg.Add(2)
 	var counter int64
-	makeConsumer(producers, &wg, fanIn, &counter)
+	consumer(producers, fanIn, &wg, &counter)
 
-	go func() {
+	wg.Add(1)
+	go func(wg *sync.WaitGroup) {
+		defer wg.Done()
+		for val := range fanIn {
+			fmt.Println("Got sender: ", val.sender, " value: ", val.value)
+		}
+	}(&wg)
+
+	go func(counter *int64) {
 		for {
-			if int(counter) == 2 {
+			if int(*counter) == 2 {
 				close(fanIn)
 				return
 			}
 		}
-	}()
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for val := range fanIn {
-			fmt.Println("Producer ", val.sender, " completed ", val.message)
-		}
-	}()
+	}(&counter)
 
 	time.Sleep(time.Second)
 	close(done)
+
 	wg.Wait()
 }
 
-func makeProducer(sender string, wg *sync.WaitGroup, done <-chan struct{}) <-chan payload {
-	res := make(chan payload)
-
-	go func() {
+func makeProducer(sender string, done <-chan struct{}, wg *sync.WaitGroup) chan payload {
+	output := make(chan payload)
+	go func(wg *sync.WaitGroup, sender string) {
 		defer wg.Done()
-		i := 0
+		val := 0
 		for {
 			select {
 			case <-done:
-				fmt.Println("Producer ", sender, " done")
-				close(res)
+				fmt.Println("Producer done")
+				close(output)
 				return
-			case <-time.After(500 * time.Millisecond):
-				fmt.Println("Produce ", i)
-				res <- payload{sender: sender, message: i}
-				i++
+			case <-time.After(400 * time.Millisecond):
+				output <- payload{sender: sender, value: val}
+				val++
 			}
 		}
-	}()
-
-	return res
+	}(wg, sender)
+	return output
 }
 
-func makeConsumer(producers []<-chan payload, wg *sync.WaitGroup, fanIn chan<- payload, counter *int64) {
-	for _, producerCh := range producers {
-		producerCh := producerCh
-		go func() {
+func consumer(producers []chan payload, fanIn chan<- payload, wg *sync.WaitGroup, counter *int64) {
+	for _, producer := range producers {
+		go func(fanIn chan<- payload, producer <-chan payload, wg *sync.WaitGroup, counter *int64) {
 			defer wg.Done()
-			for val := range producerCh {
-				fmt.Println("Consume producer ", val.sender, " value ", val.message)
+			for val := range producer {
+				fmt.Println("Consume sender: ", val.sender, " value: ", val.value)
 				fanIn <- val
 			}
 			atomic.AddInt64(counter, 1)
-		}()
+		}(fanIn, producer, wg, counter)
 	}
 }
