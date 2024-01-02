@@ -2,48 +2,35 @@ package main
 
 import (
 	"fmt"
-	"sync/atomic"
+	"sync"
 	"time"
 )
 
-const WorkerCnt = 3
-const MessagesCnt = 10
+const jobsCnt = 10
+const workersCnt = 3
 
 func main() {
-	start := time.Now()
-
-	jobs := make(chan int, MessagesCnt)
-	go func() {
-		for i := 0; i < MessagesCnt; i++ {
+	jobs := make(chan int, jobsCnt)
+	go func(jobs chan<- int) {
+		for i := 0; i < jobsCnt; i++ {
+			fmt.Println("Initialized job ", i)
 			jobs <- i
 		}
 		close(jobs)
-	}()
+	}(jobs)
 
-	var counter int64
-
-	done := make(chan struct{})
-
-	for i := 0; i < WorkerCnt; i++ {
-		go worker(jobs, &counter)
+	wg := &sync.WaitGroup{}
+	wg.Add(workersCnt)
+	for i := 0; i < workersCnt; i++ {
+		go worker(jobs, wg)
 	}
-
-	go func() {
-		for {
-			if int(counter) == MessagesCnt {
-				close(done)
-				return
-			}
-		}
-	}()
-
-	<-done
-	fmt.Println("Duration: ", time.Since(start))
+	wg.Wait()
 }
 
-func worker(jobs chan int, counter *int64) {
+func worker(jobs <-chan int, wg *sync.WaitGroup) {
+	defer wg.Done()
 	for val := range jobs {
-		fmt.Println(time.Now().Format("Mon Jan _2 15:04:04 2006"), " got value ", val)
-		atomic.AddInt64(counter, 1)
+		fmt.Println("Processed value ", val)
+		time.Sleep(500 * time.Millisecond)
 	}
 }
