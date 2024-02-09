@@ -28,16 +28,14 @@ func main() {
 func bestTeamSum(n int, list []int) int {
 	bestSum := 0
 	curSum := 0
-	l := 0
 	r := 0
-	for range list {
+	for l := range list {
 		for r < n && (l == r || list[l]+list[l+1] >= list[r]) {
 			curSum += list[r]
 			r++
 		}
 		bestSum = max(bestSum, curSum)
 		curSum -= list[l]
-		l++
 	}
 	return bestSum
 }
