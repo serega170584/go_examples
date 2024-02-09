@@ -7,12 +7,6 @@ import (
 	"strconv"
 )
 
-// 8 9 10 11 12
-// 11 12
-
-// 8 9 10
-// 10
-
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Split(bufio.ScanWords)
@@ -22,30 +16,29 @@ func main() {
 	n, _ := strconv.Atoi(scanner.Text())
 
 	fmt.Println("Enter list")
+	scanner.Scan()
 	list := make([]int, n)
 	for i := 0; i < n; i++ {
-		scanner.Scan()
 		list[i], _ = strconv.Atoi(scanner.Text())
 	}
 
-	l, r := 0, n-1
-	fmt.Println("Got searched index", lbinsearch(l, r, check, list))
+	fmt.Println("Got index", rbinsearch(0, n-1, check, list))
 }
 
-func lbinsearch(l int, r int, check func(m int, list []int) bool, list []int) int {
+func rbinsearch(l int, r int, check func(m int, list []int) bool, list []int) int {
 	for l < r {
-		m := (l + r) / 2
+		m := (l + r + 1) / 2
 		if check(m, list) {
-			r = m
+			l = m
 		} else {
-			l = m + 1
+			r = m - 1
 		}
 	}
 	return l
 }
 
 func check(m int, list []int) bool {
-	if 10 <= list[m] {
+	if list[m] <= 10 {
 		return true
 	}
 	return false
