@@ -16,9 +16,9 @@ func main() {
 	n, _ := strconv.Atoi(scanner.Text())
 
 	fmt.Println("Enter list")
-	scanner.Scan()
 	list := make([]int, n)
 	for i := 0; i < n; i++ {
+		scanner.Scan()
 		list[i], _ = strconv.Atoi(scanner.Text())
 	}
 
