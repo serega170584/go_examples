@@ -7,6 +7,16 @@ import (
 	"strconv"
 )
 
+// 9 4 1 5 6 7 2 3 10
+//
+//	     8
+//	4         9
+//
+// 1    5
+//
+//	2      6
+//	   3      7
+//	              10
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Split(bufio.ScanWords)
@@ -21,7 +31,7 @@ func main() {
 	scanner.Scan()
 	rootX, _ := strconv.Atoi(scanner.Text())
 
-	root := tree.createNode(rootX)
+	root := tree.createRoot(rootX)
 
 	for i := 1; i < n; i++ {
 		scanner.Scan()
@@ -43,6 +53,30 @@ func main() {
 
 	rightInd := tree.nodes[xInd].right
 	fmt.Println("Got right number", tree.nodes[rightInd].key)
+
+	fmt.Println("Got visited tree")
+	tree.visit(root)
+	fmt.Println()
+
+	fmt.Println("Delete element")
+	scanner.Scan()
+	el, _ := strconv.Atoi(scanner.Text())
+
+	tree.del(root, root, el)
+
+	fmt.Println("Got visited tree")
+	tree.visit(root)
+	fmt.Println()
+
+	fmt.Println("Delete element")
+	scanner.Scan()
+	el, _ = strconv.Atoi(scanner.Text())
+
+	tree.del(tree.root, tree.root, el)
+
+	fmt.Println("Got visited tree")
+	tree.visit(tree.root)
+	fmt.Println()
 }
 
 type Node struct {
@@ -56,6 +90,7 @@ type BinarySearchTree struct {
 	nodes []*Node
 	cnt   int
 	first int
+	root  int
 }
 
 func NewBinarySearchTree(n int) *BinarySearchTree {
@@ -105,6 +140,12 @@ func (tree *BinarySearchTree) createNode(key int) int {
 	return i
 }
 
+func (tree *BinarySearchTree) createRoot(root int) int {
+	node := tree.createNode(root)
+	tree.root = node
+	return node
+}
+
 func (tree *BinarySearchTree) add(root int, x int) {
 	rootNode := tree.nodes[root]
 	key := rootNode.key
@@ -127,4 +168,83 @@ func (tree *BinarySearchTree) add(root int, x int) {
 		}
 		return
 	}
+}
+
+func (tree *BinarySearchTree) visit(root int) {
+	left := tree.nodes[root].left
+	right := tree.nodes[root].right
+	key := tree.nodes[root].key
+
+	if left != -1 {
+		tree.visit(left)
+	}
+
+	fmt.Print(key, " ")
+
+	if right != -1 {
+		tree.visit(right)
+	}
+}
+
+func (tree *BinarySearchTree) del(parent int, current int, x int) {
+	currentNode := tree.nodes[current]
+
+	if x < currentNode.key {
+		tree.del(current, currentNode.left, x)
+		return
+	}
+
+	if x > currentNode.key {
+		tree.del(current, currentNode.right, x)
+		return
+	}
+
+	currentLeft := tree.nodes[current].left
+	currentRight := tree.nodes[current].right
+
+	parentCornerLeft := -1
+	cornerLeft := -1
+	if currentRight != -1 {
+		parentCornerLeft, cornerLeft = tree.findCornerLeft(currentRight, currentRight)
+	}
+
+	first := tree.first
+	tree.nodes[current].left = -1
+	tree.nodes[current].right = -1
+	tree.nodes[current].next = first
+	tree.first = current
+
+	if parentCornerLeft != -1 {
+		tree.nodes[parentCornerLeft].left = -1
+	}
+
+	if cornerLeft != -1 {
+		tree.nodes[cornerLeft].left = currentLeft
+	}
+
+	if cornerLeft != -1 && cornerLeft != parentCornerLeft {
+		tree.nodes[cornerLeft].right = currentRight
+	}
+
+	if tree.nodes[parent].left == current {
+		tree.nodes[parent].left = cornerLeft
+	}
+
+	if tree.nodes[parent].right == current {
+		tree.nodes[parent].right = cornerLeft
+	}
+
+	if tree.root == current {
+		tree.root = cornerLeft
+		if cornerLeft == -1 {
+			tree.root = tree.nodes[current].left
+		}
+	}
+}
+
+func (tree *BinarySearchTree) findCornerLeft(parent int, current int) (int, int) {
+	if tree.nodes[current].left == -1 {
+		return parent, current
+	}
+	return tree.findCornerLeft(current, tree.nodes[current].left)
 }
