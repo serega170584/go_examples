@@ -17,11 +17,12 @@ type node struct {
 }
 
 type HaffmanTree struct {
-	nodes []*node
-	first int
-	root  int
-	heap  *BinaryHeap
-	cnt   int
+	nodes     []*node
+	first     int
+	root      int
+	heap      *BinaryHeap
+	cnt       int
+	codeTable map[int]string
 }
 
 type BinaryHeap struct {
@@ -88,7 +89,8 @@ func NewHaffmanTree(cnt int) *HaffmanTree {
 		nodes[i] = &node{next: i + 1, index: i}
 	}
 	heap := NewBinaryHeap(cnt)
-	return &HaffmanTree{nodes: nodes, heap: heap, cnt: listCnt}
+	codeTable := make(map[int]string, cnt)
+	return &HaffmanTree{nodes: nodes, heap: heap, cnt: listCnt, codeTable: codeTable}
 }
 
 func (tree *HaffmanTree) createNode(x int, freq int, left int, right int) int {
@@ -100,7 +102,6 @@ func (tree *HaffmanTree) createNode(x int, freq int, left int, right int) int {
 	node.right = right
 	node.index = first
 	tree.first = node.next
-	tree.heap.add(node)
 	return first
 }
 
@@ -109,6 +110,7 @@ func (tree *HaffmanTree) build() {
 		left := tree.heap.popMin()
 		right := tree.heap.popMin()
 		ind := tree.createNode(-1, left.freq+right.freq, left.index, right.index)
+		tree.heap.add(tree.nodes[ind])
 		tree.root = ind
 	}
 }
@@ -121,6 +123,22 @@ func (tree *HaffmanTree) find(x int) int {
 	}
 
 	return -1
+}
+
+func (tree *HaffmanTree) buildCodeTable(ind int, code string) {
+	el := tree.nodes[ind]
+	if el.left == -1 && el.right == -1 {
+		tree.codeTable[el.key] = code
+	} else {
+		left := el.left
+		if left != -1 {
+			tree.buildCodeTable(left, code+"0")
+		}
+		right := el.right
+		if right != -1 {
+			tree.buildCodeTable(right, code+"1")
+		}
+	}
 }
 
 func main() {
@@ -147,5 +165,11 @@ func main() {
 		tree.nodes[ind].freq++
 	}
 
+	for i := 0; i < dictSize; i++ {
+		tree.heap.add(tree.nodes[i])
+	}
+
 	tree.build()
+	tree.buildCodeTable(tree.root, "")
+	fmt.Println(tree.codeTable)
 }
