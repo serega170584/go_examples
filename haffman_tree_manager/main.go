@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 )
 
 type node struct {
@@ -23,6 +24,9 @@ type HaffmanTree struct {
 	heap      *BinaryHeap
 	cnt       int
 	codeTable map[int]string
+	sb        strings.Builder
+	code      string
+	codeInd   int
 }
 
 type BinaryHeap struct {
@@ -141,6 +145,44 @@ func (tree *HaffmanTree) buildCodeTable(ind int, code string) {
 	}
 }
 
+func (tree *HaffmanTree) visit(root int) {
+	left := tree.nodes[root].left
+	if left != -1 {
+		tree.sb.WriteString("D")
+		tree.visit(left)
+	}
+
+	right := tree.nodes[root].right
+	if right != -1 {
+		tree.sb.WriteString("U")
+		tree.visit(right)
+	}
+}
+
+func (tree *HaffmanTree) generateCodeTable() {
+	code := tree.code
+	codeRunes := []rune(code)
+	tree.visitCodeSym(tree.root, codeRunes, "")
+}
+
+func (tree *HaffmanTree) visitCodeSym(root int, codeRunes []rune, code string) {
+	if tree.nodes[root].left == -1 && tree.nodes[root].right == -1 {
+		key := tree.nodes[root].key
+		tree.codeTable[key] = code
+		return
+	}
+
+	if string(codeRunes[tree.codeInd]) == "D" {
+		tree.codeInd++
+		tree.visitCodeSym(tree.nodes[root].left, codeRunes, code+"0")
+	}
+
+	if string(codeRunes[tree.codeInd]) == "U" {
+		tree.codeInd++
+		tree.visitCodeSym(tree.nodes[root].right, codeRunes, code+"1")
+	}
+}
+
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Split(bufio.ScanWords)
@@ -172,4 +214,12 @@ func main() {
 	tree.build()
 	tree.buildCodeTable(tree.root, "")
 	fmt.Println(tree.codeTable)
+
+	tree.visit(tree.root)
+	tree.code = tree.sb.String()
+
+	fmt.Println("Got tree:", tree.sb.String())
+
+	tree.generateCodeTable()
+	fmt.Println("Got code table", tree.codeTable)
 }
