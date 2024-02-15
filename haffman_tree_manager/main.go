@@ -18,15 +18,16 @@ type node struct {
 }
 
 type HaffmanTree struct {
-	nodes     []*node
-	first     int
-	root      int
-	heap      *BinaryHeap
-	cnt       int
-	codeTable map[int]string
-	sb        strings.Builder
-	code      string
-	codeInd   int
+	nodes      []*node
+	first      int
+	root       int
+	heap       *BinaryHeap
+	cnt        int
+	codeTable  map[int]string
+	valueTable map[string]int
+	sb         strings.Builder
+	code       string
+	codeInd    int
 }
 
 type BinaryHeap struct {
@@ -94,7 +95,8 @@ func NewHaffmanTree(cnt int) *HaffmanTree {
 	}
 	heap := NewBinaryHeap(cnt)
 	codeTable := make(map[int]string, cnt)
-	return &HaffmanTree{nodes: nodes, heap: heap, cnt: listCnt, codeTable: codeTable}
+	valueTable := make(map[string]int, cnt)
+	return &HaffmanTree{nodes: nodes, heap: heap, cnt: listCnt, codeTable: codeTable, valueTable: valueTable}
 }
 
 func (tree *HaffmanTree) createNode(x int, freq int, left int, right int) int {
@@ -165,6 +167,13 @@ func (tree *HaffmanTree) generateCodeTable() {
 	tree.visitCodeSym(tree.root, codeRunes, "")
 }
 
+func (tree *HaffmanTree) generateValueTable() {
+	codeTable := tree.codeTable
+	for n, code := range codeTable {
+		tree.valueTable[code] = n
+	}
+}
+
 func (tree *HaffmanTree) visitCodeSym(root int, codeRunes []rune, code string) {
 	if tree.nodes[root].left == -1 && tree.nodes[root].right == -1 {
 		key := tree.nodes[root].key
@@ -183,6 +192,31 @@ func (tree *HaffmanTree) visitCodeSym(root int, codeRunes []rune, code string) {
 	}
 }
 
+func (tree *HaffmanTree) generateListCode(list []int) string {
+	var sb strings.Builder
+	for _, val := range list {
+		sb.WriteString(tree.codeTable[val])
+	}
+	return sb.String()
+}
+
+func (tree *HaffmanTree) generateList(code string, cnt int) []int {
+	list := make([]int, cnt)
+	ind := 0
+	codeRunes := []rune(code)
+	symCode := ""
+	for _, runeVal := range codeRunes {
+		val := string(runeVal)
+		symCode += val
+		if v, ok := tree.valueTable[symCode]; ok {
+			list[ind] = v
+			symCode = ""
+			ind++
+		}
+	}
+	return list
+}
+
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Split(bufio.ScanWords)
@@ -197,9 +231,11 @@ func main() {
 
 	fmt.Println("Enter list")
 	tree := NewHaffmanTree(dictSize)
+	list := make([]int, n)
 	for i := 0; i < n; i++ {
 		scanner.Scan()
 		el, _ := strconv.Atoi(scanner.Text())
+		list[i] = el
 		ind := tree.find(el)
 		if ind == -1 {
 			ind = tree.createNode(el, 0, -1, -1)
@@ -212,8 +248,6 @@ func main() {
 	}
 
 	tree.build()
-	tree.buildCodeTable(tree.root, "")
-	fmt.Println(tree.codeTable)
 
 	tree.visit(tree.root)
 	tree.code = tree.sb.String()
@@ -222,4 +256,12 @@ func main() {
 
 	tree.generateCodeTable()
 	fmt.Println("Got code table", tree.codeTable)
+
+	tree.generateValueTable()
+	fmt.Println("Got value table", tree.valueTable)
+
+	listCode := tree.generateListCode(list)
+	fmt.Println("Got list code:", listCode)
+
+	fmt.Println("Got list:", tree.generateList(listCode, n))
 }
