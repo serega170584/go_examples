@@ -56,12 +56,12 @@ func minPrice(n int, a []int, b []int, c []int) int {
 
 		prevB := i - 2
 		if prevB >= 0 {
-			minPrices[i] = min(minPrices[prevB]+b[i-2], minPrices[i])
+			minPrices[i] = min(minPrices[prevB]+b[i-1], minPrices[i])
 		}
 
 		prevA := i - 1
 		if prevA >= 0 {
-			minPrices[i] = min(minPrices[prevA]+a[i-1], minPrices[i])
+			minPrices[i] = min(minPrices[prevA]+a[i], minPrices[i])
 		}
 	}
 
