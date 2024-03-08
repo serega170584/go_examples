@@ -70,6 +70,12 @@ func getMinRoundsCnt(x int, y int, p int) int {
 			barrackRecord = record[1]
 			enemyRecord = record[2]
 
+			if attackerRecord%2 == 0 && barrackRecord%2 == 0 && enemyRecord%2 == 0 {
+				attackerRecord /= 2
+				barrackRecord /= 2
+				enemyRecord /= 2
+			}
+
 			// attackerRecord - i
 
 			// 2 2 2
@@ -77,7 +83,46 @@ func getMinRoundsCnt(x int, y int, p int) int {
 			// attackerRecord - i <= 2 * enemyRecord
 			//
 
-			for i := 0; i <= attackerRecord; i++ {
+			// 2*(attackerRecord - i) > enemyRecord
+			// attackerRecord - i > enemyRecord / 2
+			// -i > enemyRecord/2 - attackerRecord
+			// i < attackerRecord - enemyRecord/2
+			// 10 11 15
+			// 10 - 7
+			// 10 > 15 / 2 10 - 0 > 15 / 2
+			// 9 > 15 / 2 10 - 1 > 15 /2
+			// 8 > 15 /2 10 - 2 > 15/2
+			// 7 == 15 /2  10 - 3 > 15 / 2
+
+			// 2 * attackerRecord > enemyRecord - attackerRecord + i
+			// 3 * attackerRecord > enemyRecord + i
+			// i < 3 * attackerRecord - enemyRecord
+			// i < 30 - 15
+
+			// i < 7500 -
+
+			// 10 3 15
+			// 10
+
+			// 2500 2500 2499
+
+			// 2500 1250 1249
+
+			// 1251 1250 3749
+
+			// 3 * 1251 - 3749 = 3753 - 3749
+
+			// 2500 2500 2499
+
+			// 1250 2500 2499
+
+			// 2500 5000 2499
+
+			// 25000 50000 24990
+			// 12500 25000 12495
+
+			minLastI := min(3*attackerRecord-enemyRecord, attackerRecord)
+			for i := 0; i <= minLastI; i++ {
 				if i > barrackRecord {
 					break
 				}
