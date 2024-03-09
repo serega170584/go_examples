@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 )
@@ -20,117 +21,93 @@ func main() {
 	scanner.Scan()
 	p, _ := strconv.Atoi(scanner.Text())
 
-	fmt.Println(getMinRoundsCnt(x, y, p))
+	diff := y - x
+	if diff < 0 {
+		diff = 0
+	}
+
+	existed := make(map[[3]int]int, 50000000)
+	minVal := getRoundsCntMin(x, diff, 0, p, existed)
+	if minVal == math.MaxInt {
+		minVal = -1
+	}
+
+	fmt.Println(minVal)
 }
 
-func getMinRoundsCnt(x int, y int, p int) int {
-	attackerRecord := x
-	barrackRecord := y
-	enemyRecord := 0
+func getRoundsCntMin(attackerRecord int, barrackRecord int, enemyRecord int, p int, existed map[[3]int]int) int {
+	if v, ok := existed[[3]int{attackerRecord, barrackRecord, enemyRecord}]; ok {
+		return v
+	}
 
-	records := make([][3]int, 1, 5000000)
-	records[0] = [3]int{attackerRecord, barrackRecord, enemyRecord}
+	baseAttackerRecord := attackerRecord
+	baseBarrackRecord := barrackRecord
+	baseEnemyRecord := enemyRecord
 
-	if attackerRecord >= barrackRecord+enemyRecord {
+	if barrackRecord == 0 && enemyRecord == 0 {
 		return 1
 	}
 
-	recordsLen := len(records)
-	tmp := make([][3]int, 0, 5000000)
-	roundNum := 0
-	m := make(map[[3]int]struct{}, 5000000)
-	for recordsLen != 0 {
-		roundNum++
+	attackerRecord = attackerRecord - enemyRecord
 
-		for _, record := range records {
-			attackerRecord = record[0]
-			barrackRecord = record[1]
-			enemyRecord = record[2]
-
-			minVal := min(barrackRecord, enemyRecord)
-			minVal = min(minVal, attackerRecord)
-			first := 0
-			last := attackerRecord
-			if minVal == enemyRecord {
-				first = min(barrackRecord, attackerRecord) - enemyRecord
-				if attackerRecord > barrackRecord {
-					last = barrackRecord
-				}
-			}
-			if minVal == barrackRecord {
-				last = barrackRecord
-				if attackerRecord-enemyRecord > 0 {
-					first += attackerRecord - enemyRecord
-				}
-			}
-
-			//if last >= barrackRecord {
-			//	curBarrackRecord := 0
-			//	curEnemyRecord := enemyRecord - attackerRecord + barrackRecord
-			//	curAttackerRecord := attackerRecord - curEnemyRecord
-			//
-			//	if curAttackerRecord < 0 {
-			//		curAttackerRecord = 0
-			//	}
-			//
-			//	tmp = append(tmp, [3]int{curAttackerRecord, curBarrackRecord, curEnemyRecord})
-			//}
-
-			for i := first; i <= last; i++ {
-				curBarrackRecord := barrackRecord - i
-				curEnemyRecord := enemyRecord - attackerRecord + i
-				curAttackerRecord := attackerRecord - curEnemyRecord
-				if curAttackerRecord < 0 {
-					curAttackerRecord = 0
-				}
-
-				if curBarrackRecord > 0 {
-					curEnemyRecord += p
-				}
-
-				if curAttackerRecord >= curBarrackRecord+curEnemyRecord {
-					return roundNum + 1
-				}
-
-				if curAttackerRecord == 0 {
-					continue
-				}
-
-				diff := curEnemyRecord - curAttackerRecord
-				if diff > 0 && 2*(curAttackerRecord-diff) <= diff {
-					continue
-				}
-
-				if 2*curAttackerRecord <= curBarrackRecord+curEnemyRecord && curAttackerRecord <= curEnemyRecord {
-					continue
-				}
-
-				if _, ok := m[[3]int{
-					curAttackerRecord,
-					curBarrackRecord,
-					curEnemyRecord,
-				}]; ok {
-					continue
-				}
-				m[[3]int{
-					curAttackerRecord,
-					curBarrackRecord,
-					curEnemyRecord,
-				}] = struct{}{}
-
-				tmp = append(tmp, [3]int{
-					curAttackerRecord,
-					curBarrackRecord,
-					curEnemyRecord,
-				})
-			}
-		}
-
-		recordsLen = len(tmp)
-		records = records[0:recordsLen]
-		copy(records, tmp)
-		tmp = tmp[:0]
+	if attackerRecord <= 0 {
+		return math.MaxInt
 	}
 
-	return -1
+	if barrackRecord > 0 {
+		enemyRecord += p
+	}
+
+	if 2*attackerRecord <= barrackRecord+enemyRecord && attackerRecord <= enemyRecord {
+		return math.MaxInt
+	}
+
+	minRecord := min(attackerRecord, barrackRecord)
+	minRecord = min(minRecord, enemyRecord)
+
+	last := min(attackerRecord, barrackRecord)
+	startEnemyRecord := attackerRecord
+	first := 0
+	if attackerRecord > enemyRecord {
+		first = attackerRecord - enemyRecord
+	}
+
+	if barrackRecord+enemyRecord <= attackerRecord {
+		first = barrackRecord
+		startEnemyRecord = barrackRecord + enemyRecord
+	}
+
+	minVal := math.MaxInt
+	for i := first; i <= last; i++ {
+		if attackerRecord == baseAttackerRecord && baseBarrackRecord == barrackRecord-i && baseEnemyRecord == enemyRecord-startEnemyRecord+i {
+			continue
+		}
+
+		resAttackerRecord := attackerRecord
+		resBarrackRecord := barrackRecord - i
+		resEnemyRecord := enemyRecord - startEnemyRecord + i
+
+		if 2*resAttackerRecord <= resBarrackRecord+resEnemyRecord && resAttackerRecord <= resEnemyRecord {
+			continue
+		}
+
+		diff := resEnemyRecord - resAttackerRecord
+		if diff > 0 && 2*(resAttackerRecord-diff) <= diff {
+			continue
+		}
+
+		v := getRoundsCntMin(attackerRecord, barrackRecord-i, enemyRecord-startEnemyRecord+i, p, existed)
+		if v == 1 {
+			return v + 1
+		}
+		minVal = min(v, minVal)
+	}
+
+	if minVal != math.MaxInt {
+		minVal += 1
+	}
+
+	existed[[3]int{baseAttackerRecord, baseBarrackRecord, baseEnemyRecord}] = minVal
+
+	return minVal
 }
