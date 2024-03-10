@@ -26,7 +26,7 @@ func main() {
 		diff = 0
 	}
 
-	existed := make(map[[3]int]int, 50000000)
+	existed := make(map[[3]int32]int32, 500)
 	minVal := getRoundsCntMin(x, diff, 0, p, existed)
 	if minVal == math.MaxInt {
 		minVal = -1
@@ -35,9 +35,16 @@ func main() {
 	fmt.Println(minVal)
 }
 
-func getRoundsCntMin(attackerRecord int, barrackRecord int, enemyRecord int, p int, existed map[[3]int]int) int {
-	if v, ok := existed[[3]int{attackerRecord, barrackRecord, enemyRecord}]; ok {
-		return v
+func getRoundsCntMin(attackerRecord int, barrackRecord int, enemyRecord int, p int, existed map[[3]int32]int32) int {
+	if v, ok := existed[[3]int32{int32(attackerRecord), int32(barrackRecord), int32(enemyRecord)}]; ok {
+		return int(v)
+	}
+
+	if attackerRecord+enemyRecord < barrackRecord && enemyRecord == 0 && attackerRecord-p > 0 {
+		cnt := barrackRecord / (attackerRecord + enemyRecord)
+		minVal := getRoundsCntMin(attackerRecord, barrackRecord-cnt*(attackerRecord-p), 0, p, existed) + cnt
+		existed[[3]int32{int32(attackerRecord), int32(attackerRecord), int32(attackerRecord)}] = int32(minVal)
+		return minVal
 	}
 
 	baseAttackerRecord := attackerRecord
@@ -62,6 +69,10 @@ func getRoundsCntMin(attackerRecord int, barrackRecord int, enemyRecord int, p i
 		return math.MaxInt
 	}
 
+	if 2*attackerRecord <= barrackRecord+p && attackerRecord <= p && barrackRecord != 0 {
+		return math.MaxInt
+	}
+
 	minRecord := min(attackerRecord, barrackRecord)
 	minRecord = min(minRecord, enemyRecord)
 
@@ -78,28 +89,21 @@ func getRoundsCntMin(attackerRecord int, barrackRecord int, enemyRecord int, p i
 	}
 
 	minVal := math.MaxInt
-	for i := first; i <= last; i++ {
-		if attackerRecord == baseAttackerRecord && baseBarrackRecord == barrackRecord-i && baseEnemyRecord == enemyRecord-startEnemyRecord+i {
-			continue
+	if !(attackerRecord == baseAttackerRecord && baseBarrackRecord == barrackRecord-first && baseEnemyRecord == enemyRecord-startEnemyRecord+first) {
+		minVal = getRoundsCntMin(attackerRecord, barrackRecord-first, enemyRecord-startEnemyRecord+first, p, existed)
+		if first == last {
+			if minVal == math.MaxInt {
+				return minVal
+			}
+			return minVal + 1
 		}
-
-		resAttackerRecord := attackerRecord
-		resBarrackRecord := barrackRecord - i
-		resEnemyRecord := enemyRecord - startEnemyRecord + i
-
-		if 2*resAttackerRecord <= resBarrackRecord+resEnemyRecord && resAttackerRecord <= resEnemyRecord {
-			continue
+		if minVal == 1 {
+			return 2
 		}
+	}
 
-		diff := resEnemyRecord - resAttackerRecord
-		if diff > 0 && 2*(resAttackerRecord-diff) <= diff {
-			continue
-		}
-
-		v := getRoundsCntMin(attackerRecord, barrackRecord-i, enemyRecord-startEnemyRecord+i, p, existed)
-		if v == 1 {
-			return v + 1
-		}
+	if !(attackerRecord == baseAttackerRecord && baseBarrackRecord == barrackRecord-last && baseEnemyRecord == enemyRecord-startEnemyRecord+last) {
+		v := getRoundsCntMin(attackerRecord, barrackRecord-last, enemyRecord-startEnemyRecord+last, p, existed)
 		minVal = min(v, minVal)
 	}
 
@@ -107,7 +111,7 @@ func getRoundsCntMin(attackerRecord int, barrackRecord int, enemyRecord int, p i
 		minVal += 1
 	}
 
-	existed[[3]int{baseAttackerRecord, baseBarrackRecord, baseEnemyRecord}] = minVal
+	existed[[3]int32{int32(baseAttackerRecord), int32(baseBarrackRecord), int32(baseEnemyRecord)}] = int32(minVal)
 
 	return minVal
 }
