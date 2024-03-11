@@ -1,56 +1,54 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"math"
+	"os"
+	"strconv"
 )
 
 func main() {
-	tests := make([][5]int, 0)
-	//tests = append(tests, [5]int{100, 96, 2, 97, 1})
-	//tests = append(tests, [5]int{100, 97, 1, 96, 2})
-	//tests = append(tests, [5]int{100, 4, -1, 94, 3})
-	//tests = append(tests, [5]int{100, 94, 3, 4, -1})
-	//tests = append(tests, [5]int{100, 86, 1, 94, -3})
-	//tests = append(tests, [5]int{100, 94, -3, 86, 1})
-	//tests = append(tests, [5]int{100, 86, 5, 98, 2})
-	//tests = append(tests, [5]int{100, 98, 2, 86, 5})
-	//tests = append(tests, [5]int{100, -86, -5, -98, -2})
-	//tests = append(tests, [5]int{100, -98, -2, -86, -5})
-	//tests = append(tests, [5]int{6, 3, 1, 1, 1})
-	tests = append(tests, [5]int{12, 8, 10, 5, 20})
-	//tests = append(tests, [5]int{5, 0, 0, 1, 2})
-	//tests = append(tests, [5]int{10, 7, -3, 1, 4})
-	for _, test := range tests {
-		fmt.Println(test)
-		fmt.Println("Result: ", getTime(test[0], test[1], test[2], test[3], test[4]))
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Split(bufio.ScanWords)
+
+	scanner.Scan()
+	l, _ := strconv.Atoi(scanner.Text())
+
+	scanner.Scan()
+	x1, _ := strconv.Atoi(scanner.Text())
+
+	scanner.Scan()
+	v1, _ := strconv.Atoi(scanner.Text())
+
+	scanner.Scan()
+	x2, _ := strconv.Atoi(scanner.Text())
+
+	scanner.Scan()
+	v2, _ := strconv.Atoi(scanner.Text())
+
+	timeVal := getTime(l, x1, v1, x2, v2)
+	if timeVal == math.MaxFloat64 {
+		fmt.Println("NO")
+		return
 	}
+
+	fmt.Println("YES")
+	fmt.Println(fmt.Sprintf("%.10f", timeVal))
 }
-
-// 100
-// 100 = 60 +40
-// -60 40
-// x1 + v1 * t = l - x2 - v2 * t,  t = (l - x1 - x2) / (v1 + v2)
-
-// (100 + 60 - 40)
-
-// x1 + v1 * t = x2 + v2 * t => t = (x1 - x2) / (v2 - v1)
-// x1 + v1 * t = l - x2 - v2 * t =>  t = (l - x2 -)
-// 0 - x1 - v1 * t = x2 + v2 * t
-//
-// 100, 86, 5, 98, 2
-// -l -x1 - v1 * t = x2 + v2 * t
-// t = (-l - x1 - x2) / (v1+v2)
-// -l + x1 + v1 * t =
 
 func getTime(l int, x1 int, v1 int, x2 int, v2 int) float64 {
 	minVal := math.MaxFloat64
 
-	if v2-v1 == 0 && v2+v1 == 0 {
-		return minVal
+	if x1 == x2 {
+		return 0
 	}
 
-	if v2+v1 == 0 {
+	if l-x1 == x2 {
+		return 0
+	}
+
+	if v2-v1 == 0 && v2+v1 == 0 {
 		return minVal
 	}
 
@@ -117,20 +115,25 @@ func getTime(l int, x1 int, v1 int, x2 int, v2 int) float64 {
 		}
 	}
 
-	if v2-v1 > 0 {
+	if v2-v1 != 0 {
 		t := (newX1 - newX2) / float64(v2-v1)
 		if t >= 0 {
 			minVal = t
+		} else {
+			minVal = -t
 		}
 	}
 
-	if v1+v2 > 0 {
+	if v1+v2 != 0 {
 		t := (float64(l) - newX1 - newX2) / float64(v1+v2)
 		if t >= 0 {
+			minVal = min(minVal, t)
+		} else {
+			t = -t
 			minVal = min(minVal, t)
 		}
 	}
 
-	minVal += cornerTime
+	minVal += minCornerTime
 	return minVal
 }
