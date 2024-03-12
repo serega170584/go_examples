@@ -123,3 +123,11 @@ func specialHolidayDays(holidayCnt int, year int, holidayDays []string, firstYea
 
 	return best, worst
 }
+
+// a[i]   = [5, 8, 9]
+// a[i+1] = [5, 8]
+// a[i][j]
+// a[
+// индекс символа в строке = индекс предыдущего заполненной строки
+
+// w / c = 1000 / 1000 = 1
