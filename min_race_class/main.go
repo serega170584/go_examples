@@ -31,14 +31,7 @@ func main() {
 }
 
 func maxDeny(n int, m int, a [][]int) (int, int) {
-	maxVal := math.MinInt
-	for i := 0; i < n; i++ {
-		for j := 0; j < m; j++ {
-			maxVal = max(a[i][j], maxVal)
-		}
-	}
-
-	minExcludeMaxVal := maxVal
+	minExcludeMaxVal := math.MaxInt
 	row := -1
 	col := -1
 	for i := 0; i < n; i++ {
@@ -61,7 +54,7 @@ func getExcludeMaxVal(row int, col int, n int, m int, a [][]int, minExcludeMaxVa
 		for j := 0; j < m; j++ {
 			if i != row && j != col {
 				maxVal = max(maxVal, a[i][j])
-				if maxVal >= minExcludeMaxVal {
+				if maxVal > minExcludeMaxVal {
 					return minExcludeMaxVal
 				}
 			}
