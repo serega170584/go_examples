@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"slices"
 	"strconv"
 	"strings"
 )
@@ -16,14 +15,14 @@ func main() {
 	scanner.Scan()
 	n, _ := strconv.Atoi(scanner.Text())
 
-	points := make([][2]int, n)
+	points := make(map[[2]int]struct{}, n)
 	for i := 0; i < n; i++ {
 		point := [2]int{}
 		scanner.Scan()
 		point[0], _ = strconv.Atoi(scanner.Text())
 		scanner.Scan()
 		point[1], _ = strconv.Atoi(scanner.Text())
-		points[i] = point
+		points[point] = struct{}{}
 	}
 
 	cnt, neededPoints := getSquarePointsMinCnt(n, points)
@@ -37,28 +36,20 @@ func main() {
 	}
 }
 
-func getSquarePointsMinCnt(n int, points [][2]int) (int, [][2]int) {
-	squarePointCnts := make(map[[4]int]int, n*(n+1))
-
-	markedPoints := make(map[int]struct{}, n+1)
-	pointsIndexesMap := make(map[[2]int]int, n*(n+1))
-	pointsMap := make(map[int][2]int, n*(n+1))
-	point := 0
-	pointsIndexesMap[[2]int{100000001, 100000001}] = 0
-	pointsMap[0] = [2]int{100000001, 100000001}
-	markedPoints[0] = struct{}{}
-	lastPointIndex := 1
-	for _, v := range points {
-		pointsIndexesMap[v] = lastPointIndex
-		pointsMap[lastPointIndex] = v
-		curVInd := lastPointIndex
-		lastPointIndex++
-		for i := range markedPoints {
-			p := pointsMap[i]
-			firstPointX := v[0]
-			firstPointY := v[1]
+func getSquarePointsMinCnt(n int, points map[[2]int]struct{}) (int, [][2]int) {
+	minCnt := 4
+	totalNeededPoints := make([][2]int, 0, 4)
+	for i, _ := range points {
+		for p, _ := range points {
+			firstPointX := i[0]
+			firstPointY := i[1]
 			secondPointX := p[0]
 			secondPointY := p[1]
+
+			if p == i {
+				secondPointX = firstPointX + 1
+				secondPointY = firstPointY
+			}
 
 			movX := -firstPointX
 			firstPointX = 0
@@ -116,141 +107,74 @@ func getSquarePointsMinCnt(n int, points [][2]int) (int, [][2]int) {
 			secondSideFourthPointX -= movX
 			secondSideFourthPointY -= movY
 
-			curPointsList := [4]int{}
-			curPointInd := -1
-			if ind, ok := pointsIndexesMap[[2]int{firstPointX, firstPointY}]; !ok {
-				pointsIndexesMap[[2]int{firstPointX, firstPointY}] = lastPointIndex
-				pointsMap[lastPointIndex] = [2]int{firstPointX, firstPointY}
-				curPointInd = lastPointIndex
-				curVInd = lastPointIndex
-				lastPointIndex++
+			cnt := 4
+			neededPoints := make([][2]int, 0, 4)
+
+			if _, ok := points[[2]int{firstPointX, firstPointY}]; ok {
+				cnt--
 			} else {
-				curPointInd = ind
+				neededPoints = append(neededPoints, [2]int{firstPointX, firstPointY})
 			}
-			curPointsList[0] = curPointInd
 
-			if ind, ok := pointsIndexesMap[[2]int{secondPointX, secondPointY}]; !ok {
-				pointsIndexesMap[[2]int{secondPointX, secondPointY}] = lastPointIndex
-				pointsMap[lastPointIndex] = [2]int{secondPointX, secondPointY}
-				curPointInd = lastPointIndex
-				lastPointIndex++
+			if _, ok := points[[2]int{secondPointX, secondPointY}]; ok {
+				cnt--
 			} else {
-				curPointInd = ind
+				neededPoints = append(neededPoints, [2]int{secondPointX, secondPointY})
 			}
-			curPointsList[1] = curPointInd
 
-			if ind, ok := pointsIndexesMap[[2]int{firstSideThirdPointX, firstSideThirdPointY}]; !ok {
-				pointsIndexesMap[[2]int{firstSideThirdPointX, firstSideThirdPointY}] = lastPointIndex
-				pointsMap[lastPointIndex] = [2]int{firstSideThirdPointX, firstSideThirdPointY}
-				curPointInd = lastPointIndex
-				lastPointIndex++
+			if _, ok := points[[2]int{firstSideThirdPointX, firstSideThirdPointY}]; ok {
+				cnt--
 			} else {
-				curPointInd = ind
+				neededPoints = append(neededPoints, [2]int{firstSideThirdPointX, firstSideThirdPointY})
 			}
-			curPointsList[2] = curPointInd
 
-			if ind, ok := pointsIndexesMap[[2]int{firstSideFourthPointX, firstSideFourthPointY}]; !ok {
-				pointsIndexesMap[[2]int{firstSideFourthPointX, firstSideFourthPointY}] = lastPointIndex
-				pointsMap[lastPointIndex] = [2]int{firstSideFourthPointX, firstSideFourthPointY}
-				curPointInd = lastPointIndex
-				lastPointIndex++
+			if _, ok := points[[2]int{firstSideFourthPointX, firstSideFourthPointY}]; ok {
+				cnt--
 			} else {
-				curPointInd = ind
-			}
-			curPointsList[3] = curPointInd
-
-			curPointsSlice := curPointsList[:]
-			slices.Sort(curPointsSlice)
-
-			if _, ok := squarePointCnts[curPointsList]; !ok {
-				squarePointCnts[curPointsList] = 4
+				neededPoints = append(neededPoints, [2]int{firstSideFourthPointX, firstSideFourthPointY})
 			}
 
-			secondCurPointsList := [4]int{}
-			secondCurPointInd := -1
-			if ind, ok := pointsIndexesMap[[2]int{firstPointX, firstPointY}]; !ok {
-				pointsIndexesMap[[2]int{firstPointX, firstPointY}] = lastPointIndex
-				pointsMap[lastPointIndex] = [2]int{firstPointX, firstPointY}
-				secondCurPointInd = lastPointIndex
-				lastPointIndex++
+			if cnt < minCnt {
+				minCnt = cnt
+				totalNeededPoints = totalNeededPoints[:len(neededPoints)]
+				totalNeededPoints = neededPoints
+			}
+
+			cnt = 4
+			secondNeededPoints := make([][2]int, 0, 4)
+
+			if _, ok := points[[2]int{firstPointX, firstPointY}]; ok {
+				cnt--
 			} else {
-				secondCurPointInd = ind
+				secondNeededPoints = append(secondNeededPoints, [2]int{firstPointX, firstPointY})
 			}
-			secondCurPointsList[0] = secondCurPointInd
 
-			if ind, ok := pointsIndexesMap[[2]int{secondPointX, secondPointY}]; !ok {
-				pointsIndexesMap[[2]int{secondPointX, secondPointY}] = lastPointIndex
-				pointsMap[lastPointIndex] = [2]int{secondPointX, secondPointY}
-				secondCurPointInd = lastPointIndex
-				lastPointIndex++
+			if _, ok := points[[2]int{secondPointX, secondPointY}]; ok {
+				cnt--
 			} else {
-				secondCurPointInd = ind
+				secondNeededPoints = append(secondNeededPoints, [2]int{secondPointX, secondPointY})
 			}
-			secondCurPointsList[1] = secondCurPointInd
 
-			if ind, ok := pointsIndexesMap[[2]int{secondSideThirdPointX, secondSideThirdPointY}]; !ok {
-				pointsIndexesMap[[2]int{secondSideThirdPointX, secondSideThirdPointY}] = lastPointIndex
-				pointsMap[lastPointIndex] = [2]int{secondSideThirdPointX, secondSideThirdPointY}
-				secondCurPointInd = lastPointIndex
-				lastPointIndex++
+			if _, ok := points[[2]int{secondSideThirdPointX, secondSideThirdPointY}]; ok {
+				cnt--
 			} else {
-				secondCurPointInd = ind
+				secondNeededPoints = append(secondNeededPoints, [2]int{secondSideThirdPointX, secondSideThirdPointY})
 			}
-			secondCurPointsList[2] = secondCurPointInd
 
-			if ind, ok := pointsIndexesMap[[2]int{secondSideFourthPointX, secondSideFourthPointY}]; !ok {
-				pointsIndexesMap[[2]int{secondSideFourthPointX, secondSideFourthPointY}] = lastPointIndex
-				pointsMap[lastPointIndex] = [2]int{secondSideFourthPointX, secondSideFourthPointY}
-				secondCurPointInd = lastPointIndex
-				lastPointIndex++
+			if _, ok := points[[2]int{secondSideFourthPointX, secondSideFourthPointY}]; ok {
+				cnt--
 			} else {
-				secondCurPointInd = ind
+				secondNeededPoints = append(secondNeededPoints, [2]int{secondSideFourthPointX, secondSideFourthPointY})
 			}
-			secondCurPointsList[3] = secondCurPointInd
 
-			secondCurPointsSlice := secondCurPointsList[:]
-			slices.Sort(secondCurPointsSlice)
-
-			if _, ok := squarePointCnts[secondCurPointsList]; !ok {
-				squarePointCnts[secondCurPointsList] = 4
+			if cnt < minCnt {
+				minCnt = cnt
+				totalNeededPoints = totalNeededPoints[:len(secondNeededPoints)]
+				totalNeededPoints = secondNeededPoints
 			}
 		}
-		markedPoints[curVInd] = struct{}{}
+
 	}
 
-	// 0 2 -> 0
-	// 2 0 -> 1
-	// 2 2 -> 6
-	// 0 4 -> 7
-	minCnt := 4
-	searchedKey := [4]int{}
-	for pis, c := range squarePointCnts {
-		count := c
-		for _, v := range pis {
-			if v == point {
-				continue
-			}
-			if _, ok := markedPoints[v]; ok {
-				count--
-			}
-		}
-		squarePointCnts[pis] = count
-		if count < minCnt {
-			minCnt = count
-			searchedKey = pis
-		}
-	}
-
-	neededPoints := make([][2]int, 0, 4)
-	for _, p := range searchedKey {
-		if p == point {
-			neededPoints = append(neededPoints, pointsMap[p])
-			continue
-		}
-		if _, ok := markedPoints[p]; !ok {
-			neededPoints = append(neededPoints, pointsMap[p])
-		}
-	}
-
-	return minCnt, neededPoints
+	return minCnt, totalNeededPoints
 }
