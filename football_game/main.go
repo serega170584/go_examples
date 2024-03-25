@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"math"
 	"os"
 	"regexp"
@@ -11,31 +10,15 @@ import (
 )
 
 func main() {
-	file, err := os.Open("football_game/123")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-	scanner := bufio.NewScanner(file)
 	text := make([]string, 0, 500)
+	scanner := makeScanner()
 	for scanner.Scan() {
-		//fmt.Println(scanner.Text())
 		if scanner.Text() == "" {
 			break
 		} else {
 			text = append(text, scanner.Text())
 		}
 	}
-	//re := regexp.MustCompile(`^([ a-zA-Z]*) ([0-9]*[0-9]*)'$`)
-	//fmt.Println(re.FindStringSubmatch(`Del Piero 67'`))
-	//scanner := makeScanner()
-	//for scanner.Scan() {
-	//	if scanner.Text() == "" {
-	//		break
-	//	} else {
-	//		text = append(text, scanner.Text())
-	//	}
-	//}
 	stat := getStat(text)
 	for _, v := range stat {
 		fmt.Println(v)
