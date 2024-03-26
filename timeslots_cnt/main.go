@@ -14,6 +14,8 @@ type network struct {
 	cntDevices       map[int][]int
 	cntDeviceList    []int
 	valuesTable      [][]int
+	markedUploaded   []bool
+	markedDownloaded []bool
 }
 
 func main() {
@@ -59,6 +61,9 @@ func newNetwork(n int, k int) *network {
 		}
 	}
 
+	markedDownloaded := make([]bool, n)
+	markedUploaded := make([]bool, n)
+
 	return &network{
 		deviceUpdates:    deviceUpdates,
 		deviceUpdatesCnt: deviceUpdatesCnt,
@@ -69,17 +74,20 @@ func newNetwork(n int, k int) *network {
 		cntDevices:       cntDevices,
 		cntDeviceList:    cntDeviceList,
 		valuesTable:      valuesTable,
+		markedDownloaded: markedDownloaded,
+		markedUploaded:   markedUploaded,
 	}
 }
 
 func (n *network) execute() {
 	updates := n.findUpdates()
-	changes := make([][3]int, 2*n.n)
+	changes := make([][3]int, 0, 2*n.n)
 	for _, update := range updates {
 		downloadDevices := n.findDownloadDevices(update)
 		changes = append(changes, n.handleDownloadDevices(downloadDevices, update)...)
 	}
 	n.applyChanges(changes)
+	n.recalculateCnts()
 }
 
 func (n *network) findUpdates() []int {
@@ -101,7 +109,7 @@ func (n *network) findDownloadDevices(update int) []int {
 	for _, cnt := range cntDevicesList {
 		cntDevices := n.cntDevices[cnt]
 		for _, v := range cntDevices {
-			if deviceUpdates[v][update] {
+			if deviceUpdates[v][update] && !n.markedDownloaded[v] {
 				devices = append(devices, v)
 			}
 		}
@@ -112,7 +120,10 @@ func (n *network) findDownloadDevices(update int) []int {
 func (n *network) handleDownloadDevices(devices []int, update int) [][3]int {
 	changes := make([][3]int, 0, n.n)
 	for _, d := range devices {
-		changes = append(changes, [3]int{d, n.findMostValuedDevice(d), update})
+		mostValuedDevice := n.findMostValuedDevice(d)
+		n.markedDownloaded[d] = true
+		n.markedUploaded[mostValuedDevice] = true
+		changes = append(changes, [3]int{d, mostValuedDevice, update})
 	}
 	return changes
 }
@@ -122,7 +133,7 @@ func (n *network) findMostValuedDevice(device int) int {
 	list := make([]int, 0, n.n)
 	startValueIndex := make(map[int]int, n.n)
 	for i := 0; i < n.n; i++ {
-		if i != -1 {
+		if i != -1 && !n.markedUploaded[i] {
 			value := table[device][i]
 			if _, ok := startValueIndex[value]; !ok {
 				list = append(list, value)
@@ -145,4 +156,42 @@ func (n *network) applyChanges(changes [][3]int) {
 		n.valuesTable[v[0]][v[1]]++
 		n.valuesTable[v[1]][v[0]]++
 	}
+}
+
+func (n *network) recalculateCnts() {
+	for k := range n.cntUpdates {
+		delete(n.cntUpdates, k)
+	}
+	n.cntList = n.cntList[:0]
+
+	updatesCnt := n.updatesCnt
+	cntUpdates := n.cntUpdates
+	cntList := n.cntList
+	for i := 0; i < n.k; i++ {
+		cnt := updatesCnt[i]
+		if _, ok := cntUpdates[cnt]; !ok {
+			cntList = append(cntList, cnt)
+		}
+		cntUpdates[cnt] = append(cntUpdates[cnt], i)
+	}
+
+	slices.Sort(cntList)
+
+	for k := range n.cntDevices {
+		delete(n.cntDevices, k)
+	}
+	n.cntDeviceList = n.cntDeviceList[:0]
+
+	devicesCnt := n.devicesCnt
+	cntDevices := n.cntDevices
+	cntDeviceList := n.cntDeviceList
+	for i := 0; i < n.n; i++ {
+		cnt := devicesCnt[i]
+		if _, ok := cntDevices[cnt]; !ok {
+			cntList = append(cntDeviceList, cnt)
+		}
+		cntDevices[cnt] = append(cntDevices[cnt], i)
+	}
+
+	slices.Sort(cntList)
 }
