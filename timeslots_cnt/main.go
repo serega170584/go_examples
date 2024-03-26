@@ -1,6 +1,13 @@
 package main
 
-import "slices"
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"slices"
+	"strconv"
+	"strings"
+)
 
 type network struct {
 	deviceUpdates    [][]bool
@@ -16,10 +23,30 @@ type network struct {
 	valuesTable      [][]int
 	markedUploaded   []bool
 	markedDownloaded []bool
+	totalUpdatesCnt  int
+	slots            []int
 }
 
 func main() {
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Split(bufio.ScanWords)
 
+	scanner.Scan()
+	n, _ := strconv.Atoi(scanner.Text())
+
+	scanner.Scan()
+	k, _ := strconv.Atoi(scanner.Text())
+
+	network := newNetwork(n, k)
+	network.execute()
+
+	s := make([]string, n)
+	slots := network.slots
+	for i, v := range slots {
+		s[i] = strconv.Itoa(v)
+	}
+
+	fmt.Println(strings.Join(s, " "))
 }
 
 func newNetwork(n int, k int) *network {
@@ -64,6 +91,8 @@ func newNetwork(n int, k int) *network {
 	markedDownloaded := make([]bool, n)
 	markedUploaded := make([]bool, n)
 
+	slots := make([]int, n)
+
 	return &network{
 		deviceUpdates:    deviceUpdates,
 		deviceUpdatesCnt: deviceUpdatesCnt,
@@ -76,22 +105,29 @@ func newNetwork(n int, k int) *network {
 		valuesTable:      valuesTable,
 		markedDownloaded: markedDownloaded,
 		markedUploaded:   markedUploaded,
+		totalUpdatesCnt:  1,
+		slots:            slots,
 	}
 }
 
 func (n *network) execute() {
-	updates := n.findUpdates()
-	changes := make([][3]int, 0, 2*n.n)
-	for _, update := range updates {
-		downloadDevices := n.findDownloadDevices(update)
-		changes = append(changes, n.handleDownloadDevices(downloadDevices, update)...)
+	for n.totalUpdatesCnt != n.n {
+		updates := n.findUpdates()
+		changes := make([][3]int, 0, 2*n.n)
+		for _, update := range updates {
+			downloadDevices := n.findDownloadDevices(update)
+			changes = append(changes, n.handleDownloadDevices(downloadDevices, update)...)
+		}
+		n.applyChanges(changes)
+		n.recalculateCnts()
+		n.reloadMarks()
+		n.changeTotalUpdatesCnt()
+		n.updateSlots()
 	}
-	n.applyChanges(changes)
-	n.recalculateCnts()
 }
 
 func (n *network) findUpdates() []int {
-	updates := make([]int, n.k)
+	updates := make([]int, 0, n.k)
 	cntList := n.cntList
 	for _, cnt := range cntList {
 		cntUpdates := n.cntUpdates[cnt]
@@ -133,7 +169,7 @@ func (n *network) findMostValuedDevice(device int) int {
 	list := make([]int, 0, n.n)
 	startValueIndex := make(map[int]int, n.n)
 	for i := 0; i < n.n; i++ {
-		if i != -1 && !n.markedUploaded[i] {
+		if i != -1 && !n.markedUploaded[i] && n.deviceUpdatesCnt[i] != n.n {
 			value := table[device][i]
 			if _, ok := startValueIndex[value]; !ok {
 				list = append(list, value)
@@ -194,4 +230,32 @@ func (n *network) recalculateCnts() {
 	}
 
 	slices.Sort(cntList)
+}
+
+func (n *network) reloadMarks() {
+	for i := range n.markedUploaded {
+		n.markedUploaded[i] = false
+	}
+
+	for i := range n.markedDownloaded {
+		n.markedDownloaded[i] = false
+	}
+}
+
+func (n *network) changeTotalUpdatesCnt() int {
+	totalUpdatesCnt := 0
+	for _, v := range n.deviceUpdatesCnt {
+		if v == n.k {
+			totalUpdatesCnt++
+		}
+	}
+	return totalUpdatesCnt
+}
+
+func (n *network) updateSlots() {
+	for i, v := range n.deviceUpdatesCnt {
+		if v != n.k {
+			n.slots[i]++
+		}
+	}
 }
