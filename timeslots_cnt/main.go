@@ -90,6 +90,7 @@ func newNetwork(n int, k int) *network {
 
 	markedDownloaded := make([]bool, n)
 	markedUploaded := make([]bool, n)
+	markedUploaded[0] = true
 
 	slots := make([]int, n)
 
@@ -122,7 +123,7 @@ func (n *network) execute() {
 		n.recalculateCnts()
 		n.reloadMarks()
 		n.changeTotalUpdatesCnt()
-		n.updateSlots()
+		n.changeSlots()
 	}
 }
 
@@ -157,9 +158,11 @@ func (n *network) handleDownloadDevices(devices []int, update int) [][3]int {
 	changes := make([][3]int, 0, n.n)
 	for _, d := range devices {
 		mostValuedDevice := n.findMostValuedDevice(d)
-		n.markedDownloaded[d] = true
-		n.markedUploaded[mostValuedDevice] = true
-		changes = append(changes, [3]int{d, mostValuedDevice, update})
+		if mostValuedDevice != -1 {
+			n.markedDownloaded[d] = true
+			n.markedUploaded[mostValuedDevice] = true
+			changes = append(changes, [3]int{d, mostValuedDevice, update})
+		}
 	}
 	return changes
 }
@@ -169,7 +172,7 @@ func (n *network) findMostValuedDevice(device int) int {
 	list := make([]int, 0, n.n)
 	startValueIndex := make(map[int]int, n.n)
 	for i := 0; i < n.n; i++ {
-		if i != -1 && !n.markedUploaded[i] && n.deviceUpdatesCnt[i] != n.n {
+		if table[device][i] != -1 && !n.markedUploaded[i] && n.deviceUpdatesCnt[i] != n.n {
 			value := table[device][i]
 			if _, ok := startValueIndex[value]; !ok {
 				list = append(list, value)
@@ -180,7 +183,11 @@ func (n *network) findMostValuedDevice(device int) int {
 	slices.Sort(list)
 
 	listCnt := len(list)
-	return startValueIndex[listCnt-1]
+
+	if listCnt != 0 {
+		return startValueIndex[listCnt-1]
+	}
+	return -1
 }
 
 func (n *network) applyChanges(changes [][3]int) {
@@ -224,12 +231,12 @@ func (n *network) recalculateCnts() {
 	for i := 0; i < n.n; i++ {
 		cnt := devicesCnt[i]
 		if _, ok := cntDevices[cnt]; !ok {
-			cntList = append(cntDeviceList, cnt)
+			cntDeviceList = append(cntDeviceList, cnt)
 		}
 		cntDevices[cnt] = append(cntDevices[cnt], i)
 	}
 
-	slices.Sort(cntList)
+	slices.Sort(cntDeviceList)
 }
 
 func (n *network) reloadMarks() {
@@ -252,7 +259,7 @@ func (n *network) changeTotalUpdatesCnt() int {
 	return totalUpdatesCnt
 }
 
-func (n *network) updateSlots() {
+func (n *network) changeSlots() {
 	for i, v := range n.deviceUpdatesCnt {
 		if v != n.k {
 			n.slots[i]++
