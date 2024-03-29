@@ -35,7 +35,7 @@ func main() {
 	}
 
 	lengths := getIntervalLengths(n, list, intervals)
-	s := make([]string, n)
+	s := make([]string, k)
 	for i, v := range lengths {
 		s[i] = strconv.Itoa(v)
 	}
@@ -48,12 +48,15 @@ func getIntervalLengths(n int, list [][2]int, intervals []int) []int {
 
 	lengths := make([]int, 0)
 	for _, v := range list {
-		l := binarySearch(v[0], n, intervals)
-		r := rbinarySearch(v[1], n, intervals)
 		length := 0
-		if r >= l {
-			length = r - l + 1
+		if v[1] >= intervals[0] && v[0] <= intervals[n-1] {
+			l := binarySearch(v[0], n, intervals)
+			r := rbinarySearch(v[1], n, intervals)
+			if r >= l {
+				length = r - l + 1
+			}
 		}
+
 		lengths = append(lengths, length)
 	}
 
