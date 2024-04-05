@@ -1,57 +1,54 @@
 package main
 
-import (
-	"fmt"
-	"sync/atomic"
-)
+import "fmt"
 
 func main() {
-	ch1 := make(chan int, 3)
-	ch1 <- 1
-	ch1 <- 2
-	ch1 <- 3
-	close(ch1)
+	a := make(chan int, 3)
+	a <- 1
+	a <- 2
+	a <- 3
+	close(a)
+	b := make(chan int, 2)
+	b <- 2
+	b <- 3
+	close(b)
+	c := make(chan int, 4)
+	c <- 4
+	c <- 5
+	c <- 6
+	c <- 7
+	close(c)
 
-	ch2 := make(chan int, 2)
-	ch2 <- 4
-	ch2 <- 5
-	close(ch2)
+	o := mergeChannels(a, b, c)
 
-	ch3 := make(chan int, 4)
-	ch3 <- 6
-	ch3 <- 7
-	ch3 <- 8
-	ch3 <- 9
-	close(ch3)
-
-	res := mergeChannels(ch1, ch2, ch3)
-	for val := range res {
-		fmt.Println(val)
+	for v := range o {
+		fmt.Println(v)
 	}
 }
 
-func mergeChannels(chList ...chan int) <-chan int {
-	res := make(chan int)
-	var counter int64
+func mergeChannels(chList ...chan int) chan int {
+	output := make(chan int)
+	sem := make([]chan struct{}, len(chList))
 
-	for _, ch := range chList {
-		ch := ch
-		go func() {
-			for val := range ch {
-				res <- val
-			}
-			atomic.AddInt64(&counter, 1)
-		}()
+	for i := range chList {
+		sem[i] = make(chan struct{})
 	}
 
-	go func() {
-		for {
-			if int(counter) == len(chList) {
-				close(res)
-				return
+	for i, ch := range chList {
+		go func(ch chan int, output chan int, i int, sem []chan struct{}) {
+			for v := range ch {
+				output <- v
 			}
-		}
-	}()
+			sem[i] <- struct{}{}
+		}(ch, output, i, sem)
+	}
 
-	return res
+	go func(sem []chan struct{}, output chan int) {
+		for _, v := range sem {
+			<-v
+		}
+		close(output)
+	}(sem, output)
+
+	return output
 }
