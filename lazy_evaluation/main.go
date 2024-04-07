@@ -5,17 +5,16 @@ import (
 	"sync"
 )
 
-type LazyInt func() int
+type LazyFunc func() int
 
 func main() {
-	f := MakeLazyInt(func() int {
+	f := makeFunc(func() int {
 		return 23
 	})
 	fmt.Println(f())
-	fmt.Println(f())
 }
 
-func MakeLazyInt(f LazyInt) LazyInt {
+func makeFunc(f LazyFunc) LazyFunc {
 	var v int
 	var once sync.Once
 	return func() int {
