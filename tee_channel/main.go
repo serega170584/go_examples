@@ -3,78 +3,58 @@ package main
 import (
 	"context"
 	"fmt"
-	"sync"
 	"time"
 )
 
 func main() {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
+	in := make(chan int)
+	out1 := make(chan int)
+	out2 := make(chan int)
+	out := []chan int{
+		out1,
+		out2,
+	}
 
-	wg := sync.WaitGroup{}
+	go func(in chan int) {
+		in <- 1
+		in <- 2
+		in <- 3
+		close(in)
+	}(in)
 
-	input := make(chan int)
-	output := make([]chan int, 2)
-	output[0] = make(chan int)
-	output[1] = make(chan int)
+	ctx, cancel := context.WithCancel(context.Background())
 
-	done := make(chan struct{})
-
-	wg.Add(4)
-	go func(ctx context.Context, wg *sync.WaitGroup) {
-		defer wg.Done()
-		i := 0
+	go func(ctx context.Context, out1 chan int, out2 chan int) {
 		for {
 			select {
+			case v := <-out1:
+				fmt.Println(fmt.Sprintf("got value %d", v))
+			case v := <-out2:
+				fmt.Println(fmt.Sprintf("got value %d", v))
 			case <-ctx.Done():
-				fmt.Println("Input closed")
-				close(input)
-				return
-			case <-time.After(500 * time.Millisecond):
-				fmt.Println("Put val to input ", i)
-				input <- i
-				i++
-				fmt.Println("Put val to input ", i)
-				input <- i
-				i++
-				fmt.Println("Put val to input ", i)
-				input <- i
+				break
 			}
 		}
-	}(ctx, &wg)
+	}(ctx, out1, out2)
 
-	go teeChannel(input, output, done, &wg)
+	tee(ctx, in, out)
 
-	go func(wg *sync.WaitGroup) {
-		defer wg.Done()
-		<-done
-		for _, ch := range output {
-			close(ch)
-		}
-	}(&wg)
-
-	for ind, ch := range output {
-		ch := ch
-		ind := ind
-		go func(wg *sync.WaitGroup) {
-			defer wg.Done()
-			for val := range ch {
-				fmt.Println("Got from output index ", ind, " value ", val)
-			}
-		}(&wg)
-	}
-
-	wg.Wait()
+	time.Sleep(time.Millisecond)
+	cancel()
 }
 
-func teeChannel(input chan int, output []chan int, done chan struct{}, wg *sync.WaitGroup) {
-	defer wg.Done()
-	for val := range input {
-		for ind, outCh := range output {
-			fmt.Println("Got from input val ", val, " to out ind ", ind)
-			outCh <- val
+func tee(ctx context.Context, in chan int, out []chan int) {
+	for v := range in {
+		for _, outCh := range out {
+			go func(outCh chan int, v int) {
+				select {
+				case <-ctx.Done():
+					break
+				default:
+					outCh <- v
+					break
+				}
+			}(outCh, v)
 		}
 	}
-
-	done <- struct{}{}
 }
