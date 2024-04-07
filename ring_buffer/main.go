@@ -2,44 +2,30 @@ package main
 
 import "fmt"
 
-func NewRingBuffer(inCh, outCh chan int) *RingBuffer {
-	return &RingBuffer{
-		inCh:  inCh,
-		outCh: outCh,
-	}
-}
-
-type RingBuffer struct {
-	inCh  chan int
-	outCh chan int
-}
-
-func (r *RingBuffer) Run() {
-	defer close(r.outCh)
-	for v := range r.inCh {
-		select {
-		case r.outCh <- v:
-		default:
-			<-r.outCh
-			r.outCh <- v
-		}
-	}
-}
-
 func main() {
-	inCh := make(chan int)
-	outCh := make(chan int, 4)
-	rb := NewRingBuffer(inCh, outCh)
-	go rb.Run()
+	in := make(chan int)
+	out := make(chan int, 4)
 
-	for i := 1; i <= 10; i++ {
-		inCh <- i
+	go func() {
+		for v := range in {
+			select {
+			case out <- v:
+			default:
+				<-out
+				out <- v
+			}
+		}
+		close(out)
+	}()
+
+	for i := 0; i < 10000; i++ {
+		in <- i
 	}
 
-	close(inCh)
+	close(in)
 
-	for res := range outCh {
-		fmt.Println(res)
+	for v := range out {
+		fmt.Println(v)
 	}
 
 }
