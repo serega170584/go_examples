@@ -1,60 +1,52 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"sync"
+)
 
 func main() {
-	ch1 := make(chan int, 4)
-	ch1 <- 1
-	ch1 <- 2
-	ch1 <- 3
-	ch1 <- 4
-	close(ch1)
-	ch2 := make(chan int, 4)
-	ch2 <- 5
-	ch2 <- 6
-	ch2 <- 7
-	ch2 <- 8
-	close(ch2)
-	ch3 := make(chan int, 3)
-	ch3 <- 9
-	ch3 <- 10
-	ch3 <- 11
-	close(ch3)
-	ch4 := make(chan int, 2)
-	ch4 <- 12
-	ch4 <- 13
-	close(ch4)
+	a := make(chan int, 4)
+	a <- 1
+	a <- 2
+	a <- 3
+	a <- 4
+	close(a)
+	b := make(chan int, 3)
+	b <- 5
+	b <- 6
+	b <- 7
+	close(b)
+	c := make(chan int, 5)
+	c <- 11
+	c <- 12
+	c <- 13
+	c <- 14
+	c <- 15
+	close(c)
 
-	output := mergeChannels(ch1, ch2, ch3, ch4)
-
-	for v := range output {
+	for v := range mergeChannels(a, b, c) {
 		fmt.Println(v)
 	}
 }
 
 func mergeChannels(chList ...chan int) chan int {
-	output := make(chan int)
-	sem := make([]chan struct{}, len(chList))
-
-	for i := range sem {
-		sem[i] = make(chan struct{})
-	}
-
-	for i, ch := range chList {
-		go func(ch chan int, i int, output chan int, sem []chan struct{}) {
-			for v := range ch {
-				output <- v
-			}
-			sem[i] <- struct{}{}
-		}(ch, i, output, sem)
-	}
-
-	go func(sem []chan struct{}, output chan int) {
-		for _, ch := range sem {
-			<-ch
+	wg := &sync.WaitGroup{}
+	out := make(chan int)
+	for _, ch := range chList {
+		wg.Add(1)
+		for v := range ch {
+			go func(wg *sync.WaitGroup, v int, out chan int) {
+				defer wg.Done()
+				out <- v
+			}(wg, v, out)
 		}
-		close(output)
-	}(sem, output)
+	}
 
-	return output
+	go func(wg *sync.WaitGroup, out chan int) {
+		wg.Wait()
+		close(out)
+	}(wg, out)
+
+	return out
 }
