@@ -2,23 +2,29 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"sync"
 )
 
-type LazyFunc func() int
+type LazyInt func() int
 
-func main() {
-	f := makeFunc(func() int {
-		return 23
-	})
-	fmt.Println(f())
+func a() int {
+	return rand.Intn(100)
 }
 
-func makeFunc(f LazyFunc) LazyFunc {
+func main() {
+	b := makeLazyInt(a)
+	c := b()
+	fmt.Println(c)
+	d := b()
+	fmt.Println(d)
+}
+
+func makeLazyInt(f LazyInt) LazyInt {
 	var v int
-	var once sync.Once
+	var o sync.Once
 	return func() int {
-		once.Do(func() {
+		o.Do(func() {
 			v = f()
 			f = nil
 		})

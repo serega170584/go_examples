@@ -5,7 +5,24 @@ import (
 	"runtime"
 )
 
+type A interface {
+	test()
+}
+
+type TestA struct{}
+
+func (a TestA) test() {}
+
 func main() {
+	var a A
+	var b TestA
+	fmt.Println(a == nil)
+	a = b
+	fmt.Println(a)
+	//a := make([]int, 2, 2)
+	//b := append(a, 1)
+	//b[0] = 1
+	//fmt.Println("New a", a)
 	stats := new(runtime.MemStats)
 	runtime.ReadMemStats(stats)
 	//fmt.Printf("stats: %d \n", stats.HeapAlloc)

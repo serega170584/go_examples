@@ -7,34 +7,44 @@ import (
 	"time"
 )
 
+type Err struct{}
+
+func (e Err) Error() string {
+	return "dfsdfsdf"
+}
+
+func err() *Err {
+	return nil
+}
+
 func main() {
+	//var a *int
+	//var b int64
+	fmt.Println(err() == nil)
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-	res, err := predictableFunc(ctx)
+	err := adapter(ctx)
 	if err != nil {
-		fmt.Printf("%v", err)
-		return
+		fmt.Println(err)
 	}
-	fmt.Println(res)
+	cancel()
 }
 
-func unpredictableFunc() int {
-	res := rand.Intn(5)
-	time.Sleep(time.Duration(res) * time.Second)
-	return res
+func test() {
+	time.Sleep(time.Duration(rand.Intn(6)) * time.Second)
+	fmt.Println("Success")
 }
 
-func predictableFunc(ctx context.Context) (int, error) {
-	res := make(chan int)
-
+func adapter(ctx context.Context) error {
+	res := make(chan struct{})
 	go func() {
-		res <- unpredictableFunc()
+		test()
+		close(res)
 	}()
 
 	select {
 	case <-ctx.Done():
-		return 0, ctx.Err()
+		return ctx.Err()
 	case <-res:
-		return unpredictableFunc(), nil
+		return nil
 	}
 }

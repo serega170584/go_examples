@@ -10,28 +10,32 @@ import (
 func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	resCh := make(chan struct{})
-	res, err := adapter(ctx, resCh)
+
+	v, err := adapter(ctx)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(err.Error())
+		return
 	}
-	fmt.Println(res)
+
+	fmt.Println(*v)
 }
 
-func something() {
-	time.Sleep(time.Duration(rand.Intn(5)) * time.Second)
+func something() int {
+	time.Sleep(time.Duration(rand.Intn(6)) * time.Second)
+	return rand.Intn(100)
 }
 
-func adapter(ctx context.Context, resCh chan struct{}) (int, error) {
+func adapter(ctx context.Context) (*int, error) {
+	ch := make(chan int)
+
 	go func() {
-		something()
-		resCh <- struct{}{}
+		ch <- something()
 	}()
 
 	select {
-	case <-resCh:
-		return rand.Intn(1000), nil
+	case v := <-ch:
+		return &v, nil
 	case <-ctx.Done():
-		return 0, ctx.Err()
+		return nil, ctx.Err()
 	}
 }

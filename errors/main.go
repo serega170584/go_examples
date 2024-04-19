@@ -14,7 +14,7 @@ func (e Error) Error() string {
 }
 
 func New(err error) Error {
-	return Error{err: fmt.Errorf("Test 1 %w", err)}
+	return Error{err: fmt.Errorf("%w", err)}
 }
 
 func (e Error) Unwrap() error {
@@ -53,12 +53,48 @@ func NewNewNew(err error) Error2 {
 	return Error2{err: fmt.Errorf("Test 3 %w", err)}
 }
 
+func returnError() error {
+	var err error
+	return err
+}
+
+func returnErrorPtr() *error {
+	var err *error
+	return err
+}
+
+func returnCustomError() error {
+	var customErr MyErr
+	return customErr
+}
+
+func returnCustomErrorPtr() error {
+	var customErr *MyErr
+	return customErr
+}
+
+func returnMyErr() *MyErr {
+	return nil
+}
+
+type MyErr struct {
+	A int
+}
+
+func (me MyErr) Error() string {
+	return "my err string"
+}
+
 func main() {
-	fmt.Println(returnError() == nil)
-	fmt.Println(returnErrorPtr() == nil)
-	fmt.Println(returnCustomError() == nil)
-	fmt.Println(returnCustomErrorPtr() == nil)
-	fmt.Println(returnMyErr() == nil)
+	//fmt.Println(returnError() == nil)
+	//fmt.Println(returnErrorPtr() == nil)
+	//fmt.Println(returnCustomError() == nil)
+	//d := returnCustomError()
+	//fmt.Println(d)
+	//c := returnCustomErrorPtr()
+	//fmt.Println(c)
+	//fmt.Println(returnCustomErrorPtr() == nil)
+	//fmt.Println(returnMyErr() == nil)
 
 	err := errors.New("Test")
 	err1 := New(err)
@@ -164,33 +200,3 @@ func err4() error {
 //func (e NegativeError) Error() string {
 //	return fmt.Sprintf("%d", e)
 //}
-
-func returnError() error {
-	var err error
-	return err
-}
-
-func returnErrorPtr() *error {
-	var err *error
-	return err
-}
-
-func returnCustomError() error {
-	var customErr MyErr
-	return customErr
-}
-
-func returnCustomErrorPtr() error {
-	var customErr *MyErr
-	return customErr
-}
-
-func returnMyErr() *MyErr {
-	return nil
-}
-
-type MyErr struct{}
-
-func (me MyErr) Error() string {
-	return "my err string"
-}

@@ -4,9 +4,24 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"slices"
 	"strconv"
 )
+
+// _ _ _ _ _ _ _
+//     _ _ _ _
+// min = 1
+// max = 7
+// max - min + 1 - (bl - tr + 1, bl >= tr) - (tl - br + 1, tl >= br) = 7
+
+// _ _ _ _ _ _ _
+//     _ _ _ _ _ _ _
+// min = 1
+// max = 9
+// max - min + 1 - (bl - tr + 1, bl >= tr) - (tl - br + 1, tl >= br) = 9
+
+//               _ _ _ _ _ _ _ _ _
+// _ _ _ _ _ _ _
+// 16 - 1 + 1 - (8 - 7 + 1) = 16
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
@@ -26,31 +41,23 @@ func main() {
 }
 
 func maxColouringTrees(firstTree int, maxFirstTrees int, secondTree int, maxSecondTrees int) int {
-	leftFirstTree := firstTree - maxFirstTrees
-	rightFirstTree := firstTree + maxFirstTrees
+	topLeft := firstTree - maxFirstTrees
+	topRight := firstTree + maxFirstTrees
 
-	leftSecondTree := secondTree - maxSecondTrees
-	rightSecondTree := secondTree + maxSecondTrees
+	bottomLeft := secondTree - maxSecondTrees
+	bottomRight := secondTree + maxSecondTrees
 
-	points := make([]int, 4)
-	points[0] = leftFirstTree
-	points[1] = rightFirstTree
-	points[2] = leftSecondTree
-	points[3] = rightSecondTree
-	slices.Sort(points)
+	minVal := min(topLeft, bottomLeft)
+	maxVal := max(topRight, bottomRight)
 
-	colouringTreesCnt := 0
-	colouringTreesCnt += points[1] - points[0] + points[3] - points[2]
-
-	if (points[2] == leftFirstTree && points[1] == rightSecondTree) || (points[2] == leftSecondTree && points[1] == rightFirstTree) {
-		if points[1] != points[2] {
-			colouringTreesCnt++
-		}
-	} else {
-		colouringTreesCnt += points[2] - points[1]
+	d := 0
+	if topLeft > bottomRight {
+		d += topLeft - bottomRight
 	}
 
-	colouringTreesCnt++
+	if bottomLeft > topRight {
+		d += bottomLeft - topRight
+	}
 
-	return colouringTreesCnt
+	return maxVal - minVal + 1 - d
 }

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math"
 	"os"
-	"slices"
 	"strconv"
 )
 
@@ -35,18 +34,12 @@ func main() {
 }
 
 func getMinLineSize(w int, h int, positions [][2]int) int {
-	sortedRows := make([]int, 0, h)
 	rowPositions := make(map[int][][2]int, h)
 	positionsLen := len(positions)
 	for i := 0; i < positionsLen; i++ {
 		row := positions[i][0]
-		if _, ok := rowPositions[row]; !ok {
-			sortedRows[i] = row
-		}
 		rowPositions[row] = append(rowPositions[row], positions[i])
 	}
-
-	slices.Sort(sortedRows)
 
 	topRowMinPositions := make([]int, h)
 	topRowMaxPositions := make([]int, h)

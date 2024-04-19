@@ -14,25 +14,25 @@ func main() {
 	scanner.Scan()
 	n, _ := strconv.Atoi(scanner.Text())
 
-	spaceCounts := make([]int, n)
+	list := make([]int, n)
 	for i := 0; i < n; i++ {
 		scanner.Scan()
-		spaceCounts[i], _ = strconv.Atoi(scanner.Text())
+		list[i], _ = strconv.Atoi(scanner.Text())
 	}
 
-	fmt.Println(getMinSpacesCnt(spaceCounts))
+	fmt.Println(getMinSyms(n, list))
 }
 
-func getMinSpacesCnt(spaceCounts []int) int {
-	baseSpaceCounts := make([]int, 4)
-	baseSpaceCounts[1] = 1
-	baseSpaceCounts[2] = 2
-	baseSpaceCounts[3] = 2
+func getMinSyms(n int, list []int) int {
+	syms := make([]int, 4)
+	syms[1] = 1
+	syms[2] = 2
+	syms[3] = 2
 
-	minSpacesCnt := 0
-	for _, v := range spaceCounts {
-		minSpacesCnt += v/4 + baseSpaceCounts[v%4]
+	q := 0
+	for _, v := range list {
+		q += v/4 + syms[v%4]
 	}
 
-	return minSpacesCnt
+	return q
 }

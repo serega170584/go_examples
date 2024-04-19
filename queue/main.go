@@ -2,35 +2,29 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
 	"sync"
-	"time"
 )
 
-const queueCnt = 3
 const messagesCnt = 10
+const queueSize = 3
 
 func main() {
-	queue := make(chan struct{}, queueCnt)
 	wg := &sync.WaitGroup{}
+	queue := make(chan struct{}, queueSize)
 	for i := 0; i < messagesCnt; i++ {
-		num := rand.Intn(1000)
-		fmt.Println("Created num ", num)
-		process(num, queue, wg)
+		fmt.Println("Try ", i)
+		handle(queue, i, wg)
 	}
 	wg.Wait()
-	close(queue)
 }
 
-func process(val int, queue chan struct{}, wg *sync.WaitGroup) {
+func handle(queue chan struct{}, i int, wg *sync.WaitGroup) {
 	queue <- struct{}{}
-
 	wg.Add(1)
-	go func(wg *sync.WaitGroup, val int) {
+	go func(wg *sync.WaitGroup, i int) {
 		defer wg.Done()
-		fmt.Println("Processing start ", val)
-		time.Sleep(500 * time.Millisecond)
-		fmt.Println("Processing finish", val)
+		fmt.Println("Start ", i)
+		fmt.Println("Finish ", i)
 		<-queue
-	}(wg, val)
+	}(wg, i)
 }
