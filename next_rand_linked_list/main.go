@@ -32,32 +32,33 @@ func main() {
 }
 
 func copyList(node *Node) *Node {
-	var copyNode *Node
-	var prevCopyNode *Node
-	linkedNodes := make(map[*Node]*Node)
+	var prev *Node
 	var first *Node
+	var copyNode *Node
+	linkedNodes := make(map[*Node]*Node)
 	for node != nil {
-		if _, ok := linkedNodes[node.random]; !ok {
-			linkedNodes[node.random] = &Node{}
-		}
-
-		if _, ok := linkedNodes[node]; !ok {
-			copyNode = &Node{val: node.val}
-			linkedNodes[node] = copyNode
-		} else {
+		if _, ok := linkedNodes[node]; ok {
 			copyNode = linkedNodes[node]
 			copyNode.val = node.val
+		} else {
+			copyNode = &Node{val: node.val}
+			linkedNodes[node] = copyNode
 		}
 
-		if prevCopyNode == nil {
+		if _, ok := linkedNodes[node.random]; ok {
+			copyNode.random = linkedNodes[node.random]
+		} else {
+			copyNode.random = &Node{}
+			linkedNodes[node.random] = copyNode.random
+		}
+
+		if prev == nil {
 			first = copyNode
 		} else {
-			prevCopyNode.next = copyNode
+			prev.next = copyNode
 		}
 
-		copyNode.random = linkedNodes[node.random]
-
-		prevCopyNode = copyNode
+		prev = copyNode
 		node = node.next
 	}
 

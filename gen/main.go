@@ -3,21 +3,20 @@ package main
 import "fmt"
 
 func main() {
-	generate("", 0, 0, 6)
+	generate("", 0, 0, 3)
 }
 
-func generate(cur string, open int, closed int, n int) {
-	//fmt.Println(len(cur))
-	if len(cur) == 2*n {
-		fmt.Println(cur)
+func generate(s string, open int, close int, n int) {
+	if len(s) == 2*n {
+		fmt.Println(s)
+		return
 	}
 
 	if open < n {
-		generate(cur+"(", open+1, closed, n)
+		generate(s+"(", open+1, close, n)
 	}
 
-	if closed < open {
-		generate(cur+")", open, closed+1, n)
+	if open > close {
+		generate(s+")", open, close+1, n)
 	}
-
 }
