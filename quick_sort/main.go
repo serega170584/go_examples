@@ -3,7 +3,7 @@ package main
 import "fmt"
 
 func main() {
-	a := []int{4, 2, 3, 1, 5}
+	a := []int{5, 4, 3, 2, 1, 5}
 	sort(a, 0, len(a)-1)
 	fmt.Println(a)
 }
@@ -19,9 +19,9 @@ func sort(a []int, lo int, hi int) {
 }
 
 func partition(a []int, lo int, hi int) int {
+	v := a[lo]
 	i := lo
 	j := hi + 1
-	v := a[lo]
 	for {
 		i++
 		for a[i] < v {
