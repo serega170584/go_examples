@@ -1,47 +1,51 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"os"
-	"sort"
-	"strconv"
+	"slices"
 	"strings"
 )
 
 func main() {
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Split(bufio.ScanWords)
+	fmt.Println(getAnagramGroups([]string{"abc", "cba", "adc", "dca", "cda", "a", "b", "c", "cd"}))
+}
 
-	scanner.Scan()
-	cnt, _ := strconv.Atoi(scanner.Text())
+func getAnagramGroups(a []string) [][]string {
+	l := len(a)
+	groups := make([][]string, 0, l)
+	gm := make(map[string][]string, l)
+	for _, v := range a {
+		var sb strings.Builder
+		r := []int32(v)
+		slices.Sort(r)
 
-	arr := make([]string, cnt)
-	for i := 0; i < cnt; i++ {
-		scanner.Scan()
-		arr[i] = scanner.Text()
+		for _, rv := range r {
+			sb.WriteString(string(rv))
+		}
+
+		k := sb.String()
+		if _, ok := gm[k]; !ok {
+			gm[k] = make([]string, 0, l)
+		}
+		gm[k] = append(gm[k], v)
 	}
 
-	anagramGroups := make(map[string][]string, cnt)
-	for _, val := range arr {
-		intBites := make([]int, len(val))
-		for i, intBite := range val {
-			intBites[i] = int(intBite)
+	eg := make([]string, 0, l)
+	for _, v := range gm {
+		if len(v) == 1 {
+			eg = append(eg, v[0])
+		} else {
+			groups = append(groups, []string{})
+			gl := len(groups)
+			groups[gl-1] = make([]string, len(v))
+			groups[gl-1] = v
 		}
-		sort.Ints(intBites)
-
-		strBites := make([]string, len(val))
-		for i, intBite := range intBites {
-			strBites[i] = fmt.Sprintf("%c", intBite)
-		}
-		str := strings.Join(strBites, "")
-
-		if _, ok := anagramGroups[str]; !ok {
-			anagramGroups[str] = make([]string, 0)
-		}
-		anagramGroups[str] = append(anagramGroups[str], val)
 	}
 
-	fmt.Println(anagramGroups)
+	groups = append(groups, []string{})
+	gl := len(groups)
+	groups[gl-1] = make([]string, len(eg))
+	groups[gl-1] = eg
 
+	return groups
 }
