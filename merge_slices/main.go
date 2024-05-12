@@ -1,54 +1,51 @@
 package main
 
-import (
-	"bufio"
-	"fmt"
-	"os"
-	"strconv"
-)
+import "fmt"
 
 func main() {
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Split(bufio.ScanWords)
-
-	fmt.Println("Enter first list count")
-	scanner.Scan()
-	fCnt, _ := strconv.Atoi(scanner.Text())
-
-	fmt.Println("Enter first list")
-	fList := make([]int, fCnt)
-	for i := 0; i < fCnt; i++ {
-		scanner.Scan()
-		fList[i], _ = strconv.Atoi(scanner.Text())
-	}
-
-	fmt.Println("Enter second list count")
-	scanner.Scan()
-	sCnt, _ := strconv.Atoi(scanner.Text())
-
-	fmt.Println("Enter second list")
-	sList := make([]int, sCnt)
-	for i := 0; i < sCnt; i++ {
-		scanner.Scan()
-		sList[i], _ = strconv.Atoi(scanner.Text())
-	}
-
-	fmt.Println("Got merged list", mergeList(fCnt, sCnt, fList, sList))
+	fmt.Println(mergeSlices([]int{1, 2, 6}, []int{3, 4, 5}))
 }
 
-func mergeList(fCnt int, sCnt int, first []int, second []int) []int {
-	first = append(first, make([]int, sCnt)...)
-	fIndex := fCnt - 1
-	sIndex := sCnt - 1
-	for i := fCnt + sCnt - 1; i > -1; i-- {
-		if fIndex == -1 || first[fIndex] < second[sIndex] {
-			first[i] = second[sIndex]
-			sIndex--
-		} else {
-			first[i] = first[fIndex]
-			fIndex--
+func mergeSlices(a []int, b []int) []int {
+	al := len(a)
+	bl := len(b)
+	var res []int
+	if al < bl {
+		for i := 0; i < al; i++ {
+			b = append(b, 0)
 		}
+		res = b
+	} else {
+		for i := 0; i < bl; i++ {
+			a = append(a, 0)
+		}
+		res = a
 	}
 
-	return first
+	l := len(res)
+
+	ai := al - 1
+	bi := bl - 1
+	for i := l - 1; i >= 0; i-- {
+		if ai == -1 {
+			res[i] = b[bi]
+			bi--
+			continue
+		}
+
+		if bi == -1 {
+			res[i] = a[ai]
+			ai--
+			continue
+		}
+
+		if a[ai] < b[bi] {
+			res[i] = b[bi]
+			bi--
+		} else {
+			res[i] = a[ai]
+			ai--
+		}
+	}
+	return res
 }
