@@ -3,7 +3,7 @@ package main
 import "fmt"
 
 func main() {
-	generate("", 0, 0, 3)
+	generate("", 0, 0, 4)
 }
 
 func generate(s string, open int, close int, n int) {
