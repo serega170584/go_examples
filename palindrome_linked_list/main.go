@@ -10,27 +10,27 @@ type Node struct {
 func main() {
 	node := &Node{val: 1}
 	next := node
+	node = &Node{val: 2}
+	node.next = next
+	next = node
+	node = &Node{val: 3}
+	node.next = next
+	next = node
+	node = &Node{val: 2}
+	node.next = next
+	next = node
 	node = &Node{val: 1}
 	node.next = next
-	//next = node
-	//node = &Node{val: 3}
-	//node.next = next
-	//next = node
-	//node = &Node{val: 2}
-	//node.next = next
-	//next = node
-	//node = &Node{val: 1}
-	//node.next = next
 
 	fmt.Println(isPalindrom(node))
 }
 
 func isPalindrom(node *Node) bool {
-	var firstList *Node
-	var secondList *Node
+	counter := 0
+	var first *Node
+	var second *Node
 	var middle *Node
 	var nextFirst *Node
-	counter := 0
 	for node != nil {
 		counter++
 		if counter == 1 {
@@ -40,13 +40,13 @@ func isPalindrom(node *Node) bool {
 		}
 
 		if counter%2 == 0 {
-			nextFirst = firstList
-			firstList = middle
+			nextFirst = first
+			first = middle
 			middle = middle.next
-			firstList.next = nextFirst
-			secondList = middle
+			second = middle
+			first.next = nextFirst
 		} else {
-			secondList = secondList.next
+			second = middle.next
 		}
 
 		node = node.next
@@ -54,11 +54,11 @@ func isPalindrom(node *Node) bool {
 
 	counter /= 2
 	for i := 0; i < counter; i++ {
-		if firstList.val != secondList.val {
+		if first.val != second.val {
 			return false
 		}
-		firstList = firstList.next
-		secondList = secondList.next
+		first = first.next
+		second = second.next
 	}
 
 	return true
