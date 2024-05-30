@@ -4,7 +4,7 @@ import "fmt"
 
 func main() {
 	a := []int{5, 4, 3, 2, 2, 2, 2, 1}
-	sort(a, 0, len(a)-1)
+	sort(a, 0, 7)
 	fmt.Println(a)
 }
 
