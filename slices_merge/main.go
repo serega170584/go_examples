@@ -1,26 +1,22 @@
 package main
 
-import (
-	"fmt"
-	"math"
-)
+import "fmt"
 
 func main() {
-	fmt.Println(mergeSlices([]int{1, 2, 3, 4}, []int{5, 6, 7}, []int{8, 9}))
+	fmt.Println(mergeSlices([]int{1, 2, 3}, []int{3, 2, 1, 4}, []int{2, 1}, []int{1, 1}))
 }
 
 func mergeSlices(list ...[]int) [][]int {
-	minLength := math.MaxInt
-
-	for _, s := range list {
-		minLength = min(minLength, len(s))
+	l := len(list[0])
+	ll := len(list)
+	for i := 1; i < ll; i++ {
+		l = min(l, len(list[i]))
 	}
 
-	res := make([][]int, minLength)
-	for i := 0; i < minLength; i++ {
-		res[i] = make([]int, len(list))
-		for j := 0; j < len(list); j++ {
-			res[i][j] = list[j][i]
+	res := make([][]int, l)
+	for i := 0; i < l; i++ {
+		for j := 0; j < ll; j++ {
+			res[i] = append(res[i], list[j][i])
 		}
 	}
 
