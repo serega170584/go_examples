@@ -1,7 +1,5 @@
 package main
 
-import "fmt"
-
 type Node struct {
 	val    int
 	next   *Node
@@ -23,42 +21,39 @@ func main() {
 	node3.random = node1
 	node2.random = node3
 	node1.random = node3
-
-	node := copyList(node1)
-	for node != nil {
-		fmt.Println(node)
-		node = node.next
-	}
 }
 
 func copyList(node *Node) *Node {
-	var prev *Node
 	var first *Node
-	var copyNode *Node
-	linkedNodes := make(map[*Node]*Node)
+	var prev *Node
+	var newNode *Node
+	links := make(map[*Node]*Node)
 	for node != nil {
-		if _, ok := linkedNodes[node]; ok {
-			copyNode = linkedNodes[node]
-			copyNode.val = node.val
+		if _, ok := links[node]; ok {
+			newNode = links[node]
+			*newNode = Node{val: node.val}
 		} else {
-			copyNode = &Node{val: node.val}
-			linkedNodes[node] = copyNode
+			newNode = &Node{
+				val: node.val,
+			}
+			links[node] = newNode
 		}
 
-		if _, ok := linkedNodes[node.random]; ok {
-			copyNode.random = linkedNodes[node.random]
+		if _, ok := links[node.random]; ok {
+			newNode.random = links[node.random]
 		} else {
-			copyNode.random = &Node{}
-			linkedNodes[node.random] = copyNode.random
+			links[node.random] = &Node{}
 		}
 
-		if prev == nil {
-			first = copyNode
-		} else {
-			prev.next = copyNode
+		if first == nil {
+			first = newNode
 		}
 
-		prev = copyNode
+		if prev != nil {
+			prev.next = newNode
+		}
+
+		prev = node
 		node = node.next
 	}
 
