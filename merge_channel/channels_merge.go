@@ -6,47 +6,45 @@ import (
 )
 
 func main() {
-	a := make(chan int, 4)
+	a := make(chan int, 3)
 	a <- 1
 	a <- 2
 	a <- 3
-	a <- 4
 	close(a)
-	b := make(chan int, 3)
+	b := make(chan int, 4)
+	b <- 4
 	b <- 5
 	b <- 6
 	b <- 7
 	close(b)
-	c := make(chan int, 5)
-	c <- 11
-	c <- 12
-	c <- 13
-	c <- 14
-	c <- 15
+	c := make(chan int, 2)
+	c <- 8
+	c <- 9
 	close(c)
 
-	for v := range mergeChannels(a, b, c) {
+	output := merge(a, b, c)
+	for v := range output {
 		fmt.Println(v)
 	}
 }
 
-func mergeChannels(chList ...chan int) chan int {
+func merge(chList ...chan int) chan int {
+	output := make(chan int)
 	wg := &sync.WaitGroup{}
-	out := make(chan int)
-	for _, ch := range chList {
+	for _, in := range chList {
 		wg.Add(1)
-		for v := range ch {
-			go func(wg *sync.WaitGroup, v int, out chan int) {
-				defer wg.Done()
-				out <- v
-			}(wg, v, out)
-		}
+		go func(in chan int, output chan int, wg *sync.WaitGroup) {
+			defer wg.Done()
+			for v := range in {
+				output <- v
+			}
+		}(in, output, wg)
 	}
 
-	go func(wg *sync.WaitGroup, out chan int) {
+	go func(wg *sync.WaitGroup) {
 		wg.Wait()
-		close(out)
-	}(wg, out)
+		close(output)
+	}(wg)
 
-	return out
+	return output
 }
