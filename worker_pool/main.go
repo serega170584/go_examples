@@ -1,79 +1,39 @@
 package main
 
 import (
-	"context"
 	"fmt"
-	"net/http"
+	"strconv"
 	"sync"
-	"time"
 )
 
-const workersCnt = 3
+const workersCnt = 4
 
 func main() {
-	urls := []string{
-		"http://yandex.ru",
-		"http://magnit.ru",
-		"http://ozon.ru",
-		"http://avito.ru",
+	in := make(chan int, 10000)
+	for i := 0; i < 10000; i++ {
+		in <- i
 	}
-	in := make(chan string, len(urls))
-	out := make(chan string)
+	close(in)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
+	output := make(chan string)
 
-	wg := sync.WaitGroup{}
+	wg := &sync.WaitGroup{}
 	wg.Add(workersCnt)
+	for i := 0; i < workersCnt; i++ {
+		go func(wg *sync.WaitGroup, in chan int, output chan string, i int) {
+			defer wg.Done()
+			for v := range in {
+				output <- strconv.Itoa(v) + ", task number: " + strconv.Itoa(i)
+			}
+		}(wg, in, output, i)
+	}
 
-	go func(in chan string, urls []string) {
-		defer close(in)
-		for _, v := range urls {
-			in <- v
-		}
-	}(in, urls)
-
-	go func(ctx context.Context, in chan string, out chan string, wg *sync.WaitGroup) {
-		for i := 0; i < workersCnt; i++ {
-			go worker(ctx, in, out, wg)
-		}
-	}(ctx, in, out, &wg)
-
-	go func(wg *sync.WaitGroup, out chan string) {
-		defer close(out)
+	go func(wg *sync.WaitGroup, output chan string) {
 		wg.Wait()
-	}(&wg, out)
+		close(output)
+	}(wg, output)
 
-	for v := range out {
+	for v := range output {
 		fmt.Println(v)
-	}
-}
-
-func worker(ctx context.Context, in chan string, out chan string, wg *sync.WaitGroup) {
-	defer wg.Done()
-	for v := range in {
-		sig := make(chan string)
-		adapter(ctx, out, v, sig)
-	}
-}
-
-func handleUrl(url string) string {
-	rsp, err := http.Get(url)
-	if err != nil || rsp.StatusCode != 200 {
-		return fmt.Sprintf("Url: %s, error", url)
-	}
-	return fmt.Sprintf("Url: %s, OK", url)
-}
-
-func adapter(ctx context.Context, out chan string, url string, sig chan string) {
-	go func(sig chan string, url string) {
-		sig <- handleUrl(url)
-	}(sig, url)
-
-	select {
-	case <-ctx.Done():
-		out <- ctx.Err().Error()
-	case res := <-sig:
-		out <- res
 	}
 }
