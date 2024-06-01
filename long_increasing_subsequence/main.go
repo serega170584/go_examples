@@ -3,42 +3,40 @@ package main
 import "fmt"
 
 func main() {
-	fmt.Println(maxDecIncSubsequence([]int{2, 4, 3, 2, 2}))
+	fmt.Println(lis([]int{1, 2, 5, 3, 4}))
 }
 
-func maxDecIncSubsequence(a []int) int {
-	if len(a) == 0 {
-		return 0
-	}
-
-	if len(a) == 1 {
+func lis(a []int) int {
+	if len(a) <= 1 {
 		return 1
 	}
 
-	maxIncDec := 1
-	l := len(a)
+	prev := a[0]
+	maxLen := 1
+	incLen := 1
+	decLen := 1
+	al := len(a)
+	for i := 1; i < al; i++ {
+		maxLen = max(maxLen, decLen)
+		maxLen = max(maxLen, incLen)
 
-	inc := 1
-	dec := 1
-	for i := 1; i < l; i++ {
-		if a[i-1] < a[i] {
-			inc++
+		if a[i] > prev {
+			incLen++
 		} else {
-			inc = 1
+			incLen = 1
 		}
 
-		if a[i-1] > a[i] {
-			dec++
+		if a[i] < prev {
+			decLen++
 		} else {
-			dec = 1
+			decLen = 1
 		}
 
-		maxIncDec = max(maxIncDec, inc)
-		maxIncDec = max(maxIncDec, dec)
+		prev = a[i]
 	}
 
-	maxIncDec = max(maxIncDec, inc)
-	maxIncDec = max(maxIncDec, dec)
+	maxLen = max(maxLen, decLen)
+	maxLen = max(maxLen, incLen)
 
-	return maxIncDec
+	return maxLen
 }
