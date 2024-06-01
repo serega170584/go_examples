@@ -4,27 +4,28 @@ import "fmt"
 
 func main() {
 	in := make(chan int)
-	out := make(chan int, 4)
+	output := make(chan int, 4)
 
-	go func(out chan int) {
+	go func(in, output chan int) {
 		for v := range in {
 			select {
-			case out <- v:
+			case output <- v:
 				continue
 			default:
-				<-out
-				out <- v
+				<-output
+				output <- v
 			}
 		}
-		close(out)
-	}(out)
+		close(output)
+	}(in, output)
 
 	for i := 0; i < 10000; i++ {
 		in <- i
 	}
 	close(in)
 
-	for v := range out {
-		fmt.Println("Got: ", v)
+	for v := range output {
+		fmt.Println(v)
 	}
+
 }
