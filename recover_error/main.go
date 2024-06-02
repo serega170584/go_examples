@@ -1,22 +1,27 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"sync"
+)
 
 func main() {
-	defer handler()
-	//a := make([]int, 0)
-	//a[1] = 123
+	a := make([]int, 0)
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
 
 	go func() {
 		defer handler()
-		a := make([]int, 0)
+		defer wg.Done()
 		fmt.Println(a)
 		//a[1] = 123
 	}()
+
+	wg.Wait()
 }
 
 func handler() {
 	e := recover()
-	err, _ := e.(error)
-	fmt.Println(err)
+	//err, _ := e.(error)
+	fmt.Println(e)
 }
