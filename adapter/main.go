@@ -9,32 +9,32 @@ import (
 )
 
 func main() {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	v, err := adapter(ctx)
 	if err != nil {
 		fmt.Println("Error: " + err.Error())
 		return
 	}
-	fmt.Println("Result " + strconv.Itoa(*v))
-}
-
-func getVal() *int {
-	time.Sleep(time.Duration(rand.Intn(3)) * time.Second)
-	v := rand.Intn(1000)
-	return &v
+	fmt.Println("Value: " + strconv.Itoa(*v))
+	defer cancel()
 }
 
 func adapter(ctx context.Context) (*int, error) {
-	in := make(chan *int)
-	go func(in chan *int) {
-		in <- getVal()
-	}(in)
+	ch := make(chan int)
+	go func() {
+		res := something()
+		ch <- res
+	}()
 
 	select {
-	case v := <-in:
-		return v, nil
+	case v := <-ch:
+		return &v, nil
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	}
+}
+
+func something() int {
+	time.Sleep(time.Duration(rand.Intn(100)) * time.Second)
+	return rand.Intn(1000)
 }
