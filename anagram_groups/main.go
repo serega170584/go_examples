@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"slices"
-	"strings"
 )
 
 func main() {
@@ -11,41 +10,23 @@ func main() {
 }
 
 func getAnagramGroups(a []string) [][]string {
-	l := len(a)
-	groups := make([][]string, 0, l)
-	gm := make(map[string][]string, l)
+	groups := make(map[string][]string)
 	for _, v := range a {
-		var sb strings.Builder
-		r := []int32(v)
-		slices.Sort(r)
-
-		for _, rv := range r {
-			sb.WriteString(string(rv))
-		}
-
-		k := sb.String()
-		if _, ok := gm[k]; !ok {
-			gm[k] = make([]string, 0, l)
-		}
-		gm[k] = append(gm[k], v)
+		key := []int32(v)
+		slices.Sort(key)
+		groups[string(key)] = append(groups[string(key)], v)
 	}
-
-	eg := make([]string, 0, l)
-	for _, v := range gm {
+	groupsSlice := make([][]string, 0)
+	var newGroup []string
+	for _, v := range groups {
 		if len(v) == 1 {
-			eg = append(eg, v[0])
+			newGroup = append(newGroup, v[0])
 		} else {
-			groups = append(groups, []string{})
-			gl := len(groups)
-			groups[gl-1] = make([]string, len(v))
-			groups[gl-1] = v
+			groupsSlice = append(groupsSlice, v)
 		}
 	}
-
-	groups = append(groups, []string{})
-	gl := len(groups)
-	groups[gl-1] = make([]string, len(eg))
-	groups[gl-1] = eg
-
-	return groups
+	if newGroup != nil {
+		groupsSlice = append(groupsSlice, newGroup)
+	}
+	return groupsSlice
 }
