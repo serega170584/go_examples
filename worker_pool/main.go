@@ -10,30 +10,29 @@ const workersCnt = 4
 
 func main() {
 	in := make(chan int, 10000)
-	for i := 0; i < 10000; i++ {
+	out := make(chan string)
+	wg := &sync.WaitGroup{}
+	for i := 0; i < 1000; i++ {
 		in <- i
 	}
 	close(in)
 
-	output := make(chan string)
-
-	wg := &sync.WaitGroup{}
-	wg.Add(workersCnt)
-	for i := 0; i < workersCnt; i++ {
-		go func(wg *sync.WaitGroup, in chan int, output chan string, i int) {
+	wg.Add(5)
+	for i := 0; i < 5; i++ {
+		go func(i int) {
 			defer wg.Done()
 			for v := range in {
-				output <- strconv.Itoa(v) + ", task number: " + strconv.Itoa(i)
+				out <- "Result: task - " + strconv.Itoa(i) + ", value - " + strconv.Itoa(v)
 			}
-		}(wg, in, output, i)
+		}(i)
 	}
 
-	go func(wg *sync.WaitGroup, output chan string) {
+	go func() {
 		wg.Wait()
-		close(output)
-	}(wg, output)
+		close(out)
+	}()
 
-	for v := range output {
+	for v := range out {
 		fmt.Println(v)
 	}
 }
