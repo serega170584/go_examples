@@ -6,23 +6,23 @@ import (
 	"sync"
 )
 
-const workersCnt = 4
-
 func main() {
-	in := make(chan int, 10000)
-	out := make(chan string)
-	wg := &sync.WaitGroup{}
+	in := make(chan int, 1000)
 	for i := 0; i < 1000; i++ {
 		in <- i
 	}
 	close(in)
 
+	out := make(chan string)
+
+	wg := &sync.WaitGroup{}
 	wg.Add(5)
+
 	for i := 0; i < 5; i++ {
 		go func(i int) {
 			defer wg.Done()
 			for v := range in {
-				out <- "Result: task - " + strconv.Itoa(i) + ", value - " + strconv.Itoa(v)
+				out <- "Result: " + strconv.Itoa(v) + "task: " + strconv.Itoa(i)
 			}
 		}(i)
 	}
