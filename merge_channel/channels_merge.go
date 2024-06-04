@@ -6,13 +6,13 @@ import (
 )
 
 func main() {
-	a := make(chan int, 3)
+	a := make(chan int, 4)
 	a <- 1
 	a <- 2
 	a <- 3
+	a <- 4
 	close(a)
-	b := make(chan int, 4)
-	b <- 4
+	b := make(chan int, 3)
 	b <- 5
 	b <- 6
 	b <- 7
@@ -22,29 +22,28 @@ func main() {
 	c <- 9
 	close(c)
 
-	output := merge(a, b, c)
-	for v := range output {
+	out := merge(a, b, c)
+	for v := range out {
 		fmt.Println(v)
 	}
 }
 
 func merge(chList ...chan int) chan int {
-	output := make(chan int)
+	out := make(chan int)
 	wg := &sync.WaitGroup{}
-	for _, in := range chList {
-		wg.Add(1)
-		go func(in chan int, output chan int, wg *sync.WaitGroup) {
-			defer wg.Done()
-			for v := range in {
-				output <- v
-			}
-		}(in, output, wg)
+	wg.Add(len(chList))
+	for _, ch := range chList {
+		for v := range ch {
+			go func(v int) {
+				defer wg.Done()
+				out <- v
+			}(v)
+		}
 	}
 
-	go func(wg *sync.WaitGroup) {
+	go func() {
 		wg.Wait()
-		close(output)
-	}(wg)
-
-	return output
+		close(out)
+	}()
+	return out
 }
