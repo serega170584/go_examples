@@ -13,24 +13,23 @@ func main() {
 	}
 	close(in)
 
-	out := make(chan string)
-
-	wg := &sync.WaitGroup{}
+	wg := sync.WaitGroup{}
 	wg.Add(5)
+
+	out := make(chan string)
+	go func() {
+		wg.Wait()
+		close(out)
+	}()
 
 	for i := 0; i < 5; i++ {
 		go func(i int) {
 			defer wg.Done()
 			for v := range in {
-				out <- "Result: " + strconv.Itoa(v) + "task: " + strconv.Itoa(i)
+				out <- "Result: " + strconv.Itoa(v) + ", job: " + strconv.Itoa(i)
 			}
 		}(i)
 	}
-
-	go func() {
-		wg.Wait()
-		close(out)
-	}()
 
 	for v := range out {
 		fmt.Println(v)
