@@ -33,12 +33,12 @@ func merge(chList ...chan int) chan int {
 	wg := &sync.WaitGroup{}
 	wg.Add(len(chList))
 	for _, ch := range chList {
-		for v := range ch {
-			go func(v int) {
-				defer wg.Done()
+		go func(ch chan int) {
+			defer wg.Done()
+			for v := range ch {
 				out <- v
-			}(v)
-		}
+			}
+		}(ch)
 	}
 
 	go func() {
