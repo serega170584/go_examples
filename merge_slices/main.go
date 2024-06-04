@@ -3,54 +3,36 @@ package main
 import "fmt"
 
 func main() {
-	fmt.Println(mergeSlices([]int{1, 2, 6}, []int{3, 3, 4, 5}))
+	fmt.Println(mergeSlices([]int{3, 3, 4, 5}, []int{1, 2, 6}))
 }
 
 func mergeSlices(a []int, b []int) []int {
 	al := len(a)
 	bl := len(b)
-	var mainS, foreignS []int
-	foreignL := 0
-	mainL := 0
-	if al > bl {
-		mainS = a
-		foreignS = b
-		foreignL = bl
-		mainL = al
-	} else {
-		mainS = b
-		foreignS = a
-		foreignL = al
-		mainL = bl
-	}
+	cl := al + bl
+	c := make([]int, cl)
 
-	for i := 0; i < foreignL; i++ {
-		mainS = append(mainS, 0)
-	}
-
-	mainP := mainL - 1
-	foreignP := foreignL - 1
-	for i := mainL + foreignL - 1; i >= 0; i-- {
-		if mainP == -1 {
-			mainS[i] = foreignS[foreignP]
-			foreignP--
+	ai := 0
+	bi := 0
+	for i := 0; i < cl; i++ {
+		if ai == al {
+			c[i] = b[bi]
+			bi++
+			continue
+		}
+		if bi == bl {
+			c[i] = a[ai]
+			ai++
+			continue
+		}
+		if a[ai] > b[bi] {
+			c[i] = b[bi]
+			bi++
 			continue
 		}
 
-		if foreignP == -1 {
-			mainS[i] = mainS[mainP]
-			mainP--
-			continue
-		}
-
-		if mainS[mainP] > foreignS[foreignP] {
-			mainS[i] = mainS[mainP]
-			mainP--
-		} else {
-			mainS[i] = foreignS[foreignP]
-			foreignP--
-		}
+		c[i] = a[ai]
+		ai++
 	}
-
-	return mainS
+	return c
 }
