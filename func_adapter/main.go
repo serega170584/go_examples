@@ -9,31 +9,29 @@ import (
 
 func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-
 	v, err := adapter(ctx)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println(err)
 		return
 	}
-
 	fmt.Println(*v)
+	defer cancel()
 }
 
 func something() int {
-	time.Sleep(time.Duration(rand.Intn(6)) * time.Second)
-	return rand.Intn(100)
+	time.Sleep(time.Duration(rand.Intn(5)) * time.Second)
+	return rand.Intn(1000)
 }
 
 func adapter(ctx context.Context) (*int, error) {
-	ch := make(chan int)
+	in := make(chan int)
 
 	go func() {
-		ch <- something()
+		in <- something()
 	}()
 
 	select {
-	case v := <-ch:
+	case v := <-in:
 		return &v, nil
 	case <-ctx.Done():
 		return nil, ctx.Err()
