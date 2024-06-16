@@ -10,23 +10,27 @@ func main() {
 }
 
 func getAnagramGroups(a []string) [][]string {
-	groups := make(map[string][]string)
+	am := make(map[string][]string, len(a))
 	for _, v := range a {
-		key := []int32(v)
-		slices.Sort(key)
-		groups[string(key)] = append(groups[string(key)], v)
+		r := []int32(v)
+		slices.Sort(r)
+		rv := string(r)
+		am[rv] = append(am[rv], v)
 	}
-	groupsSlice := make([][]string, 0)
-	var newGroup []string
-	for _, v := range groups {
+
+	only := make([]string, 0)
+	groups := make([][]string, 0)
+	for _, v := range am {
 		if len(v) == 1 {
-			newGroup = append(newGroup, v[0])
+			only = append(only, v[0])
 		} else {
-			groupsSlice = append(groupsSlice, v)
+			groups = append(groups, v)
 		}
 	}
-	if newGroup != nil {
-		groupsSlice = append(groupsSlice, newGroup)
+
+	if len(only) != 0 {
+		groups = append(groups, only)
 	}
-	return groupsSlice
+
+	return groups
 }
