@@ -3,8 +3,8 @@ package main
 import "fmt"
 
 func main() {
-	a := []int{5, 4, 3, 2, 2, 2, 2, 1}
-	sort(a, 0, 7)
+	a := []int{5, 4, 3, 2, 1}
+	sort(a, 0, 4)
 	fmt.Println(a)
 }
 
@@ -12,7 +12,6 @@ func sort(a []int, lo int, hi int) {
 	if lo >= hi {
 		return
 	}
-
 	j := partition(a, lo, hi)
 	sort(a, lo, j-1)
 	sort(a, j+1, hi)
