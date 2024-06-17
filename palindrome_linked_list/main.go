@@ -27,10 +27,10 @@ func main() {
 
 func isPalindrom(node *Node) bool {
 	counter := 0
-	var first *Node
-	var second *Node
 	var middle *Node
-	var nextFirst *Node
+	var firstHead *Node
+	var secondHead *Node
+	var prevFirstHead *Node
 	for node != nil {
 		counter++
 		if counter == 1 {
@@ -40,13 +40,13 @@ func isPalindrom(node *Node) bool {
 		}
 
 		if counter%2 == 0 {
-			nextFirst = first
-			first = middle
+			prevFirstHead = firstHead
+			firstHead = middle
 			middle = middle.next
-			second = middle
-			first.next = nextFirst
+			firstHead.next = prevFirstHead
+			secondHead = middle
 		} else {
-			second = middle.next
+			secondHead = middle.next
 		}
 
 		node = node.next
@@ -54,11 +54,11 @@ func isPalindrom(node *Node) bool {
 
 	counter /= 2
 	for i := 0; i < counter; i++ {
-		if first.val != second.val {
+		if firstHead.val != secondHead.val {
 			return false
 		}
-		first = first.next
-		second = second.next
+		firstHead = firstHead.next
+		secondHead = secondHead.next
 	}
 
 	return true
