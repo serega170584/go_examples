@@ -3,20 +3,20 @@ package main
 import "fmt"
 
 func main() {
-	fmt.Println(diff([]int{1, 2, 3, 4, 5, 10, 11}, []int{4, 5, 6, 7, 8, 9, 10}))
+	fmt.Println(diff([]int{3, 4, 5, 6, 7}, []int{1, 2, 6, 7}))
 }
 
 func diff(a []int, b []int) []int {
-	bp := 0
+	i := 0
 	al := len(a)
 	bl := len(b)
 	res := make([]int, 0, al)
 	for _, v := range a {
-		for bp != bl && v > b[bp] {
-			bp++
+		for i != bl && v > b[i] {
+			i++
 		}
 
-		if bp == bl || v < b[bp] {
+		if i == bl || v != b[i] {
 			res = append(res, v)
 		}
 	}
