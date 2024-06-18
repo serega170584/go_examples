@@ -4,26 +4,30 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
-	"strconv"
 	"time"
 )
 
 func main() {
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-	v, err := adapter(ctx)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	res, err := adapter(ctx)
 	if err != nil {
-		fmt.Println("Error: " + err.Error())
+		fmt.Println(err)
 		return
 	}
-	fmt.Println("Value: " + strconv.Itoa(*v))
-	defer cancel()
+	fmt.Println(*res)
+}
+
+func something() int {
+	time.Sleep(time.Duration(rand.Intn(5)) * time.Second)
+
+	return rand.Intn(1000)
 }
 
 func adapter(ctx context.Context) (*int, error) {
 	ch := make(chan int)
 	go func() {
-		res := something()
-		ch <- res
+		ch <- something()
 	}()
 
 	select {
@@ -32,9 +36,4 @@ func adapter(ctx context.Context) (*int, error) {
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	}
-}
-
-func something() int {
-	time.Sleep(time.Duration(rand.Intn(100)) * time.Second)
-	return rand.Intn(1000)
 }
