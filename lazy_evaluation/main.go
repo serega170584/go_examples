@@ -7,20 +7,22 @@ import (
 
 type LazyInt func() int
 
-func main() {
-	a := MakeLazyInt(func() int { return 1 })
-	fmt.Println(a())
-	fmt.Println(a())
-}
-
-func MakeLazyInt(f LazyInt) LazyInt {
+func makeLazyInt(f LazyInt) LazyInt {
 	var o sync.Once
-	res := 0
+	var a int
 	return func() int {
 		o.Do(func() {
-			res = f()
+			a = f()
 			f = nil
 		})
-		return res
+		return a
 	}
+}
+
+func main() {
+	b := makeLazyInt(func() int {
+		return 123
+	})
+	fmt.Println(b())
+	fmt.Println(b())
 }
