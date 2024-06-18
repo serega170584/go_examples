@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 type Node struct {
 	val    int
 	next   *Node
@@ -21,6 +23,13 @@ func main() {
 	node3.random = node1
 	node2.random = node3
 	node1.random = node3
+
+	newNode := copyList(node1)
+	for newNode != nil {
+		fmt.Println(newNode.val)
+		fmt.Println(newNode.random.val)
+		newNode = newNode.next
+	}
 }
 
 func copyList(node *Node) *Node {
@@ -30,30 +39,27 @@ func copyList(node *Node) *Node {
 	links := make(map[*Node]*Node)
 	for node != nil {
 		if _, ok := links[node]; ok {
+			links[node].val = node.val
 			newNode = links[node]
-			*newNode = Node{val: node.val}
 		} else {
-			newNode = &Node{
-				val: node.val,
-			}
+			newNode = &Node{val: node.val}
 			links[node] = newNode
 		}
 
 		if _, ok := links[node.random]; ok {
 			newNode.random = links[node.random]
 		} else {
-			links[node.random] = &Node{}
+			newNode.random = &Node{}
+			links[node.random] = newNode.random
 		}
 
-		if first == nil {
+		if prev == nil {
 			first = newNode
-		}
-
-		if prev != nil {
+		} else {
 			prev.next = newNode
 		}
 
-		prev = node
+		prev = newNode
 		node = node.next
 	}
 
