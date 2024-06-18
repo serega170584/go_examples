@@ -12,15 +12,16 @@ func sort(a []int, lo int, hi int) {
 	if lo >= hi {
 		return
 	}
-	j := partition(a, lo, hi)
-	sort(a, lo, j-1)
-	sort(a, j+1, hi)
+
+	i := partition(a, lo, hi)
+	sort(a, lo, i-1)
+	sort(a, i+1, hi)
 }
 
 func partition(a []int, lo int, hi int) int {
 	v := a[lo]
-	i := lo
 	j := hi + 1
+	i := lo
 	for {
 		i++
 		for a[i] < v {
