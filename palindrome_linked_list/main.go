@@ -3,62 +3,45 @@ package main
 import "fmt"
 
 type Node struct {
-	next *Node
 	val  int
+	next *Node
 }
 
 func main() {
-	node := &Node{val: 1}
-	next := node
-	node = &Node{val: 2}
-	node.next = next
-	next = node
-	node = &Node{val: 3}
-	node.next = next
-	next = node
-	node = &Node{val: 2}
-	node.next = next
-	next = node
-	node = &Node{val: 1}
-	node.next = next
+	n1 := &Node{val: 1}
+	n2 := &Node{val: 2}
+	n1.next = n2
+	n3 := &Node{val: 3}
+	n2.next = n3
+	n4 := &Node{val: 2}
+	n3.next = n4
+	n5 := &Node{val: 2}
+	n4.next = n5
 
-	fmt.Println(isPalindrom(node))
+	fmt.Println(isPalindrome(n1))
 }
 
-func isPalindrom(node *Node) bool {
-	counter := 0
-	var middle *Node
-	var firstHead *Node
-	var secondHead *Node
-	var prevFirstHead *Node
-	for node != nil {
-		counter++
-		if counter == 1 {
-			middle = node
-			node = node.next
-			continue
-		}
-
-		if counter%2 == 0 {
-			prevFirstHead = firstHead
-			firstHead = middle
-			middle = middle.next
-			firstHead.next = prevFirstHead
-			secondHead = middle
-		} else {
-			secondHead = middle.next
-		}
-
-		node = node.next
+func isPalindrome(n *Node) bool {
+	fast := n
+	slow := n
+	half := make([]*Node, 0)
+	for fast != nil && fast.next != nil {
+		half = append(half, slow)
+		slow = slow.next
+		fast = fast.next.next
 	}
 
-	counter /= 2
-	for i := 0; i < counter; i++ {
-		if firstHead.val != secondHead.val {
+	if fast != nil {
+		slow = slow.next
+	}
+
+	p := len(half) - 1
+	for slow != nil {
+		if slow.val != half[p].val {
 			return false
 		}
-		firstHead = firstHead.next
-		secondHead = secondHead.next
+		slow = slow.next
+		p--
 	}
 
 	return true
