@@ -18,28 +18,31 @@ func main() {
 	node5 := &Node{val: 5}
 	node4.next = node5
 
-	node := find(node1, 3)
+	node := find(node1, 5)
+	if node == nil {
+		fmt.Println(node)
+		return
+	}
 	fmt.Println(node.val)
 }
 
 func find(node *Node, k int) *Node {
-	_, node = getKthToLast(node, k)
+	f, node := getKthToLast(node, k)
+	if f != k {
+		return nil
+	}
 	return node
 }
 
 func getKthToLast(node *Node, k int) (int, *Node) {
-	if node == nil {
-		return 0, nil
+	if node.next == nil {
+		return 1, node
 	}
 
-	kth, n := getKthToLast(node.next, k)
-	if kth == k {
-		return kth, n
+	f, newNode := getKthToLast(node.next, k)
+	if f == k {
+		return f, newNode
 	}
-	kth++
-	if kth == k {
-		return kth, node
-	}
-
-	return kth, nil
+	f++
+	return f, node
 }
