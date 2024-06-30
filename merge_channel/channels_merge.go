@@ -31,8 +31,8 @@ func main() {
 
 func merge(chList ...chan int) chan int {
 	out := make(chan int)
-	l := len(chList)
 	wg := &sync.WaitGroup{}
+	l := len(chList)
 	wg.Add(l)
 	for _, ch := range chList {
 		go func(ch chan int) {
@@ -47,5 +47,6 @@ func merge(chList ...chan int) chan int {
 		wg.Wait()
 		close(out)
 	}()
+
 	return out
 }
