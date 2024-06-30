@@ -6,46 +6,38 @@ import (
 	"time"
 )
 
-func listen(name string, data map[string]string, c *sync.Cond, wg *sync.WaitGroup) {
-	defer wg.Done()
-	c.L.Lock()
-	c.Wait()
-
-	fmt.Printf("[%s] %s\n", name, data["key"])
-
-	c.L.Unlock()
-
-	fmt.Printf("[%s] %s\n", name, data["key"])
-
+func main() {
+	c := sync.NewCond(&sync.Mutex{})
+	wg := &sync.WaitGroup{}
+	wg.Add(2)
+	data := make(map[int]int, 0)
+	go listen(c, data, wg)
+	go listen(c, data, wg)
+	go broadcast(c, data)
+	wg.Wait()
 }
 
-func broadcast(name string, data map[string]string, c *sync.Cond) {
+func broadcast(c *sync.Cond, data map[int]int) {
 	time.Sleep(time.Second)
 
 	c.L.Lock()
 
-	data["key"] = "value"
-
-	fmt.Printf("[%s] данные получены\n", name)
+	data[0] = 321
 
 	c.Broadcast()
+
+	fmt.Println("broadcast")
+
 	c.L.Unlock()
 }
 
-func main() {
-	data := map[string]string{}
+func listen(c *sync.Cond, data map[int]int, wg *sync.WaitGroup) {
+	defer wg.Done()
+	c.L.Lock()
 
-	cond := sync.NewCond(&sync.Mutex{})
+	c.Wait()
 
-	wg := &sync.WaitGroup{}
+	fmt.Println("listen data ", data)
 
-	wg.Add(2)
-
-	go listen("слушатель 1", data, cond, wg)
-	go listen("слушатель 2", data, cond, wg)
-
-	go broadcast("источник", data, cond)
-
-	wg.Wait()
-
+	c.L.Unlock()
 }
