@@ -6,31 +6,32 @@ import (
 )
 
 func main() {
-	fmt.Println(getAnagramGroups([]string{"abc", "cba", "adc", "dca", "cda", "a", "b", "c", "cd"}))
+	groups := []string{"sdad", "adsd", "ewq", "aaaa", "ab", "qwe", "wqe"}
+	anagramGroups := getAnagramGroups(groups)
+	fmt.Println(anagramGroups)
 }
 
-func getAnagramGroups(a []string) [][]string {
-	am := make(map[string][]string, len(a))
-	for _, v := range a {
-		r := []int32(v)
-		slices.Sort(r)
-		rv := string(r)
-		am[rv] = append(am[rv], v)
+func getAnagramGroups(groups []string) [][]string {
+	gm := make(map[string][]string, len(groups))
+	for _, g := range groups {
+		sl := []rune(g)
+		slices.Sort(sl)
+		gm[string(sl)] = append(gm[string(sl)], g)
 	}
 
-	only := make([]string, 0)
-	groups := make([][]string, 0)
-	for _, v := range am {
-		if len(v) == 1 {
-			only = append(only, v[0])
+	ag := make([][]string, 0, len(groups))
+	o := make([]string, 0, len(groups))
+	for _, g := range gm {
+		if len(g) > 1 {
+			ag = append(ag, g)
 		} else {
-			groups = append(groups, v)
+			o = append(o, g[0])
 		}
 	}
 
-	if len(only) != 0 {
-		groups = append(groups, only)
+	if len(o) > 0 {
+		ag = append(ag, o)
 	}
 
-	return groups
+	return ag
 }
