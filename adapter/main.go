@@ -12,7 +12,7 @@ func main() {
 	defer cancel()
 	res, err := adapter(ctx)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(err.Error())
 		return
 	}
 	fmt.Println(*res)
@@ -20,20 +20,20 @@ func main() {
 
 func something() int {
 	time.Sleep(time.Duration(rand.Intn(5)) * time.Second)
-
 	return rand.Intn(1000)
 }
 
 func adapter(ctx context.Context) (*int, error) {
-	ch := make(chan int)
+	in := make(chan int)
 	go func() {
-		ch <- something()
+		in <- something()
+		close(in)
 	}()
 
 	select {
-	case v := <-ch:
-		return &v, nil
 	case <-ctx.Done():
 		return nil, ctx.Err()
+	case res := <-in:
+		return &res, nil
 	}
 }
