@@ -7,36 +7,32 @@ func main() {
 }
 
 func lis(a []int) int {
-	if len(a) <= 1 {
+	if len(a) == 0 {
+		return 0
+	}
+
+	if len(a) == 1 {
 		return 1
 	}
 
-	prev := a[0]
-	maxLen := 1
-	incLen := 1
-	decLen := 1
-	al := len(a)
-	for i := 1; i < al; i++ {
-		maxLen = max(maxLen, decLen)
-		maxLen = max(maxLen, incLen)
-
-		if a[i] > prev {
-			incLen++
+	inc := 1
+	dec := 1
+	m := 1
+	for i := 1; i < len(a); i++ {
+		if a[i] > a[i-1] {
+			inc++
+			m = max(inc, m)
 		} else {
-			incLen = 1
+			inc = 1
 		}
 
-		if a[i] < prev {
-			decLen++
+		if a[i] < a[i-1] {
+			dec++
+			m = max(dec, m)
 		} else {
-			decLen = 1
+			dec = 1
 		}
-
-		prev = a[i]
 	}
 
-	maxLen = max(maxLen, decLen)
-	maxLen = max(maxLen, incLen)
-
-	return maxLen
+	return m
 }
