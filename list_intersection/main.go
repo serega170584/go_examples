@@ -33,24 +33,27 @@ func main() {
 }
 
 func getIntersection(list1 *Node, list2 *Node) *Node {
-	s1, tail1 := getSizeAndTail(list1)
-	s2, tail2 := getSizeAndTail(list2)
-	var shorter *Node
-	var longer *Node
-	if tail1 != tail2 {
+	s1, t1 := getSizeAndTail(list1)
+	s2, t2 := getSizeAndTail(list2)
+	var longer, shorter *Node
+
+	if t1 != t2 {
 		return nil
 	}
-	if s1 < s2 {
-		shorter = list1
-		longer = list2
-	} else {
-		shorter = list2
+
+	if s1 > s2 {
 		longer = list1
+		shorter = list2
+	} else {
+		longer = list2
+		shorter = list1
 	}
+
 	diff := s1 - s2
 	if diff < 0 {
 		diff = -diff
 	}
+
 	longer = getKthNode(longer, diff)
 
 	for shorter != longer {
@@ -62,15 +65,12 @@ func getIntersection(list1 *Node, list2 *Node) *Node {
 }
 
 func getSizeAndTail(node *Node) (int, *Node) {
-	counter := 0
-	var tail *Node
-	for node != nil {
+	counter := 1
+	for node.next != nil {
 		counter++
-		tail = node
 		node = node.next
 	}
-
-	return counter, tail
+	return counter, node
 }
 
 func getKthNode(node *Node, k int) *Node {
@@ -79,6 +79,5 @@ func getKthNode(node *Node, k int) *Node {
 		node = node.next
 		counter++
 	}
-
 	return node
 }
