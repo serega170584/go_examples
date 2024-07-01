@@ -13,9 +13,9 @@ func sort(a []int, lo int, hi int) {
 		return
 	}
 
-	i := partition(a, lo, hi)
-	sort(a, lo, i-1)
-	sort(a, i+1, hi)
+	j := partition(a, lo, hi)
+	sort(a, lo, j-1)
+	sort(a, j+1, hi)
 }
 
 func partition(a []int, lo int, hi int) int {
