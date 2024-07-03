@@ -14,9 +14,10 @@ func main() {
 
 	out := make(chan int)
 
-	wg := &sync.WaitGroup{}
-	wg.Add(5)
-	for i := 0; i < 5; i++ {
+	wg := sync.WaitGroup{}
+	wg.Add(10)
+
+	for i := 0; i < 10; i++ {
 		go func() {
 			defer wg.Done()
 			for v := range in {
