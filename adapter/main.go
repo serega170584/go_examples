@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(rand.Intn(5))*time.Second)
 	defer cancel()
 	res, err := adapter(ctx)
 	if err != nil {
@@ -19,8 +19,8 @@ func main() {
 }
 
 func something() int {
-	time.Sleep(time.Duration(rand.Intn(5)) * time.Second)
-	return rand.Intn(1000)
+	time.Sleep(3 * time.Second)
+	return rand.Intn(320)
 }
 
 func adapter(ctx context.Context) (*int, error) {
@@ -33,7 +33,7 @@ func adapter(ctx context.Context) (*int, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
-	case res := <-in:
-		return &res, nil
+	case v := <-in:
+		return &v, nil
 	}
 }
