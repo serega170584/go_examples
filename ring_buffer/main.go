@@ -3,21 +3,22 @@ package main
 import "fmt"
 
 func main() {
-	out := make(chan int, 4)
 	in := make(chan int)
+	out := make(chan int, 5)
 	go func() {
 		for v := range in {
 			select {
 			case out <- v:
 				continue
-			case <-out:
+			default:
+				<-out
 				out <- v
 			}
 		}
 		close(out)
 	}()
 
-	for i := 0; i < 10000; i++ {
+	for i := 0; i < 1000; i++ {
 		in <- i
 	}
 	close(in)
