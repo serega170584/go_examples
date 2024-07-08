@@ -8,32 +8,31 @@ import (
 )
 
 func main() {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(rand.Intn(5))*time.Second)
-	defer cancel()
-	res, err := adapter(ctx)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	v, err := adapter(ctx)
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
-	fmt.Println(*res)
-}
-
-func something() int {
-	time.Sleep(3 * time.Second)
-	return rand.Intn(320)
+	fmt.Println(*v)
+	defer cancel()
 }
 
 func adapter(ctx context.Context) (*int, error) {
-	in := make(chan int)
+	ch := make(chan int)
 	go func() {
-		in <- something()
-		close(in)
+		ch <- something()
 	}()
 
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
-	case v := <-in:
+	case v := <-ch:
 		return &v, nil
 	}
+}
+
+func something() int {
+	time.Sleep(time.Duration(rand.Intn(5)) * time.Second)
+	return rand.Intn(10000)
 }
