@@ -3,33 +3,34 @@ package main
 import "fmt"
 
 func main() {
-	semBar := make([]chan struct{}, 10)
-	semFoo := make([]chan struct{}, 11)
+	fooSem := make(chan struct{})
+	barSem := make(chan struct{})
+	resSem := make(chan struct{})
+
+	go foo(fooSem, barSem)
+	go bar(fooSem, barSem, resSem)
+
+	<-resSem
+}
+
+func foo(fooSem chan struct{}, barSem chan struct{}) {
 	for i := 0; i < 10; i++ {
-		semBar[i] = make(chan struct{})
-		semFoo[i] = make(chan struct{})
+		if i != 0 {
+			<-fooSem
+		}
+		fmt.Println("Foo")
+		barSem <- struct{}{}
 	}
-	semFoo[10] = make(chan struct{})
+}
 
-	go func(semFoo []chan struct{}) {
-		semFoo[0] <- struct{}{}
-	}(semFoo)
-
-	go func(semFoo []chan struct{}, semBar []chan struct{}) {
-		for i := 0; i < 10; i++ {
-			<-semFoo[i]
-			fmt.Println("Foo")
-			semBar[i] <- struct{}{}
+func bar(fooSem chan struct{}, barSem chan struct{}, resSem chan struct{}) {
+	for i := 0; i < 10; i++ {
+		<-barSem
+		fmt.Println("Bar")
+		if i == 9 {
+			resSem <- struct{}{}
+		} else {
+			fooSem <- struct{}{}
 		}
-	}(semFoo, semBar)
-
-	go func(semFoo []chan struct{}, semBar []chan struct{}) {
-		for i := 0; i < 10; i++ {
-			<-semBar[i]
-			fmt.Println("Bar")
-			semFoo[i+1] <- struct{}{}
-		}
-	}(semFoo, semBar)
-
-	<-semFoo[10]
+	}
 }
