@@ -13,17 +13,15 @@ func main() {
 	close(in)
 
 	out := make(chan int)
-
-	wg := sync.WaitGroup{}
-	wg.Add(10)
-
-	for i := 0; i < 10; i++ {
-		go func() {
+	wg := &sync.WaitGroup{}
+	wg.Add(4)
+	for i := 0; i < 4; i++ {
+		go func(i int) {
 			defer wg.Done()
 			for v := range in {
 				out <- v
 			}
-		}()
+		}(i)
 	}
 
 	go func() {
