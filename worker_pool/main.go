@@ -7,21 +7,23 @@ import (
 
 func main() {
 	in := make(chan int, 1000)
+	out := make(chan int)
+
+	wg := &sync.WaitGroup{}
+	wg.Add(5)
+
 	for i := 0; i < 1000; i++ {
 		in <- i
 	}
 	close(in)
 
-	out := make(chan int)
-	wg := &sync.WaitGroup{}
-	wg.Add(4)
-	for i := 0; i < 4; i++ {
-		go func(i int) {
+	for i := 0; i < 5; i++ {
+		go func() {
 			defer wg.Done()
 			for v := range in {
 				out <- v
 			}
-		}(i)
+		}()
 	}
 
 	go func() {
