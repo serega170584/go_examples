@@ -7,283 +7,144 @@ import (
 )
 
 func main() {
+	cells := [8][8]string{}
+
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Split(bufio.ScanWords)
 
-	board := make([]string, 8)
 	for i := 0; i < 8; i++ {
 		scanner.Scan()
-		board[i] = scanner.Text()
+		t := scanner.Text()
+		for j, v := range t {
+			cells[i][j] = string([]rune{v})
+		}
 	}
 
-	fmt.Println(emptySaveCellsCnt(board))
+	fmt.Println(getEmptyCellsCnt(cells))
 }
 
-func emptySaveCellsCnt(board []string) int {
-	bSym := []rune("B")[0]
-	rSym := []rune("R")[0]
+func getEmptyCellsCnt(cells [8][8]string) int {
+	ltBishops := [8][8]bool{}
+	rtBishops := [8][8]bool{}
+	lbBishops := [8][8]bool{}
+	rbBishops := [8][8]bool{}
 
-	runeBoard := make([][]rune, 8)
-	for i, row := range board {
-		runeRow := []rune(row)
-		runeBoard[i] = make([]rune, 8)
-		runeBoard[i] = runeRow[0:8]
-	}
+	lRooks := [8][8]bool{}
+	rRooks := [8][8]bool{}
+	tRooks := [8][8]bool{}
+	bRooks := [8][8]bool{}
 
-	filledCells := make([][]bool, 8)
+	cnt := 0
+
 	for i := 0; i < 8; i++ {
-		filledCells[i] = make([]bool, 8)
-	}
-
-	for i, row := range runeBoard {
-		prevRook := -1
 		for j := 0; j < 8; j++ {
-			v := row[j]
-
-			if prevRook != -1 {
-				filledCells[i][j] = true
+			if cells[i][j] == "R" {
+				lRooks[i][j] = true
+				tRooks[i][j] = true
+				ltBishops[i][j] = false
+				rtBishops[i][j] = false
+				continue
 			}
 
-			if v == bSym {
-				filledCells[i][j] = true
-				prevRook = -1
+			if cells[i][j] == "B" {
+				ltBishops[i][j] = true
+				rtBishops[i][j] = true
+				lRooks[i][j] = false
+				tRooks[i][j] = false
+				continue
 			}
 
-			if v == rSym {
-				filledCells[i][j] = true
-				prevRook = j
-			}
-		}
-
-		prevRook = -1
-		for j := 7; j > -1; j-- {
-			v := row[j]
-
-			if prevRook != -1 {
-				filledCells[i][j] = true
+			if j >= 1 && lRooks[i][j-1] {
+				lRooks[i][j] = true
 			}
 
-			if v == bSym {
-				filledCells[i][j] = true
-				prevRook = -1
+			if i >= 1 && tRooks[i-1][j] {
+				tRooks[i][j] = true
 			}
 
-			if v == rSym {
-				filledCells[i][j] = true
-				prevRook = j
+			if i >= 1 && j >= 1 && ltBishops[i-1][j-1] {
+				ltBishops[i][j] = true
+			}
+
+			if i >= 1 && j <= 6 && rtBishops[i-1][j+1] {
+				rtBishops[i][j] = true
 			}
 		}
 	}
 
-	for j := 0; j < 8; j++ {
-		prevRook := -1
-		for i := 0; i < 8; i++ {
-			v := runeBoard[i][j]
-
-			if prevRook != -1 {
-				filledCells[i][j] = true
+	for i := 7; i >= 0; i-- {
+		for j := 7; j >= 0; j-- {
+			if cells[i][j] == "R" {
+				rRooks[i][j] = true
+				bRooks[i][j] = true
+				lbBishops[i][j] = false
+				rbBishops[i][j] = false
+				continue
 			}
 
-			if v == bSym {
-				filledCells[i][j] = true
-				prevRook = -1
+			if cells[i][j] == "B" {
+				lbBishops[i][j] = true
+				rbBishops[i][j] = true
+				rRooks[i][j] = false
+				bRooks[i][j] = false
+				continue
 			}
 
-			if v == rSym {
-				filledCells[i][j] = true
-				prevRook = j
-			}
-		}
-
-		prevRook = -1
-		for i := 7; i > -1; i-- {
-			v := runeBoard[i][j]
-
-			if prevRook != -1 {
-				filledCells[i][j] = true
+			if j <= 6 && rRooks[i][j+1] {
+				rRooks[i][j] = true
 			}
 
-			if v == bSym {
-				filledCells[i][j] = true
-				prevRook = -1
+			if i <= 6 && bRooks[i+1][j] {
+				bRooks[i][j] = true
 			}
 
-			if v == rSym {
-				filledCells[i][j] = true
-				prevRook = j
+			if i <= 6 && j >= 1 && lbBishops[i+1][j-1] {
+				lbBishops[i][j] = true
+			}
+
+			if i <= 6 && j <= 6 && rbBishops[i+1][j+1] {
+				rbBishops[i][j] = true
 			}
 		}
 	}
 
-	for j := 0; j < 8; j++ {
-		prevBishop := -1
-		for i := 0; i <= 7-j; i++ {
-			v := runeBoard[i][i+j]
-
-			if prevBishop != -1 {
-				filledCells[i][i+j] = true
+	for i := 0; i < 8; i++ {
+		for j := 0; j < 8; j++ {
+			if ltBishops[i][j] {
+				continue
 			}
 
-			if v == rSym {
-				filledCells[i][i+j] = true
-				prevBishop = -1
+			if rtBishops[i][j] {
+				continue
 			}
 
-			if v == bSym {
-				filledCells[i][i+j] = true
-				prevBishop = j
-			}
-		}
-
-		prevBishop = -1
-		for i := 7 - j; i >= 0; i-- {
-			v := runeBoard[i][i+j]
-
-			if prevBishop != -1 {
-				filledCells[i][i+j] = true
+			if lbBishops[i][j] {
+				continue
 			}
 
-			if v == rSym {
-				filledCells[i][i+j] = true
-				prevBishop = -1
+			if rbBishops[i][j] {
+				continue
 			}
 
-			if v == bSym {
-				filledCells[i][i+j] = true
-				prevBishop = j
+			if tRooks[i][j] {
+				continue
 			}
+
+			if lRooks[i][j] {
+				continue
+			}
+
+			if bRooks[i][j] {
+				continue
+			}
+
+			if rRooks[i][j] {
+				continue
+			}
+
+			cnt++
 		}
 	}
 
-	for j := 0; j < 8; j++ {
-		prevBishop := -1
-		for i := j; i <= 7; i++ {
-			v := runeBoard[i][i-j]
-
-			if prevBishop != -1 {
-				filledCells[i][i-j] = true
-			}
-
-			if v == rSym {
-				filledCells[i][i-j] = true
-				prevBishop = -1
-			}
-
-			if v == bSym {
-				filledCells[i][i-j] = true
-				prevBishop = j
-			}
-		}
-
-		prevBishop = -1
-		for i := 7; i >= j; i-- {
-			v := runeBoard[i][i-j]
-
-			if prevBishop != -1 {
-				filledCells[i][i-j] = true
-			}
-
-			if v == rSym {
-				filledCells[i][i-j] = true
-				prevBishop = -1
-			}
-
-			if v == bSym {
-				filledCells[i][i-j] = true
-				prevBishop = j
-			}
-		}
-	}
-
-	for j := 0; j < 8; j++ {
-		prevBishop := -1
-		for i := j; i <= 7; i++ {
-			v := runeBoard[i][7-i+j]
-
-			if prevBishop != -1 {
-				filledCells[i][7-i+j] = true
-			}
-
-			if v == rSym {
-				filledCells[i][7-i+j] = true
-				prevBishop = -1
-			}
-
-			if v == bSym {
-				filledCells[i][7-i+j] = true
-				prevBishop = 7 - i + j
-			}
-		}
-
-		prevBishop = -1
-		for i := 7; i >= j; i-- {
-			v := runeBoard[i][7-i+j]
-
-			if prevBishop != -1 {
-				filledCells[i][7-i+j] = true
-			}
-
-			if v == rSym {
-				filledCells[i][7-i+j] = true
-				prevBishop = -1
-			}
-
-			if v == bSym {
-				filledCells[i][7-i+j] = true
-				prevBishop = 7 - i + j
-			}
-		}
-	}
-
-	for j := 0; j < 8; j++ {
-		prevBishop := -1
-		for i := 0; i <= 7-j; i++ {
-			v := runeBoard[i][7-i-j]
-
-			if prevBishop != -1 {
-				filledCells[i][7-i-j] = true
-			}
-
-			if v == rSym {
-				filledCells[i][7-i-j] = true
-				prevBishop = -1
-			}
-
-			if v == bSym {
-				filledCells[i][7-i-j] = true
-				prevBishop = 7 - i - j
-			}
-		}
-
-		prevBishop = -1
-		for i := 7 - j; i >= 0; i-- {
-			v := runeBoard[i][7-i-j]
-
-			if prevBishop != -1 {
-				filledCells[i][7-i-j] = true
-			}
-
-			if v == rSym {
-				filledCells[i][7-i-j] = true
-				prevBishop = -1
-			}
-
-			if v == bSym {
-				filledCells[i][7-i-j] = true
-				prevBishop = 7 - i - j
-			}
-		}
-	}
-
-	emptyCellsCnt := 0
-
-	for _, row := range filledCells {
-		for _, v := range row {
-			if !v {
-				emptyCellsCnt++
-			}
-		}
-	}
-
-	return emptyCellsCnt
+	return cnt
 }
