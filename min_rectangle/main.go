@@ -6,6 +6,7 @@ import (
 	"math"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func main() {
@@ -14,28 +15,34 @@ func main() {
 
 	scanner.Scan()
 	n, _ := strconv.Atoi(scanner.Text())
-	pairs := make([][2]int, n)
+
+	points := [][2]int{}
 
 	for i := 0; i < n; i++ {
+		points = append(points, [2]int{})
+
 		scanner.Scan()
-		pairs[i][0], _ = strconv.Atoi(scanner.Text())
+		points[i][0], _ = strconv.Atoi(scanner.Text())
+
 		scanner.Scan()
-		pairs[i][1], _ = strconv.Atoi(scanner.Text())
+		points[i][1], _ = strconv.Atoi(scanner.Text())
 	}
 
-	fmt.Println(getMinRectanglePositions(pairs))
+	fmt.Println(getRect(points))
 }
 
-func getMinRectanglePositions(pairs [][2]int) (int, int, int, int) {
-	minXVal := math.MaxInt
-	maxXVal := math.MinInt
-	minYVal := math.MaxInt
-	maxYVal := math.MinInt
-	for _, v := range pairs {
-		minXVal = min(minXVal, v[0])
-		maxXVal = max(maxXVal, v[0])
-		minYVal = min(minYVal, v[1])
-		maxYVal = max(maxYVal, v[1])
+func getRect(points [][2]int) string {
+	minX := math.MaxInt
+	maxX := math.MinInt
+	minY := math.MaxInt
+	maxY := math.MinInt
+	for _, v := range points {
+		minX = min(minX, v[0])
+		maxX = max(maxX, v[0])
+		minY = min(minY, v[1])
+		maxY = max(maxY, v[1])
 	}
-	return minXVal, minYVal, maxXVal, maxYVal
+
+	res := []string{strconv.Itoa(minX), strconv.Itoa(minY), strconv.Itoa(maxX), strconv.Itoa(maxY)}
+	return strings.Join(res, " ")
 }
