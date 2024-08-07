@@ -7,57 +7,58 @@ import (
 	"strconv"
 )
 
-// _ _ _ _ _ _ _
-//     _ _ _ _
-// min = 1
-// max = 7
-// max - min + 1 - (bl - tr + 1, bl >= tr) - (tl - br + 1, tl >= br) = 7
-
-// _ _ _ _ _ _ _
-//     _ _ _ _ _ _ _
-// min = 1
-// max = 9
-// max - min + 1 - (bl - tr + 1, bl >= tr) - (tl - br + 1, tl >= br) = 9
-
-//               _ _ _ _ _ _ _ _ _
-// _ _ _ _ _ _ _
-// 16 - 1 + 1 - (8 - 7 + 1) = 16
+// lp1_____lp2
+//   rp1___rp2
+//     rp1_____rp2
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Split(bufio.ScanWords)
 
 	scanner.Scan()
-	firstTree, _ := strconv.Atoi(scanner.Text())
-	scanner.Scan()
-	maxFirstTree, _ := strconv.Atoi(scanner.Text())
+	p1, _ := strconv.Atoi(scanner.Text())
 
 	scanner.Scan()
-	secondTree, _ := strconv.Atoi(scanner.Text())
-	scanner.Scan()
-	maxSecondTree, _ := strconv.Atoi(scanner.Text())
+	i1, _ := strconv.Atoi(scanner.Text())
 
-	fmt.Println(maxColouringTrees(firstTree, maxFirstTree, secondTree, maxSecondTree))
+	scanner.Scan()
+	p2, _ := strconv.Atoi(scanner.Text())
+
+	scanner.Scan()
+	i2, _ := strconv.Atoi(scanner.Text())
+
+	fmt.Println(getColouredTreesCnt(p1, i1, p2, i2))
+
 }
 
-func maxColouringTrees(firstTree int, maxFirstTrees int, secondTree int, maxSecondTrees int) int {
-	topLeft := firstTree - maxFirstTrees
-	topRight := firstTree + maxFirstTrees
+func getColouredTreesCnt(p1 int, i1 int, p2 int, i2 int) int {
+	cp1 := min(p1-i1, p1+i1)
+	cp2 := max(p1-i1, p1+i1)
 
-	bottomLeft := secondTree - maxSecondTrees
-	bottomRight := secondTree + maxSecondTrees
+	cp3 := min(p2-i2, p2+i2)
+	cp4 := max(p2-i2, p2+i2)
 
-	minVal := min(topLeft, bottomLeft)
-	maxVal := max(topRight, bottomRight)
+	cnt := cp2 - cp1 + 1
+	cnt += cp4 - cp3 + 1
 
-	d := 0
-	if topLeft > bottomRight {
-		d += topLeft - bottomRight
+	if cp3 > cp1 {
+		return getTreeCnt(cp2, cp3, cp4, cnt)
 	}
 
-	if bottomLeft > topRight {
-		d += bottomLeft - topRight
+	return getTreeCnt(cp4, cp1, cp2, cnt)
+}
+
+func getTreeCnt(lp2 int, rp1 int, rp2 int, cnt int) int {
+	n := 0
+	if rp1 > lp2 {
+		return cnt
+	} else {
+		n = cnt - lp2 + rp1 - 1
 	}
 
-	return maxVal - minVal + 1 - d
+	if lp2 > rp2 {
+		n += lp2 - rp2
+	}
+
+	return n
 }
