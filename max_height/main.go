@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -20,64 +19,65 @@ func main() {
 	for i := 0; i < cnt; i++ {
 		scanner.Scan()
 		list[i][0], _ = strconv.Atoi(scanner.Text())
+
 		scanner.Scan()
 		list[i][1], _ = strconv.Atoi(scanner.Text())
 	}
 
-	h, r := maxHeight(list, cnt)
-	fmt.Println(h)
-	fmt.Println(r)
+	path, height := getPathHeight(list)
+
+	strList := make([]string, len(path))
+	for i := range strList {
+		strList[i] = strconv.Itoa(path[i] + 1)
+	}
+
+	fmt.Println(height, strings.Join(strList, " "))
 }
 
-func maxHeight(list [][2]int, cnt int) (int, string) {
-	totalPositiveHeight := 0
-	maxSecond := math.MinInt
-	maxSecondIndex := 0
-	negativeMaxUp := 0
-	negativeMaxUpIndex := 0
+func getPathHeight(list [][2]int) ([]int, int) {
+	minPositiveDiff := 0
+	maxItemHeight := 0
+	minPositiveIndex := -1
+	positiveIndexList := make([]int, 0)
+	positiveSum := 0
+	maxNegativeItemHeight := 0
+	maxNegativeIndex := -1
+	negativeIndexList := make([]int, 0)
 	for i, v := range list {
-		diff := v[0] - v[1]
-		if diff >= 0 {
-			totalPositiveHeight += diff
-			if v[1] > maxSecond {
-				maxSecond = v[1]
-				maxSecondIndex = i
+		if v[0] > v[1] {
+			positiveSum += v[0] - v[1]
+			if v[0] > maxItemHeight {
+				maxItemHeight = v[0]
+				minPositiveDiff = v[0] - v[1]
+				minPositiveIndex = len(positiveIndexList)
+			} else if v[0] == maxItemHeight {
+				if v[0]-v[1] < minPositiveDiff {
+					minPositiveDiff = v[0] - v[1]
+					minPositiveIndex = len(positiveIndexList)
+				}
 			}
+			positiveIndexList = append(positiveIndexList, i)
 		} else {
-			if v[0] > negativeMaxUp {
-				negativeMaxUp = v[0]
-				negativeMaxUpIndex = i
+			if v[0] > maxNegativeItemHeight {
+				maxNegativeItemHeight = v[0]
+				maxNegativeIndex = len(negativeIndexList)
 			}
+			negativeIndexList = append(negativeIndexList, i)
 		}
 	}
 
-	cornerInd := 0
-	cornerVal := 0
-	if maxSecond > negativeMaxUp {
-		cornerInd = maxSecondIndex
-		cornerVal = maxSecond
-	} else {
-		cornerInd = negativeMaxUpIndex
-		cornerVal = negativeMaxUp
-	}
-	maxHeightVal := totalPositiveHeight + cornerVal
+	height := positiveSum
+	positiveSum -= minPositiveDiff
+	positiveSum += maxItemHeight
 
-	s := make([]string, cnt)
-	left := 0
-	right := cnt - 1
-	for i, v := range list {
-		if i != cornerInd {
-			diff := v[0] - v[1]
-			if diff < 0 {
-				s[right] = strconv.Itoa(i + 1)
-				right--
-			} else {
-				s[left] = strconv.Itoa(i + 1)
-				left++
-			}
-		}
+	if minPositiveIndex != -1 {
+		positiveIndexList[minPositiveIndex], positiveIndexList[len(positiveIndexList)-1] = positiveIndexList[len(positiveIndexList)-1], positiveIndexList[minPositiveIndex]
 	}
-	s[left] = strconv.Itoa(cornerInd + 1)
 
-	return maxHeightVal, strings.Join(s, " ")
+	if maxNegativeIndex != -1 {
+		negativeIndexList[maxNegativeIndex], negativeIndexList[0] = negativeIndexList[0], negativeIndexList[maxNegativeIndex]
+	}
+
+	return append(positiveIndexList, negativeIndexList...), max(positiveSum, height+maxNegativeItemHeight)
+
 }
