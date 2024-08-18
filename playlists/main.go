@@ -4,52 +4,49 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"slices"
 	"strconv"
 	"strings"
 )
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Split(bufio.ScanWords)
 
 	scanner.Scan()
-	n, _ := strconv.Atoi(scanner.Text())
+	cnt, _ := strconv.Atoi(scanner.Text())
 
-	k := 0
-	lists := make([][]string, n)
-	for i := 0; i < n; i++ {
+	counts := make([]int, cnt)
+	list := make([]string, cnt)
+	for i := 0; i < cnt; i++ {
 		scanner.Scan()
-		t, _ := strconv.Atoi(scanner.Text())
+		counts[i], _ = strconv.Atoi(scanner.Text())
 
-		lists[i] = make([]string, t)
-		k += t
-		for j := 0; j < t; j++ {
-			scanner.Scan()
-			lists[i][j] = scanner.Text()
-		}
+		scanner.Scan()
+		list[i] = scanner.Text()
 	}
 
-	l, c := getPlaylists(n, k, lists)
+	resCnt, playlists := getPlaylists(list, counts, cnt)
 
-	fmt.Println(l)
-	fmt.Println(strings.Join(c, " "))
+	fmt.Println(resCnt)
+	fmt.Println(playlists)
 }
 
-func getPlaylists(n int, k int, lists [][]string) (int, []string) {
-	m := make(map[string]int, n)
-	c := make([]string, 0, n)
-
-	for _, list := range lists {
-		for _, v := range list {
-			m[v]++
-			if m[v] == n {
-				c = append(c, v)
-			}
+func getPlaylists(list []string, counts []int, cnt int) (int, []string) {
+	names := make(map[string]int)
+	for i, v := range list {
+		nv := strings.Split(v, " ")
+		for j := 0; j < counts[i]; j++ {
+			names[nv[j]]++
 		}
 	}
 
-	slices.Sort(c)
+	playLists := make([]string, 0)
+	resCnt := 0
+	for name, v := range names {
+		if v == cnt {
+			playLists = append(playLists, name)
+			resCnt++
+		}
+	}
 
-	return len(c), c
+	return resCnt, playLists
 }

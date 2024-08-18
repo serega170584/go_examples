@@ -3,9 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"math"
 	"os"
-	"slices"
 	"strconv"
 )
 
@@ -22,38 +20,27 @@ func main() {
 		list[i], _ = strconv.Atoi(scanner.Text())
 	}
 
-	fmt.Println(getModOneMinCnt(n, list))
+	fmt.Println(getModOneMinCnt(list, n))
 }
 
-func getModOneMinCnt(n int, list []int) int {
-	numCnts := make(map[int]int, n)
-	keys := make([]int, 0, n)
-	cnt := 0
+func getModOneMinCnt(list []int, n int) int {
+	m := make(map[int]int, n)
 	for _, v := range list {
-		if _, ok := numCnts[v]; !ok {
-			keys = append(keys, v)
+		m[v]++
+	}
+
+	minExcludedCnt := n
+	for v := range m {
+		curCnt := n - m[v]
+
+		if _, ok := m[v-1]; ok {
+			minExcludedCnt = min(minExcludedCnt, curCnt-m[v-1])
 		}
-		numCnts[v]++
-		cnt++
-	}
 
-	keysLen := len(keys)
-	if keysLen == 1 {
-		return 0
-	}
-
-	slices.Sort(keys)
-	minExcludeCnt := math.MaxInt
-	prev := keys[0]
-	for i := 1; i < keysLen; i++ {
-		v := keys[i]
-		if v-prev == -1 || v-prev == 1 {
-			minExcludeCnt = min(cnt-numCnts[v]-numCnts[prev], minExcludeCnt)
-		} else {
-			minExcludeCnt = min(cnt-numCnts[v], minExcludeCnt)
+		if _, ok := m[v+1]; ok {
+			minExcludedCnt = min(minExcludedCnt, curCnt-m[v+1])
 		}
-		prev = keys[i]
 	}
 
-	return minExcludeCnt
+	return minExcludedCnt
 }

@@ -7,72 +7,39 @@ import (
 	"slices"
 )
 
-func makeScanner() *bufio.Scanner {
-	const maxCapacity = 3 * 1024 * 1024
-	buf := make([]byte, maxCapacity)
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Buffer(buf, maxCapacity)
-	return scanner
-}
-
 func main() {
-	scanner := makeScanner()
+	scanner := bufio.NewScanner(os.Stdin)
 
 	scanner.Scan()
-	a := []rune(scanner.Text())
+	a := scanner.Text()
 
 	scanner.Scan()
-	b := []rune(scanner.Text())
+	b := scanner.Text()
 
-	isSame := isSameAnagram(a, b)
-	if isSame {
+	r := isSameAnagram(a, b)
+
+	if r {
 		fmt.Println("YES")
 		return
 	}
 
 	fmt.Println("NO")
+
 }
 
-func isSameAnagram(a []rune, b []rune) bool {
-	if len(a) != len(b) {
+func isSameAnagram(a string, b string) bool {
+	ar := []rune(a)
+	br := []rune(b)
+
+	if len(ar) != len(br) {
 		return false
 	}
 
-	ac := make(map[rune]int, len(a))
-	bc := make(map[rune]int, len(b))
+	slices.Sort(ar)
+	slices.Sort(br)
 
-	al := make([]rune, 0, len(a))
-	bl := make([]rune, 0, len(b))
-
-	for _, v := range a {
-		if _, ok := ac[v]; !ok {
-			al = append(al, v)
-		}
-		ac[v]++
-	}
-
-	for _, v := range b {
-		if _, ok := bc[v]; !ok {
-			bl = append(bl, v)
-		}
-		bc[v]++
-	}
-
-	if len(al) != len(bl) {
-		return false
-	}
-
-	l := len(al)
-
-	slices.Sort(al)
-	slices.Sort(bl)
-
-	for i := 0; i < l; i++ {
-		if al[i] != bl[i] {
-			return false
-		}
-
-		if ac[al[i]] != bc[bl[i]] {
+	for i := range ar {
+		if ar[i] != br[i] {
 			return false
 		}
 	}

@@ -13,8 +13,6 @@ func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Split(bufio.ScanWords)
 
-	cnt := 0
-
 	scanner.Scan()
 	n, _ := strconv.Atoi(scanner.Text())
 	a := make([]int, n)
@@ -22,7 +20,6 @@ func main() {
 		scanner.Scan()
 		a[i], _ = strconv.Atoi(scanner.Text())
 	}
-	cnt += n
 
 	scanner.Scan()
 	n, _ = strconv.Atoi(scanner.Text())
@@ -31,7 +28,6 @@ func main() {
 		scanner.Scan()
 		b[i], _ = strconv.Atoi(scanner.Text())
 	}
-	cnt += n
 
 	scanner.Scan()
 	n, _ = strconv.Atoi(scanner.Text())
@@ -40,9 +36,8 @@ func main() {
 		scanner.Scan()
 		c[i], _ = strconv.Atoi(scanner.Text())
 	}
-	cnt += n
 
-	list := getSharedListsNumbers(cnt, a, b, c)
+	list := getSharedListsNumbers(a, b, c)
 	sList := make([]string, 0, len(list))
 	for _, v := range list {
 		sList = append(sList, strconv.Itoa(v))
@@ -51,44 +46,41 @@ func main() {
 	fmt.Println(strings.Join(sList, " "))
 }
 
-func getSharedListsNumbers(cnt int, a []int, b []int, c []int) []int {
-	numbersCnts := make(map[int]int, cnt)
+func getSharedListsNumbers(a []int, b []int, c []int) []int {
+	m := make(map[int]int)
 
-	aCnts := make(map[int]struct{}, cnt)
+	am := make(map[int]struct{})
 	for _, v := range a {
-		aCnts[v] = struct{}{}
-	}
-
-	for i := range aCnts {
-		numbersCnts[i]++
-	}
-
-	bCnts := make(map[int]struct{}, cnt)
-	for _, v := range b {
-		bCnts[v] = struct{}{}
-	}
-
-	for i := range bCnts {
-		numbersCnts[i]++
-	}
-
-	cCnts := make(map[int]struct{}, cnt)
-	for _, v := range c {
-		cCnts[v] = struct{}{}
-	}
-
-	for i := range cCnts {
-		numbersCnts[i]++
-	}
-
-	numbers := make([]int, 0, cnt)
-	for n, v := range numbersCnts {
-		if v >= 2 {
-			numbers = append(numbers, n)
+		if _, ok := am[v]; !ok {
+			am[v] = struct{}{}
+			m[v]++
 		}
 	}
 
-	slices.Sort(numbers)
+	bm := make(map[int]struct{})
+	for _, v := range b {
+		if _, ok := bm[v]; !ok {
+			bm[v] = struct{}{}
+			m[v]++
+		}
+	}
 
-	return numbers
+	cm := make(map[int]struct{})
+	for _, v := range c {
+		if _, ok := cm[v]; !ok {
+			cm[v] = struct{}{}
+			m[v]++
+		}
+	}
+
+	l := make([]int, 0)
+	for i, v := range m {
+		if v >= 2 {
+			l = append(l, i)
+		}
+	}
+
+	slices.Sort(l)
+
+	return l
 }

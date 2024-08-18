@@ -33,15 +33,15 @@ func main() {
 }
 
 func isNumberRepeated(n int, k int, list []int) bool {
-	repeatInds := make(map[int]int, n)
 	for i, v := range list {
-		if _, ok := repeatInds[v]; ok {
-			if i-repeatInds[v] <= k {
+		m := make(map[int]struct{}, k)
+		m[v] = struct{}{}
+		for j := i + 1; j <= i+k && j < n; j++ {
+			if _, ok := m[list[j]]; ok {
 				return true
 			}
+			m[list[j]] = struct{}{}
 		}
-		repeatInds[v] = i
 	}
-
 	return false
 }
