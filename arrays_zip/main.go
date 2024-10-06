@@ -1,28 +1,74 @@
 package main
 
-import "fmt"
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"strconv"
+)
 
 func main() {
-	fmt.Println(union([]int{1, 2, 3, 7, 6, 4}, []int{6, 4, 3, 2, 90}, []int{7, 9, 3, 2, 1, 89, 90}, []int{3, 4, 5, 90}))
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Split(bufio.ScanWords)
+
+	scanner.Scan()
+	cnt, _ := strconv.Atoi(scanner.Text())
+
+	a := make([]int, cnt)
+	for i := 0; i < cnt; i++ {
+		scanner.Scan()
+		a[i], _ = strconv.Atoi(scanner.Text())
+	}
+
+	scanner.Scan()
+	cnt, _ = strconv.Atoi(scanner.Text())
+
+	b := make([]int, cnt)
+	for i := 0; i < cnt; i++ {
+		scanner.Scan()
+		b[i], _ = strconv.Atoi(scanner.Text())
+	}
+
+	scanner.Scan()
+	cnt, _ = strconv.Atoi(scanner.Text())
+
+	c := make([]int, cnt)
+	for i := 0; i < cnt; i++ {
+		scanner.Scan()
+		c[i], _ = strconv.Atoi(scanner.Text())
+	}
+
+	scanner.Scan()
+	cnt, _ = strconv.Atoi(scanner.Text())
+	d := make([]int, cnt)
+	for i := 0; i < cnt; i++ {
+		scanner.Scan()
+		d[i], _ = strconv.Atoi(scanner.Text())
+	}
+
+	fmt.Println(convert(a, b, c, d))
 }
 
-func union(a ...[]int) [][]int {
-	l := len(a[0])
-	al := len(a)
-	for _, v := range a {
-		if len(v) < l {
-			l = len(v)
+func convert(list ...[]int) [][]int {
+	ll := len(list)
+	if len(list) == 0 {
+		return [][]int{}
+	}
+	l := len(list[0])
+	for i := 1; i < ll; i++ {
+		il := len(list[i])
+		if il < l {
+			l = il
 		}
 	}
-
-	u := make([][]int, 0, l)
+	res := make([][]int, 0, l)
 	for i := 0; i < l; i++ {
-		el := make([]int, 0, al)
-		for j := 0; j < al; j++ {
-			el = append(el, a[j][i])
+		el := make([]int, 0, ll)
+		for j := 0; j < ll; j++ {
+			el = append(el, list[j][i])
 		}
-		u = append(u, el)
+		res = append(res, el)
 	}
 
-	return u
+	return res
 }

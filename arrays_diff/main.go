@@ -1,25 +1,51 @@
 package main
 
-import "fmt"
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"strconv"
+)
 
 func main() {
-	a1 := []int{1, 2, 3, 4, 8, 9, 10, 13, 15, 16}
-	a2 := []int{3, 5, 6, 11, 12, 15, 18, 20}
-	fmt.Println(diff(a1, a2))
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Split(bufio.ScanWords)
+
+	scanner.Scan()
+	cnt1, _ := strconv.Atoi(scanner.Text())
+
+	a := make([]int, cnt1)
+	for i := 0; i < cnt1; i++ {
+		scanner.Scan()
+		a[i], _ = strconv.Atoi(scanner.Text())
+	}
+
+	scanner.Scan()
+	cnt2, _ := strconv.Atoi(scanner.Text())
+
+	b := make([]int, cnt2)
+	for i := 0; i < cnt2; i++ {
+		scanner.Scan()
+		b[i], _ = strconv.Atoi(scanner.Text())
+	}
+
+	fmt.Println(diff(a, b))
 }
 
-func diff(a1 []int, a2 []int) []int {
-	p := 0
-	d := make([]int, 0, len(a1))
-	for _, v := range a1 {
-		for p != len(a2) && a2[p] < v {
-			p++
+func diff(a []int, b []int) []int {
+	al := len(a)
+	c := make([]int, 0, al)
+	bi := 0
+	bl := len(b)
+	for _, v := range a {
+		for bi != bl && b[bi] < v {
+			bi++
 		}
 
-		if p == len(a2) || a2[p] > v {
-			d = append(d, v)
+		if bi == bl || v != b[bi] {
+			c = append(c, v)
 		}
 	}
 
-	return d
+	return c
 }

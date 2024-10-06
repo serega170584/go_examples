@@ -5,99 +5,110 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"strings"
 )
 
 type Heap struct {
 	list []int
-	cnt  int
 }
 
-func NewHeap(capacity int) *Heap {
-	heap := &Heap{}
-	heap.list = make([]int, 0, capacity)
-	return heap
+func create(c int) *Heap {
+	return &Heap{list: make([]int, 0, c)}
 }
 
-func (h *Heap) add(v int) {
-	h.cnt++
-	i := h.cnt - 1
-	h.list = append(h.list, v)
-	for i != 0 {
+func (h *Heap) push(item int) {
+	l := len(h.list)
+	h.list = h.list[:l+1]
+	h.list[l] = item
+	h.sink()
+}
+
+func (h *Heap) sink() {
+	l := len(h.list)
+	i := l - 1
+	if i == 0 {
+		return
+	}
+	for {
 		p := (i - 1) / 2
-
-		if h.list[p] > h.list[i] {
+		if h.list[p] < h.list[i] {
 			h.list[i], h.list[p] = h.list[p], h.list[i]
 			i = p
-			continue
+		} else {
+			return
 		}
 
-		break
+		if i == 0 {
+			return
+		}
 	}
 }
 
-func (h *Heap) getMin() int {
-	min := -1
-	if h.cnt > 0 {
-		min = h.list[0]
-		h.cnt--
-	}
-	if h.cnt > 0 {
-		h.list[0] = h.list[h.cnt]
-		h.heapify()
-	}
-	return min
+func (h *Heap) pop() int {
+	l := len(h.list)
+	last := l - 1
+	el := h.list[last]
+	h.list[0], h.list[last] = h.list[last], h.list[0]
+	h.list = h.list[:last]
+	h.dive()
+	return el
 }
 
-func (h *Heap) isEmpty() bool {
-	return h.cnt == 0
-}
-
-func (h *Heap) heapify() {
+func (h *Heap) dive() {
 	i := 0
+	cnt := len(h.list)
+
+	if cnt == 0 {
+		return
+	}
+
 	for {
-		smallest := i
+		el := h.list[i]
+		c := i
 
 		l := 2*i + 1
-		if l > h.cnt-1 {
-			break
-		}
-
-		if h.list[smallest] > h.list[l] {
-			smallest = l
+		if l < cnt && el < h.list[l] {
+			el = h.list[l]
+			c = l
 		}
 
 		r := 2*i + 2
-		if r < h.cnt && h.list[smallest] > h.list[r] {
-			smallest = r
+		if r < cnt && el < h.list[r] {
+			el = h.list[r]
+			c = r
 		}
 
-		if smallest == i {
+		if c == i {
 			break
 		}
 
-		h.list[smallest], h.list[i] = h.list[i], h.list[smallest]
-		i = smallest
+		h.list[i], h.list[c] = h.list[c], h.list[i]
+		i = c
 	}
+}
+
+func (h *Heap) getSorted() []int {
+	l := cap(h.list)
+	return h.list[:l]
 }
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Split(bufio.ScanWords)
-	scanner.Scan()
 
+	scanner.Scan()
 	cnt, _ := strconv.Atoi(scanner.Text())
-	heap := NewHeap(cnt)
+
+	heap := create(cnt)
+
 	for i := 0; i < cnt; i++ {
 		scanner.Scan()
 		v, _ := strconv.Atoi(scanner.Text())
-		heap.add(v)
+		heap.push(v)
 	}
 
-	res := make([]string, 0, cnt)
-	for !heap.isEmpty() {
-		v := strconv.Itoa(heap.getMin())
-		res = append(res, v)
+	for len(heap.list) != 0 {
+		heap.pop()
 	}
-	fmt.Println(strings.Join(res, " "))
+
+	fmt.Println(heap.getSorted())
 }

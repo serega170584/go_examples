@@ -103,9 +103,12 @@ func main() {
 	//err = errors.New("Test")
 	//err3 := New(err)
 
-	fmt.Println(errors.Is(err, err1))
+	err4 := errors.New("Test1")
+	err5 := New(err4)
+
+	fmt.Println(errors.Is(err1, err))
 	fmt.Println(errors.Is(err2, err3))
-	fmt.Println(errors.As(err2, &err1))
+	fmt.Println(errors.As(err5, &err4))
 	fmt.Println(errors.As(err2, &err3))
 	//err := Error2{test: "123"}
 	//err1 := Error2{test: "1233344"}

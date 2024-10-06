@@ -8,22 +8,22 @@ type Node struct {
 }
 
 func main() {
-	n1 := &Node{val: 1}
-	n2 := &Node{val: 2}
-	n1.next = n2
-	n3 := &Node{val: 3}
-	n2.next = n3
-	fmt.Println(getMiddle(n1))
+	head := &Node{val: 1}
+	middle := &Node{val: 2}
+	middle1 := &Node{val: 3}
+	last := &Node{val: 4}
+	head.next = middle
+	middle.next = middle1
+	middle1.next = last
+	fmt.Println(getMiddle(head))
 }
 
 func getMiddle(node *Node) *Node {
-	slow := node
-	fast := node
-	for fast != nil && fast.next != nil {
-		fast = fast.next.next
-		slow = slow.next
+	runner := node
+	for runner.next != nil && runner.next.next != nil {
+		runner = runner.next.next
+		node = node.next
 	}
 
-	return slow
-
+	return node
 }

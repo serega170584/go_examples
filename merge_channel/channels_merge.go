@@ -3,9 +3,14 @@ package main
 import (
 	"fmt"
 	"sync"
+	"time"
 )
 
 func main() {
+	t := time.Now()
+	defer func() {
+		fmt.Println(time.Since(t).Microseconds())
+	}()
 	a := make(chan int, 4)
 	a <- 1
 	a <- 2
@@ -22,17 +27,17 @@ func main() {
 	c <- 9
 	close(c)
 
-	out := merge(a, b, c)
+	out := mergeChannels(a, b, c)
+
 	for v := range out {
 		fmt.Println(v)
 	}
 }
 
-func merge(chList ...chan int) chan int {
+func mergeChannels(chList ...chan int) chan int {
 	out := make(chan int)
-	l := len(chList)
 	wg := &sync.WaitGroup{}
-	wg.Add(l)
+	wg.Add(len(chList))
 	for _, ch := range chList {
 		go func(ch chan int) {
 			defer wg.Done()
@@ -46,5 +51,6 @@ func merge(chList ...chan int) chan int {
 		wg.Wait()
 		close(out)
 	}()
+
 	return out
 }

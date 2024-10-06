@@ -1,15 +1,71 @@
 package main
 
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"strconv"
+)
+
 func main() {
-	arr := make([]int, 3)
-	left := 0
-	right := len(arr)
-	for left+1 < right {
-		mid := (left + right) / 2
-		if arr[mid] <= 0 {
-			left = mid
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Split(bufio.ScanWords)
+
+	scanner.Scan()
+	cnt, _ := strconv.Atoi(scanner.Text())
+
+	scanner.Scan()
+	s, _ := strconv.Atoi(scanner.Text())
+
+	list := make([]int, 0, cnt)
+	for i := 0; i < cnt; i++ {
+		scanner.Scan()
+		v, _ := strconv.Atoi(scanner.Text())
+		list = append(list, v)
+	}
+
+	l := 0
+	r := cnt - 1
+	for l < r {
+		m := (l + r) / 2
+		if lCheck(list, m, s) {
+			r = m
 		} else {
-			right = mid
+			l = m + 1
 		}
 	}
+
+	if list[r] != s {
+		return
+	}
+	left := r
+
+	l = 0
+	r = cnt - 1
+	for l < r {
+		m := (l + r + 1) / 2
+		if rCheck(list, m, s) {
+			l = m
+		} else {
+			r = m - 1
+		}
+	}
+
+	right := l
+
+	fmt.Println(left, right)
+}
+
+func lCheck(list []int, m int, s int) bool {
+	if s <= list[m] {
+		return true
+	}
+	return false
+}
+
+func rCheck(list []int, m int, s int) bool {
+	if s >= list[m] {
+		return true
+	}
+	return false
 }

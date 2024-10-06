@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"unicode/utf8"
 )
 
 func main() {
@@ -16,56 +17,26 @@ func main() {
 	scanner.Scan()
 	s2 := scanner.Text()
 
-	dict1 := make(map[int32]int, len(s1))
-	dict2 := make(map[int32]int, len(s2))
-
-	valList := make([]int32, len(s1)+len(s2))
-	var valListPointer int
-
-	for _, val := range s1 {
-		if _, ok := dict1[val]; !ok {
-			dict1[val] = 0
-			valList[valListPointer] = val
-			valListPointer++
-		}
-		dict1[val]++
+	cnt1 := make(map[rune]int, utf8.RuneCountInString(s1))
+	for _, v := range s1 {
+		cnt1[v]++
 	}
 
-	for _, val := range s2 {
-		if _, ok := dict2[val]; !ok {
-			dict2[val] = 0
-			valList[valListPointer] = val
-			valListPointer++
-		}
-		dict2[val]++
-	}
-
-	isNo := false
-	for _, val := range valList {
-		if val == 0 {
-			break
-		}
-
-		if _, ok := dict1[val]; !ok {
+	cnt2 := make(map[rune]int, utf8.RuneCountInString(s2))
+	for _, v := range s2 {
+		if _, ok := cnt1[v]; !ok {
 			fmt.Println("NO")
-			isNo = true
-			break
+			return
 		}
+		cnt2[v]++
+	}
 
-		if _, ok := dict2[val]; !ok {
+	for v := range cnt1 {
+		if cnt1[v] != cnt2[v] {
 			fmt.Println("NO")
-			isNo = true
-			break
-		}
-
-		if dict1[val] != dict2[val] {
-			fmt.Println("NO")
-			isNo = true
-			break
+			return
 		}
 	}
 
-	if !isNo {
-		fmt.Println("YES")
-	}
+	fmt.Println("YES")
 }
