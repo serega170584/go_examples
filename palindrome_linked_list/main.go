@@ -7,6 +7,27 @@ type Node struct {
 	next *Node
 }
 
+type Stack struct {
+	list []int
+}
+
+func (st *Stack) Push(v int) {
+	st.list = append(st.list, v)
+}
+
+func (st *Stack) Pop() *int {
+	if st.list == nil {
+		return nil
+	}
+	v := st.list[len(st.list)-1]
+	st.list = st.list[0 : len(st.list)-1]
+	return &v
+}
+
+func NewStack() *Stack {
+	return &Stack{}
+}
+
 func main() {
 	n1 := &Node{val: 1}
 	n2 := &Node{val: 2}
@@ -15,18 +36,19 @@ func main() {
 	n2.next = n3
 	n4 := &Node{val: 2}
 	n3.next = n4
-	n5 := &Node{val: 2}
+	n5 := &Node{val: 1}
 	n4.next = n5
 
 	fmt.Println(isPalindrome(n1))
 }
 
-func isPalindrome(n *Node) bool {
-	fast := n
-	slow := n
-	half := make([]*Node, 0)
+func isPalindrome(head *Node) bool {
+	fast := head
+	slow := head
+
+	stack := NewStack()
 	for fast != nil && fast.next != nil {
-		half = append(half, slow)
+		stack.Push(slow.val)
 		slow = slow.next
 		fast = fast.next.next
 	}
@@ -35,14 +57,15 @@ func isPalindrome(n *Node) bool {
 		slow = slow.next
 	}
 
-	p := len(half) - 1
 	for slow != nil {
-		if slow.val != half[p].val {
+		top := stack.Pop()
+		if top == nil {
+			return false
+		}
+		if *top != slow.val {
 			return false
 		}
 		slow = slow.next
-		p--
 	}
-
 	return true
 }

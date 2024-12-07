@@ -1,56 +1,44 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
-	"log"
-	"strings"
+	"os"
+	"strconv"
 )
 
 func main() {
-	var cnt int
-	fmt.Println("Enter count")
-	_, err := fmt.Scan(&cnt)
-	if err != nil {
-		log.Fatal(err)
-	}
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Split(bufio.ScanWords)
 
-	x := make([]interface{}, cnt)
+	scanner.Scan()
+	n, _ := strconv.Atoi(scanner.Text())
 
-	fmt.Println("Enter array")
-
-	a := make([][]string, cnt)
-	for i := range a {
-		a[i] = make([]string, cnt)
-		for j := range a[i] {
-			x[j] = &a[i][j]
-		}
-		_, err = fmt.Scanln(x...)
-		if err != nil {
-			log.Fatal(err)
+	arr := make([][]int, 0, n)
+	for i := 0; i < n; i++ {
+		arr = append(arr, make([]int, 0, n))
+		for j := 0; j < n; j++ {
+			scanner.Scan()
+			v, _ := strconv.Atoi(scanner.Text())
+			arr[i] = append(arr[i], v)
 		}
 	}
 
-	for i := 0; i < cnt; i++ {
-		for j := 0; j < i; j++ {
-			a[i][j], a[j][i] = a[j][i], a[i][j]
+	for layer := 0; layer < n/2; layer++ {
+		first := layer
+		last := n - 1 - layer
+		for i := first; i < last; i++ {
+			offset := i - first
+			top := arr[first][i]
+
+			arr[first][i] = arr[last-offset][first]
+			arr[last-offset][first] = arr[last][last-offset]
+			arr[last][last-offset] = arr[i][last]
+			arr[i][last] = top
 		}
 	}
 
-	fmt.Println(a)
-
-	middleCnt := cnt / 2
-	fmt.Println(middleCnt)
-	for i := 0; i < cnt; i++ {
-		for j := 0; j < middleCnt; j++ {
-			a[i][j], a[i][cnt-j-1] = a[i][cnt-j-1], a[i][j]
-		}
-	}
-
-	for i := 0; i < cnt; i++ {
-		y := make([]string, cnt)
-		for j := 0; j < cnt; j++ {
-			y[j] = fmt.Sprintf("%02s", a[i][j])
-		}
-		fmt.Println(strings.Join(y, " "))
+	for i := 0; i < n; i++ {
+		fmt.Println(arr[i])
 	}
 }
