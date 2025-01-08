@@ -7,144 +7,167 @@ import (
 )
 
 func main() {
-	cells := [8][8]string{}
-
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Split(bufio.ScanWords)
 
+	list := make([]string, 0, 8)
 	for i := 0; i < 8; i++ {
 		scanner.Scan()
-		t := scanner.Text()
-		for j, v := range t {
-			cells[i][j] = string([]rune{v})
+		list = append(list, scanner.Text())
+	}
+
+	bottom := make([][]bool, 0, 8)
+	right := make([][]bool, 0, 8)
+	crossLeft := make([][]bool, 0, 8)
+	crossRight := make([][]bool, 0, 8)
+	for i, v := range list {
+		bottom = append(bottom, make([]bool, 0, 8))
+		right = append(right, make([]bool, 0, 8))
+		crossLeft = append(crossLeft, make([]bool, 0, 8))
+		crossRight = append(crossRight, make([]bool, 0, 8))
+		j := 0
+		for _, s := range v {
+			crossLeftV := false
+			if i > 0 && j > 0 && crossLeft[i-1][j-1] {
+				crossLeftV = true
+			}
+			if s == 'R' {
+				crossLeftV = false
+			}
+			if s == 'B' {
+				crossLeftV = true
+			}
+			crossLeft[i] = append(crossLeft[i], crossLeftV)
+
+			crossRightV := false
+			if i > 0 && j < 7 && crossRight[i-1][j+1] {
+				crossRightV = true
+			}
+			if s == 'R' {
+				crossRightV = false
+			}
+			if s == 'B' {
+				crossRightV = true
+			}
+			crossRight[i] = append(crossRight[i], crossRightV)
+
+			rightV := false
+			if j > 0 && right[i][j-1] {
+				rightV = true
+			}
+			if s == 'B' {
+				rightV = false
+			}
+			if s == 'R' {
+				rightV = true
+			}
+			right[i] = append(right[i], rightV)
+
+			bottomV := false
+			if i > 0 && bottom[i-1][j] {
+				bottomV = true
+			}
+			if s == 'B' {
+				bottomV = false
+			}
+			if s == 'R' {
+				bottomV = true
+			}
+			bottom[i] = append(bottom[i], bottomV)
+
+			j++
 		}
 	}
 
-	fmt.Println(getEmptyCellsCnt(cells))
-}
-
-func getEmptyCellsCnt(cells [8][8]string) int {
-	ltBishops := [8][8]bool{}
-	rtBishops := [8][8]bool{}
-	lbBishops := [8][8]bool{}
-	rbBishops := [8][8]bool{}
-
-	lRooks := [8][8]bool{}
-	rRooks := [8][8]bool{}
-	tRooks := [8][8]bool{}
-	bRooks := [8][8]bool{}
-
-	cnt := 0
-
+	top := make([][]bool, 0, 8)
 	for i := 0; i < 8; i++ {
-		for j := 0; j < 8; j++ {
-			if cells[i][j] == "R" {
-				lRooks[i][j] = true
-				tRooks[i][j] = true
-				ltBishops[i][j] = false
-				rtBishops[i][j] = false
-				continue
-			}
+		top = append(top, make([]bool, 8))
+	}
 
-			if cells[i][j] == "B" {
-				ltBishops[i][j] = true
-				rtBishops[i][j] = true
-				lRooks[i][j] = false
-				tRooks[i][j] = false
-				continue
-			}
+	left := make([][]bool, 0, 8)
+	for i := 0; i < 8; i++ {
+		left = append(left, make([]bool, 8))
+	}
 
-			if j >= 1 && lRooks[i][j-1] {
-				lRooks[i][j] = true
-			}
+	crossLeftTop := make([][]bool, 0, 8)
+	for i := 0; i < 8; i++ {
+		crossLeftTop = append(crossLeftTop, make([]bool, 8))
+	}
 
-			if i >= 1 && tRooks[i-1][j] {
-				tRooks[i][j] = true
-			}
-
-			if i >= 1 && j >= 1 && ltBishops[i-1][j-1] {
-				ltBishops[i][j] = true
-			}
-
-			if i >= 1 && j <= 6 && rtBishops[i-1][j+1] {
-				rtBishops[i][j] = true
-			}
-		}
+	crossRightTop := make([][]bool, 0, 8)
+	for i := 0; i < 8; i++ {
+		crossRightTop = append(crossRightTop, make([]bool, 8))
 	}
 
 	for i := 7; i >= 0; i-- {
-		for j := 7; j >= 0; j-- {
-			if cells[i][j] == "R" {
-				rRooks[i][j] = true
-				bRooks[i][j] = true
-				lbBishops[i][j] = false
-				rbBishops[i][j] = false
-				continue
-			}
+		j := 7
+		v := list[i]
+		reverse := make([]rune, 8)
+		for ind, s := range v {
+			reverse[7-ind] = s
+		}
 
-			if cells[i][j] == "B" {
-				lbBishops[i][j] = true
-				rbBishops[i][j] = true
-				rRooks[i][j] = false
-				bRooks[i][j] = false
-				continue
+		for _, s := range reverse {
+			crossLeftTopV := false
+			if i < 7 && j > 0 && crossLeftTop[i+1][j-1] {
+				crossLeftTopV = true
 			}
+			if s == 'R' {
+				crossLeftTopV = false
+			}
+			if s == 'B' {
+				crossLeftTopV = true
+			}
+			crossLeftTop[i][j] = crossLeftTopV
 
-			if j <= 6 && rRooks[i][j+1] {
-				rRooks[i][j] = true
+			crossRightTopV := false
+			if i < 7 && j < 7 && crossRightTop[i+1][j+1] {
+				crossRightTopV = true
 			}
+			if s == 'R' {
+				crossRightTopV = false
+			}
+			if s == 'B' {
+				crossRightTopV = true
+			}
+			crossRightTop[i][j] = crossRightTopV
 
-			if i <= 6 && bRooks[i+1][j] {
-				bRooks[i][j] = true
+			leftV := false
+			if j < 7 && left[i][j+1] {
+				leftV = true
 			}
+			if s == 'B' {
+				leftV = false
+			}
+			if s == 'R' {
+				leftV = true
+			}
+			left[i][j] = leftV
 
-			if i <= 6 && j >= 1 && lbBishops[i+1][j-1] {
-				lbBishops[i][j] = true
+			topV := false
+			if i < 7 && top[i+1][j] {
+				topV = true
 			}
+			if s == 'B' {
+				topV = false
+			}
+			if s == 'R' {
+				topV = true
+			}
+			top[i][j] = topV
 
-			if i <= 6 && j <= 6 && rbBishops[i+1][j+1] {
-				rbBishops[i][j] = true
-			}
+			j--
 		}
 	}
 
+	cnt := 0
 	for i := 0; i < 8; i++ {
 		for j := 0; j < 8; j++ {
-			if ltBishops[i][j] {
-				continue
+			if !bottom[i][j] && !right[i][j] && !crossLeft[i][j] && !crossRight[i][j] && !crossLeftTop[i][j] && !crossRightTop[i][j] && !top[i][j] && !left[i][j] {
+				cnt++
 			}
-
-			if rtBishops[i][j] {
-				continue
-			}
-
-			if lbBishops[i][j] {
-				continue
-			}
-
-			if rbBishops[i][j] {
-				continue
-			}
-
-			if tRooks[i][j] {
-				continue
-			}
-
-			if lRooks[i][j] {
-				continue
-			}
-
-			if bRooks[i][j] {
-				continue
-			}
-
-			if rRooks[i][j] {
-				continue
-			}
-
-			cnt++
 		}
 	}
 
-	return cnt
+	fmt.Println(cnt)
 }
