@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 )
@@ -29,69 +30,74 @@ func main() {
 	scanner.Scan()
 	k, _ := strconv.Atoi(scanner.Text())
 
-	fmt.Println(getMaxWin(n, list, a, b, k))
-}
-
-func getMaxWin(n int, list []int, a int, b int, k int) int {
-	maxNumber := 0
-
-	minSearchCnt := 0
-	if a-1 >= k {
-		minSearchCnt = (a - 1) / k
+	aInd := a / k
+	if a%k != 0 {
+		aInd++
 	}
 
-	maxSearchCnt := 0
-	if b-1 >= k {
-		maxSearchCnt = (b - 1) / k
+	bInd := b / k
+	if b%k != 0 {
+		bInd++
 	}
 
-	if maxSearchCnt-minSearchCnt >= n-1 {
-		for i := 0; i < n; i++ {
-			maxNumber = max(maxNumber, list[i])
-		}
-		return maxNumber
+	diff := aInd - bInd
+	if diff < 0 {
+		diff = -diff
 	}
 
-	minSearchInd := minSearchCnt % n
-	maxSearchInd := maxSearchCnt % n
+	startInd := 0
+	endInd := n - 1
+	otherWayStartIndex := 0
+	otherWayEndIndex := n - 1
 
-	if minSearchInd <= maxSearchInd {
-		for i := minSearchInd; i <= maxSearchInd; i++ {
-			maxNumber = max(maxNumber, list[i])
+	if diff < n {
+		mod := aInd % n
+		if mod == 0 {
+			startInd = n
+			otherWayStartIndex = 2
+		} else {
+			startInd = mod
+			if mod == 1 {
+				otherWayStartIndex = 1
+			} else {
+				otherWayStartIndex = n - mod + 2
+			}
 		}
-	} else {
-		for i := minSearchInd; i < n; i++ {
-			maxNumber = max(maxNumber, list[i])
+		startInd--
+		otherWayStartIndex--
+
+		mod = bInd % n
+		if mod == 0 {
+			endInd = n
+			otherWayEndIndex = 1
+		} else {
+			endInd = mod
+			if mod == 1 {
+				otherWayEndIndex = 1
+			} else {
+				otherWayEndIndex = n - mod + 2
+			}
+		}
+		endInd--
+		otherWayEndIndex--
+
+		if endInd-startInd < 0 {
+			startInd, endInd = endInd, startInd
 		}
 
-		for i := 0; i <= maxSearchInd; i++ {
-			maxNumber = max(maxNumber, list[i])
-		}
-	}
-
-	minSearchInd = 0
-	if maxSearchCnt != 0 {
-		minSearchInd = n - maxSearchCnt%n
-	}
-
-	maxSearchInd = 0
-	if minSearchCnt != 0 {
-		maxSearchInd = n - minSearchCnt%n
-	}
-
-	if minSearchInd <= maxSearchInd {
-		for i := minSearchInd; i <= maxSearchInd; i++ {
-			maxNumber = max(maxNumber, list[i])
-		}
-	} else {
-		for i := minSearchInd; i < n; i++ {
-			maxNumber = max(maxNumber, list[i])
-		}
-
-		for i := 0; i < maxSearchInd; i++ {
-			maxNumber = max(maxNumber, list[i])
+		if otherWayEndIndex-otherWayStartIndex < 0 {
+			otherWayStartIndex, otherWayEndIndex = otherWayEndIndex, otherWayStartIndex
 		}
 	}
 
-	return maxNumber
+	maxWon := math.MinInt
+	for i := startInd; i <= endInd; i++ {
+		maxWon = max(maxWon, list[i])
+	}
+
+	for i := otherWayStartIndex; i <= otherWayEndIndex; i++ {
+		maxWon = max(maxWon, list[i])
+	}
+
+	fmt.Println(maxWon)
 }
