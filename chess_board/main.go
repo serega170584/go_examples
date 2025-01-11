@@ -16,7 +16,6 @@ func main() {
 	n, _ := strconv.Atoi(scanner.Text())
 
 	list := make([][2]int, n)
-
 	for i := 0; i < n; i++ {
 		scanner.Scan()
 		list[i][0], _ = strconv.Atoi(scanner.Text())
@@ -24,69 +23,62 @@ func main() {
 		list[i][1], _ = strconv.Atoi(scanner.Text())
 	}
 
-	fmt.Println(getPerimeter(list))
-}
-
-func getPerimeter(list [][2]int) int {
-	minXVal := math.MaxInt
-	maxXVal := math.MinInt
-	minYVal := math.MaxInt
-	maxYVal := math.MinInt
+	minTop := math.MaxInt
+	maxTop := math.MinInt
+	minLeft := math.MaxInt
+	maxLeft := math.MinInt
 	for _, v := range list {
-		minXVal = min(minXVal, v[0])
-		maxXVal = max(maxXVal, v[0])
-		minYVal = min(minYVal, v[1])
-		maxYVal = max(maxYVal, v[1])
+		minTop = min(minTop, v[0])
+		maxTop = max(maxTop, v[0])
+		minLeft = min(minLeft, v[1])
+		maxLeft = max(maxLeft, v[1])
 	}
 
-	width := maxXVal - minXVal + 1
-	height := maxYVal - minYVal + 1
-
-	rect := make([][]bool, height)
-	for i := 0; i < height; i++ {
-		rect[i] = make([]bool, width)
+	rect := make([][]bool, 0, maxTop-minTop+1)
+	for i := 0; i < maxTop-minTop+1; i++ {
+		rect = append(rect, make([]bool, maxLeft-minLeft+1))
 	}
 
 	for _, v := range list {
-		rect[v[1]-minYVal][v[0]-minXVal] = true
+		rect[v[0]-minTop][v[1]-minLeft] = true
 	}
 
 	perimeter := 0
-	for i := 0; i < height; i++ {
-		for j := 0; j < width; j++ {
-			if i == 0 && rect[i][j] {
+	for i, row := range rect {
+		for j, v := range row {
+			if j == 0 && v {
 				perimeter++
 			}
 
-			if j == 0 && rect[i][j] {
+			if j == maxLeft-minLeft && v {
 				perimeter++
 			}
 
-			if i+1 == height && rect[i][j] {
+			if i == 0 && v {
 				perimeter++
 			}
 
-			if j+1 == width && rect[i][j] {
+			if i == maxTop-minTop && v {
 				perimeter++
 			}
 
-			if i != height-1 && !rect[i+1][j] && rect[i][j] {
+			if j != 0 && !rect[i][j-1] && v {
 				perimeter++
 			}
 
-			if j != width-1 && !rect[i][j+1] && rect[i][j] {
+			if j != maxLeft-minLeft && !rect[i][j+1] && v {
 				perimeter++
 			}
 
-			if i != 0 && !rect[i-1][j] && rect[i][j] {
+			if i != 0 && !rect[i-1][j] && v {
 				perimeter++
 			}
 
-			if j != 0 && !rect[i][j-1] && rect[i][j] {
+			if i != maxTop-minTop && !rect[i+1][j] && v {
 				perimeter++
 			}
 		}
 	}
 
-	return perimeter
+	fmt.Println(perimeter)
 }

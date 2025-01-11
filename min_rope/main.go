@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"math"
 	"os"
 	"strconv"
 )
@@ -21,34 +20,28 @@ func main() {
 		list[i], _ = strconv.Atoi(scanner.Text())
 	}
 
-	fmt.Println(leftMinRopeLength(list))
-}
+	maxLenInd := 0
+	maxVal := 0
+	for i, v := range list {
+		if v > maxVal {
+			maxLenInd = i
+			maxVal = v
+		}
+	}
 
-func leftMinRopeLength(list []int) int {
-	maxVal := math.MinInt
 	sum := 0
-	for _, v := range list {
-		maxVal = max(maxVal, v)
-		sum += v
-	}
-
-	maxQuantity := 0
-	for _, v := range list {
-		if maxVal == v {
-			maxQuantity++
+	for i, v := range list {
+		if i != maxLenInd {
+			sum += v
 		}
 	}
 
-	if maxQuantity == 1 {
-		leftRopeLength := maxVal
-		for _, v := range list {
-			if v != maxVal {
-				leftRopeLength -= v
-			}
-		}
-		if leftRopeLength > 0 {
-			return leftRopeLength
-		}
+	rest := 0
+	if sum < maxVal {
+		rest = maxVal - sum
+	} else {
+		rest = sum + maxVal
 	}
-	return sum
+
+	fmt.Println(rest)
 }
