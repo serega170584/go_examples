@@ -4,45 +4,41 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"slices"
 )
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Split(bufio.ScanWords)
 
 	scanner.Scan()
-	a := scanner.Text()
+	a := []rune(scanner.Text())
 
 	scanner.Scan()
-	b := scanner.Text()
+	b := []rune(scanner.Text())
 
-	r := isSameAnagram(a, b)
-
-	if r {
-		fmt.Println("YES")
-		return
+	if len(a) != len(b) {
+		fmt.Println("NO")
 	}
 
-	fmt.Println("NO")
+	aMap := make(map[rune]int, len(a))
+	bMap := make(map[rune]int, len(b))
 
-}
-
-func isSameAnagram(a string, b string) bool {
-	ar := []rune(a)
-	br := []rune(b)
-
-	if len(ar) != len(br) {
-		return false
+	for i := 0; i < len(a); i++ {
+		aMap[a[i]]++
+		bMap[b[i]]++
 	}
 
-	slices.Sort(ar)
-	slices.Sort(br)
+	for _, v := range a {
+		if _, ok := bMap[v]; !ok {
+			fmt.Println("NO")
+			return
+		}
 
-	for i := range ar {
-		if ar[i] != br[i] {
-			return false
+		if aMap[v] != bMap[v] {
+			fmt.Println("NO")
+			return
 		}
 	}
 
-	return true
+	fmt.Println("YES")
 }

@@ -5,48 +5,40 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"strings"
 )
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Split(bufio.ScanWords)
 
 	scanner.Scan()
-	cnt, _ := strconv.Atoi(scanner.Text())
+	n, _ := strconv.Atoi(scanner.Text())
 
-	counts := make([]int, cnt)
-	list := make([]string, cnt)
-	for i := 0; i < cnt; i++ {
+	k := make([]int, n)
+	list := make([][]string, n)
+	for i := 0; i < n; i++ {
 		scanner.Scan()
-		counts[i], _ = strconv.Atoi(scanner.Text())
-
-		scanner.Scan()
-		list[i] = scanner.Text()
-	}
-
-	resCnt, playlists := getPlaylists(list, counts, cnt)
-
-	fmt.Println(resCnt)
-	fmt.Println(playlists)
-}
-
-func getPlaylists(list []string, counts []int, cnt int) (int, []string) {
-	names := make(map[string]int)
-	for i, v := range list {
-		nv := strings.Split(v, " ")
-		for j := 0; j < counts[i]; j++ {
-			names[nv[j]]++
+		k[i], _ = strconv.Atoi(scanner.Text())
+		for j := 0; j < k[i]; j++ {
+			scanner.Scan()
+			list[i] = append(list[i], scanner.Text())
 		}
 	}
 
-	playLists := make([]string, 0)
-	resCnt := 0
-	for name, v := range names {
-		if v == cnt {
-			playLists = append(playLists, name)
-			resCnt++
+	playlistsDict := make(map[string]int, n)
+	for _, row := range list {
+		for _, v := range row {
+			playlistsDict[v]++
 		}
 	}
 
-	return resCnt, playLists
+	res := make([]any, 0)
+	for s, v := range playlistsDict {
+		if v == n {
+			res = append(res, s)
+		}
+	}
+
+	fmt.Println(len(res))
+	fmt.Println(res...)
 }
