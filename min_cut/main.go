@@ -5,76 +5,52 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"strings"
 )
-
-// 6 - 2 = 4, 8 - 3 = 5
-// 6 - 3 = 3, 8 - 2 = 6
-
-// 0 1 0 0 0 0 0 0 0
-// 0 1 1 0 0 0 0 0 0
-// 0 0 0 0 0 0 1 1 0
-// 0 0 0 0 0 1 0 0 0
-// 0 0 0 1 0 0 0 0 0
-// 0 0 0 0 0 0 0 0 0
-// 0 0 0 0 0 0 0 0 1
-// 0 0 0 0 0 0 0 0 0
-// 1 0 0 0 0 0 0 0 0
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Split(bufio.ScanWords)
 
 	scanner.Scan()
-	cnt, _ := strconv.Atoi(scanner.Text())
+	n, _ := strconv.Atoi(scanner.Text())
 
-	lists := make([][]int, cnt)
-	for i := 0; i < cnt; i++ {
+	sets := make([][]int, n)
+	for i := 0; i < n; i++ {
 		scanner.Scan()
-		n, _ := strconv.Atoi(scanner.Text())
-		lists[i] = make([]int, n)
-		for j := 0; j < n; j++ {
+		l, _ := strconv.Atoi(scanner.Text())
+		for j := 0; j < l; j++ {
 			scanner.Scan()
-			lists[i][j], _ = strconv.Atoi(scanner.Text())
+			v, _ := strconv.Atoi(scanner.Text())
+			sets[i] = append(sets[i], v)
 		}
 	}
 
-	res := getMinCuts(cnt, lists)
-	for _, v := range res {
-		cnt = len(v)
-		fmt.Println(cnt)
-		s := make([]string, cnt)
-		for i, val := range v {
-			s[i] = strconv.Itoa(val)
-		}
-		fmt.Println(strings.Join(s, " "))
-	}
-}
-
-func getMinCuts(cnt int, lists [][]int) [][]int {
-	res := make([][]int, 0, cnt)
-	for _, list := range lists {
-		capacity := 200000
-		sum := 0
-		sums := make([]int, 0)
-		counter := 0
-		for i, v := range list {
-			capacity = min(capacity, v)
-			counter++
-			if capacity < counter {
-				sums = append(sums, sum)
-				capacity = v
-				sum = 0
-				counter = 1
+	res := make([][]int, n)
+	for i, set := range sets {
+		minVal := set[0]
+		cutLen := 1
+		for j := 1; j < len(set); j++ {
+			if set[j] < minVal {
+				minVal = set[j]
 			}
-			sum++
-
-			if i == len(list)-1 {
-				sums = append(sums, sum)
+			cutLen++
+			if minVal < cutLen {
+				cutLen--
+				res[i] = append(res[i], cutLen)
+				cutLen = 1
+				minVal = set[j]
+				continue
 			}
 		}
-		res = append(res, sums)
+		res[i] = append(res[i], cutLen)
 	}
 
-	return res
+	for _, row := range res {
+		cur := make([]any, len(row))
+		for i, v := range row {
+			cur[i] = v
+		}
+		fmt.Println(len(row))
+		fmt.Println(cur...)
+	}
 }
