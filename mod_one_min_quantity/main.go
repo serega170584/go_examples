@@ -14,33 +14,28 @@ func main() {
 	scanner.Scan()
 	n, _ := strconv.Atoi(scanner.Text())
 
-	list := make([]int, n)
+	a := make([]int, n)
 	for i := 0; i < n; i++ {
 		scanner.Scan()
-		list[i], _ = strconv.Atoi(scanner.Text())
+		a[i], _ = strconv.Atoi(scanner.Text())
 	}
 
-	fmt.Println(getModOneMinCnt(list, n))
-}
-
-func getModOneMinCnt(list []int, n int) int {
-	m := make(map[int]int, n)
-	for _, v := range list {
-		m[v]++
+	unique := make(map[int]int, n)
+	for _, v := range a {
+		unique[v]++
 	}
 
-	minExcludedCnt := n
-	for v := range m {
-		curCnt := n - m[v]
-
-		if _, ok := m[v-1]; ok {
-			minExcludedCnt = min(minExcludedCnt, curCnt-m[v-1])
+	minCnt := n
+	for v, cnt := range unique {
+		curCnt := n - cnt
+		if curV, ok := unique[v+1]; ok {
+			curCnt -= curV
 		}
-
-		if _, ok := m[v+1]; ok {
-			minExcludedCnt = min(minExcludedCnt, curCnt-m[v+1])
+		if curCnt < minCnt {
+			minCnt = curCnt
 		}
 	}
 
-	return minExcludedCnt
+	fmt.Println(minCnt)
+
 }
