@@ -23,25 +23,17 @@ func main() {
 		list[i], _ = strconv.Atoi(scanner.Text())
 	}
 
-	isRepeated := isNumberRepeated(n, k, list)
-	if isRepeated {
-		fmt.Println("YES")
-		return
+	viMap := make(map[int]int, n)
+	for i, v := range list {
+		if prevI, ok := viMap[v]; ok {
+			if i-prevI <= k {
+				fmt.Println("YES")
+				return
+			}
+		}
+
+		viMap[v] = i
 	}
 
 	fmt.Println("NO")
-}
-
-func isNumberRepeated(n int, k int, list []int) bool {
-	for i, v := range list {
-		m := make(map[int]struct{}, k)
-		m[v] = struct{}{}
-		for j := i + 1; j <= i+k && j < n; j++ {
-			if _, ok := m[list[j]]; ok {
-				return true
-			}
-			m[list[j]] = struct{}{}
-		}
-	}
-	return false
 }
