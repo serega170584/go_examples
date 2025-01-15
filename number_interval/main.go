@@ -6,7 +6,6 @@ import (
 	"os"
 	"slices"
 	"strconv"
-	"strings"
 )
 
 func main() {
@@ -16,86 +15,80 @@ func main() {
 	scanner.Scan()
 	n, _ := strconv.Atoi(scanner.Text())
 
-	intervals := make([]int, 0)
+	list := make([]int, n)
 	for i := 0; i < n; i++ {
 		scanner.Scan()
-		val, _ := strconv.Atoi(scanner.Text())
-		intervals = append(intervals, val)
+		list[i], _ = strconv.Atoi(scanner.Text())
 	}
 
 	scanner.Scan()
-	k, _ := strconv.Atoi(scanner.Text())
+	requestsCnt, _ := strconv.Atoi(scanner.Text())
 
-	list := make([][2]int, k)
-	for i := 0; i < k; i++ {
+	requests := make([][2]int, requestsCnt)
+	for i := 0; i < requestsCnt; i++ {
 		scanner.Scan()
-		list[i][0], _ = strconv.Atoi(scanner.Text())
+		requests[i][0], _ = strconv.Atoi(scanner.Text())
 		scanner.Scan()
-		list[i][1], _ = strconv.Atoi(scanner.Text())
+		requests[i][1], _ = strconv.Atoi(scanner.Text())
 	}
 
-	lengths := getIntervalLengths(n, list, intervals)
-	s := make([]string, k)
-	for i, v := range lengths {
-		s[i] = strconv.Itoa(v)
-	}
+	slices.Sort(list)
 
-	fmt.Println(strings.Join(s, " "))
-}
-
-func getIntervalLengths(n int, list [][2]int, intervals []int) []int {
-	slices.Sort(intervals)
-
-	lengths := make([]int, 0)
-	for _, v := range list {
-		length := 0
-		if v[1] >= intervals[0] && v[0] <= intervals[n-1] {
-			l := binarySearch(v[0], n, intervals)
-			r := rbinarySearch(v[1], n, intervals)
-			if r >= l {
-				length = r - l + 1
+	searchedCnt := make([]int, requestsCnt)
+	for i, request := range requests {
+		from := request[0]
+		to := request[1]
+		for v := from; v <= to; v++ {
+			leftIndex := leftSearch(list, v)
+			if leftIndex == -1 {
+				continue
 			}
+			rightIndex := rightSearch(list, v)
+			searchedCnt[i] += rightIndex - leftIndex + 1
 		}
-
-		lengths = append(lengths, length)
 	}
 
-	return lengths
+	printSearched := make([]any, requestsCnt)
+	for i, v := range searchedCnt {
+		printSearched[i] = v
+	}
+
+	fmt.Println(printSearched...)
 }
 
-func binarySearch(x int, n int, list []int) int {
+func leftSearch(list []int, v int) int {
 	l := 0
-	r := n - 1
+	r := len(list) - 1
 	m := 0
 	for l < r {
 		m = (l + r) / 2
-		if check(m, x, list) {
+		if list[m] >= v {
 			r = m
 		} else {
 			l = m + 1
 		}
 	}
-	return l
+	if list[r] == v {
+		return r
+	}
+
+	return -1
 }
 
-func rbinarySearch(x int, n int, list []int) int {
+func rightSearch(list []int, v int) int {
 	l := 0
-	r := n - 1
+	r := len(list) - 1
+	m := 0
 	for l < r {
-		m := (l + r + 1) / 2
-		if lcheck(m, x, list) {
+		m = (l + r + 1) / 2
+		if list[m] <= v {
 			l = m
 		} else {
 			r = m - 1
 		}
 	}
-	return l
-}
-
-func check(m int, x int, list []int) bool {
-	return list[m] >= x
-}
-
-func lcheck(m int, x int, list []int) bool {
-	return list[m] <= x
+	if list[l] == v {
+		return l
+	}
+	return -1
 }

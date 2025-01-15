@@ -8,58 +8,34 @@ import (
 )
 
 func main() {
-	scanner := makeScanner()
+	scanner := bufio.NewScanner(os.Stdin)
 
 	scanner.Scan()
-	s := strings.Split(scanner.Text(), " ")
-	dn := len(s)
-	dict := make([][]rune, dn)
-	for i, v := range s {
-		dict[i] = []rune(v)
-	}
+	inPrefixList := strings.Split(scanner.Text(), " ")
 
 	scanner.Scan()
-	ws := strings.Split(scanner.Text(), " ")
-	wn := len(ws)
-	words := make([][]rune, wn)
-	for i, v := range ws {
-		words[i] = []rune(v)
+	list := strings.Split(scanner.Text(), " ")
+
+	prefixList := make(map[string]struct{}, len(inPrefixList))
+	for _, v := range inPrefixList {
+		prefixList[v] = struct{}{}
 	}
 
-	rs := make([]string, wn)
-	r := getReplacedWords(dn, dict, wn, words)
-	for i, v := range r {
-		rs[i] = string(v)
-	}
-
-	fmt.Println(strings.Join(rs, " "))
-}
-
-func getReplacedWords(dn int, dict [][]rune, wn int, words [][]rune) [][]rune {
-	dictMap := make(map[string]struct{}, dn)
-	for _, v := range dict {
-		dictMap[string(v)] = struct{}{}
-	}
-
-	replaced := make([][]rune, 0, wn)
-	for _, word := range words {
-		prefix := make([]rune, 0, len(word))
-		for _, v := range word {
-			prefix = append(prefix, v)
-			if _, ok := dictMap[string(prefix)]; ok {
+	res := make([]string, 0, len(prefixList))
+	for _, str := range list {
+		cmpStr := ""
+		for _, v := range str {
+			cmpStr += string(v)
+			if _, ok := prefixList[cmpStr]; ok {
 				break
 			}
 		}
-		replaced = append(replaced, prefix)
+		res = append(res, cmpStr)
 	}
 
-	return replaced
-}
-
-func makeScanner() *bufio.Scanner {
-	const maxCapacity = 3 * 1024 * 1024
-	buf := make([]byte, maxCapacity)
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Buffer(buf, maxCapacity)
-	return scanner
+	outRes := make([]any, 0, len(list))
+	for _, v := range res {
+		outRes = append(outRes, v)
+	}
+	fmt.Println(outRes...)
 }
