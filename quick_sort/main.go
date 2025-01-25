@@ -3,50 +3,33 @@ package main
 import "fmt"
 
 func main() {
-	a := []int{5, 4, 3, 2, 1}
-	sort(a, 0, 4)
+	a := []int{1}
+	sort(a, 0, len(a)-1)
 	fmt.Println(a)
 }
 
-func sort(a []int, lo int, hi int) {
-	if lo >= hi {
+func sort(a []int, low, high int) {
+	if low >= high {
 		return
 	}
 
-	j := partition(a, lo, hi)
-	sort(a, lo, j-1)
-	sort(a, j+1, hi)
+	i := partition(a, low, high)
+	sort(a, low, i-1)
+	sort(a, i+1, high)
 }
 
-func partition(a []int, lo int, hi int) int {
-	v := a[lo]
-	j := hi + 1
-	i := lo
-	for {
-		i++
-		for a[i] < v {
-			if i == hi {
-				break
-			}
+func partition(a []int, low int, high int) int {
+	i := low - 1
+	pivot := a[high]
+	for j := low; j <= high-1; j++ {
+		if a[j] < pivot {
 			i++
+			a[i], a[j] = a[j], a[i]
 		}
-
-		j--
-		for a[j] > v {
-			if j == lo {
-				break
-			}
-			j--
-		}
-
-		if i >= j {
-			break
-		}
-
-		a[i], a[j] = a[j], a[i]
 	}
 
-	a[lo], a[j] = a[j], a[lo]
+	i++
+	a[i], a[high] = a[high], a[i]
 
-	return j
+	return i
 }

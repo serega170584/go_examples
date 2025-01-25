@@ -6,16 +6,17 @@ import (
 )
 
 func main() {
-	in := make(chan int, 1000)
-	for i := 0; i < 1000; i++ {
+	in := make(chan int, 10000)
+	for i := 0; i < 10000; i++ {
 		in <- i
 	}
 	close(in)
 
 	out := make(chan int)
 
-	wg := &sync.WaitGroup{}
+	wg := sync.WaitGroup{}
 	wg.Add(4)
+
 	for i := 0; i < 4; i++ {
 		go func() {
 			defer wg.Done()

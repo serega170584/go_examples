@@ -10,28 +10,26 @@ import (
 func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-
-	res, err := adapter(ctx)
+	v, err := adapter(ctx)
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
-
-	fmt.Println(*res)
+	fmt.Println(*v)
 }
 
 func adapter(ctx context.Context) (*int, error) {
 	ch := make(chan int)
-
 	go func() {
-		ch <- something()
+		v := something()
+		ch <- v
 	}()
 
 	select {
-	case res := <-ch:
-		return &res, nil
 	case <-ctx.Done():
 		return nil, ctx.Err()
+	case v := <-ch:
+		return &v, nil
 	}
 }
 
