@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"slices"
 	"strconv"
 )
 
@@ -12,33 +13,38 @@ func main() {
 	scanner.Split(bufio.ScanWords)
 
 	scanner.Scan()
-	n, _ := strconv.Atoi(scanner.Text())
+	cnt, _ := strconv.Atoi(scanner.Text())
 
-	k := make([]int, n)
-	list := make([][]string, n)
-	for i := 0; i < n; i++ {
+	items := make([][]string, cnt)
+
+	for i := 0; i < cnt; i++ {
 		scanner.Scan()
-		k[i], _ = strconv.Atoi(scanner.Text())
-		for j := 0; j < k[i]; j++ {
+		itemsCnt, _ := strconv.Atoi(scanner.Text())
+		for j := 0; j < itemsCnt; j++ {
 			scanner.Scan()
-			list[i] = append(list[i], scanner.Text())
+			items[i] = append(items[i], scanner.Text())
 		}
 	}
 
-	playlistsDict := make(map[string]int, n)
-	for _, row := range list {
-		for _, v := range row {
-			playlistsDict[v]++
+	m := make(map[string]int)
+	for _, item := range items {
+		for _, v := range item {
+			m[v]++
 		}
 	}
 
-	res := make([]any, 0)
-	for s, v := range playlistsDict {
-		if v == n {
-			res = append(res, s)
+	list := make([]string, 0)
+	for track, trackCnt := range m {
+		if trackCnt == cnt {
+			list = append(list, track)
 		}
 	}
+	slices.Sort(list)
 
-	fmt.Println(len(res))
-	fmt.Println(res...)
+	printList := make([]interface{}, len(list))
+	for i, v := range list {
+		printList[i] = v
+	}
+
+	fmt.Println(printList...)
 }

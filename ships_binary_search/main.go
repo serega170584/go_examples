@@ -1,52 +1,40 @@
 package main
 
-import (
-	"bufio"
-	"fmt"
-	"os"
-	"strconv"
-)
+import "fmt"
 
+// 1 * 2
+// 2 * 3 = 1 * 3 + 1 * 3 = 1 * 2 + 1 * 1 + 1 * 3
+// 3 * 4 = 2 * 4 + 1 * 4 = 2 * 3 + 2 * 1 + 1 * 4 =
+// = 1 * 2 + 1 * 1 + 1 * 3 + 2 * 1 + 1 * 4 =
+// = 1 * 2 + (1 * 1 + 2 * 1) + (1 * 3 + 1 * 4)
+// 4 * 5 = 1 * 2 + (1 * 1 + 2 * 1 + 3 * 1) + (1 * 3 + 1 * 4 + 1 * 5) =
+// k + 2 * (k - 1) + 3 * (k - 2) + 4 * (k - 3) + ... + k * 1 = k + 2 * k + 3 * k + 4 * k + ... - (2 * 1 + 3 * 2 + 4 * 3 + ... + k * (k - 1))
+// k + 2 * (k - 1) + ... + k * (k - (k - 1)) = k + 2 * k + ... + k * k - (2 * 1 + 3 * 2 + ... + k * (k - 1))
+// k + 2 * k + 3 * k + ... + k * k, (k + 1) * k * k / 2
+// 2 * 1 + 3 * 2 + ... + k * (k - 1) = (1 * 2) * (k - 1) + (1 * 1 + 2 * 1 + ... + (k - 2) * 1) + (1 * 3 + 1 * 4 + ... + 1 * k) =
+// = 2 * (k - 1) + (k - 1) * (k - 2) / 2 + (k + 3) * (k - 2) / 2
+// (k + 1) * k * k / 2 - 2 * (k - 1) - (k - 1) * (k - 2) / 2 - (k + 3) * (k - 2) / 2
+// + 1, if 3, + 2, if 4 ....
+// 1, if 2
+// 1 + 2, if 3, 1 + 2 + 3, if 4
+// 1 + 2 + ... + (k - 1), k * (k - 1) / 2
+// k - 1
+// (k + 1) * k * k / 2 - 2 * (k - 1) - (k - 1) * (k - 2) / 2 - (k + 3) * (k - 2) / 2 + k * (k - 1) / 2 + k - 1
+// 2:
+// 6 - 2 + 1 + 1 = 6
+// 3:
+// 18 - 2 * 2 - 1 - 3 + 3 + 2 = 15
+// 4:
+// 40 - 6 - 3 - 7 + 6 + 3 = 33
+// **** *** *** ** ** ** * * * *
+// *** ** ** * * *
+// without space = 12
+// ** * *
+
+// k, k + k, k + k + k
+// k + k + k + k - 1 раз
 func main() {
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Split(bufio.ScanWords)
-
-	scanner.Scan()
-	n, _ := strconv.Atoi(scanner.Text())
-
-	fmt.Println(binarySearch(n))
-}
-
-func getShipsCnt(k int) int {
-	if k == 1 {
-		return 1
-	}
-
-	cnt := 1
-	for i := 2; i <= k; i++ {
-		cnt = i*(i+1)/2 + i + cnt
-	}
-
-	return cnt
-}
-
-func binarySearch(n int) int {
-	l := 1
-	r := 2000000
-	for l < r {
-		m := (l + r) / 2
-		if check(m, n) {
-			r = m
-		} else {
-			l = m + 1
-		}
-	}
-	if getShipsCnt(l) > n {
-		l--
-	}
-	return l
-}
-
-func check(m int, n int) bool {
-	return getShipsCnt(m) >= n
+	a := 1000000000000000000
+	b := a / 2
+	fmt.Println(b)
 }

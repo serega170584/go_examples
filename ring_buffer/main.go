@@ -4,6 +4,7 @@ import "fmt"
 
 func main() {
 	in := make(chan int)
+
 	out := make(chan int, 5)
 	go func() {
 		for v := range in {
@@ -18,7 +19,7 @@ func main() {
 		close(out)
 	}()
 
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < 10000; i++ {
 		in <- i
 	}
 	close(in)

@@ -44,30 +44,35 @@ func main() {
 	fmt.Println(isPalindrome(n1))
 }
 
-func isPalindrome(head *Node) bool {
-	fast := head
-	slow := head
-	st := NewStack()
+// ab
+// a
 
+// ab
+//
+// ab ..
+func isPalindrome(head *Node) bool {
+	slow := head
+	fast := head
+	st := NewStack()
 	for fast != nil && fast.next != nil {
 		st.push(slow)
 		slow = slow.next
 		fast = fast.next.next
 	}
 
-	if fast != nil {
+	if fast.next == nil {
 		slow = slow.next
 	}
 
 	el := st.pop()
-	for slow != nil {
-		if slow.val != el.val {
-			return false
-		}
+	for el.val == slow.val {
 		slow = slow.next
 		el = st.pop()
 	}
 
-	return true
+	if el.val != slow.val {
+		return false
+	}
 
+	return true
 }

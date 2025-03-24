@@ -12,38 +12,35 @@ func main() {
 	scanner.Split(bufio.ScanWords)
 
 	scanner.Scan()
-	firstPoint, _ := strconv.Atoi(scanner.Text())
+	firstStart, _ := strconv.Atoi(scanner.Text())
 
 	scanner.Scan()
-	firstDistance, _ := strconv.Atoi(scanner.Text())
+	firstInterval, _ := strconv.Atoi(scanner.Text())
 
 	scanner.Scan()
-	secondPoint, _ := strconv.Atoi(scanner.Text())
+	secondStart, _ := strconv.Atoi(scanner.Text())
 
 	scanner.Scan()
-	secondDistance, _ := strconv.Atoi(scanner.Text())
+	secondInterval, _ := strconv.Atoi(scanner.Text())
 
-	firstLeft := firstPoint - firstDistance
-	firstRight := firstPoint + firstDistance
+	leastLeft := firstStart - firstInterval
+	leastRight := firstStart + firstInterval
 
-	distance := firstRight - firstLeft + 1
+	mostLeft := secondStart - secondInterval
+	mostRight := secondStart + secondInterval
 
-	secondLeft := secondPoint - secondDistance
-	secondRight := secondPoint + secondDistance
-
-	if secondLeft > firstRight || firstLeft > secondRight {
-		distance += secondRight - secondLeft + 1
-		fmt.Println(distance)
-		return
+	if leastLeft > mostLeft {
+		leastLeft, mostLeft = mostLeft, leastLeft
+		leastRight, mostRight = mostRight, leastRight
 	}
 
-	if firstLeft >= secondLeft {
-		distance += firstLeft - secondLeft
+	s := 0
+	if mostLeft > leastRight {
+		s += leastRight - leastLeft + 1
+		s += mostRight - mostLeft + 1
+	} else {
+		s += mostRight - leastLeft + 1
 	}
 
-	if firstRight <= secondRight {
-		distance += secondRight - firstRight
-	}
-
-	fmt.Println(distance)
+	fmt.Println(s)
 }

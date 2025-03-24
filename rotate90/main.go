@@ -26,29 +26,28 @@ func main() {
 	rotate(a)
 
 	for i := 0; i < cnt; i++ {
-		fmt.Println(a[i])
+		v := make([]interface{}, cnt)
+		for j := 0; j < cnt; j++ {
+			v[j] = a[i][j]
+		}
+		fmt.Println(v...)
 	}
 }
 
 func rotate(a [][]int) {
 	l := len(a)
-	if l == 0 || l == 1 {
-		return
-	}
-
-	for layer := 0; layer < l/2; layer++ {
+	layerCnt := l / 2
+	for layer := 0; layer < layerCnt; layer++ {
 		first := layer
-		last := l - 1 - layer
+		last := l - layer - 1
 		for i := first; i < last; i++ {
 			offset := i - first
+
 			top := a[first][i]
 
 			a[first][i] = a[last-offset][first]
-
 			a[last-offset][first] = a[last][last-offset]
-
 			a[last][last-offset] = a[i][last]
-
 			a[i][last] = top
 		}
 	}

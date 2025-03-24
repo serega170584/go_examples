@@ -705,7 +705,7 @@ func main() {
 		"ed0c0b32-0ac2-4606-9a73-e608c3373619",
 	}
 	for _, v := range fiasIDs {
-		req, _ := http.NewRequest("GET", "https://middle-api.magnit.ru/v1/cities/getbyfiasid?fiasId="+v, nil)
+		req, _ := http.NewRequest("GET", "http://omni-web.k8s.dev.mos.corp/v1/cities/getbyfiasid?fiasId="+v, nil)
 		req.Header.Set("x-device-platform", "Apteka")
 		req.Header.Set("x-app-version", "111")
 		resp, err := client.Do(req)

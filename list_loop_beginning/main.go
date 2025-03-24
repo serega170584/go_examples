@@ -29,10 +29,10 @@ func main() {
 	fmt.Println(findListLoopBeginning(n1))
 }
 
-func findListLoopBeginning(node *Node) *Node {
-	slow := node
-	fast := node
-	for fast.next != nil && fast.next.next != nil {
+func findListLoopBeginning(head *Node) *Node {
+	slow := head
+	fast := head
+	for fast != nil && fast.next != nil {
 		slow = slow.next
 		fast = fast.next.next
 		if slow == fast {
@@ -44,11 +44,12 @@ func findListLoopBeginning(node *Node) *Node {
 		return nil
 	}
 
-	slow = node
+	slow = head
 	for slow != fast {
 		slow = slow.next
 		fast = fast.next
 	}
 
-	return fast
+	return slow
+
 }

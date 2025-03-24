@@ -4,9 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"slices"
 	"strconv"
-	"strings"
 )
 
 func main() {
@@ -14,73 +12,65 @@ func main() {
 	scanner.Split(bufio.ScanWords)
 
 	scanner.Scan()
-	n, _ := strconv.Atoi(scanner.Text())
-	a := make([]int, n)
-	for i := 0; i < n; i++ {
+	firstCnt, _ := strconv.Atoi(scanner.Text())
+	firstList := make([]int, firstCnt)
+	for i := 0; i < firstCnt; i++ {
 		scanner.Scan()
-		a[i], _ = strconv.Atoi(scanner.Text())
+		firstList[i], _ = strconv.Atoi(scanner.Text())
 	}
 
 	scanner.Scan()
-	n, _ = strconv.Atoi(scanner.Text())
-	b := make([]int, n)
-	for i := 0; i < n; i++ {
+	secondCnt, _ := strconv.Atoi(scanner.Text())
+	secondList := make([]int, secondCnt)
+	for i := 0; i < secondCnt; i++ {
 		scanner.Scan()
-		b[i], _ = strconv.Atoi(scanner.Text())
+		secondList[i], _ = strconv.Atoi(scanner.Text())
 	}
 
 	scanner.Scan()
-	n, _ = strconv.Atoi(scanner.Text())
-	c := make([]int, n)
-	for i := 0; i < n; i++ {
+	thirdCnt, _ := strconv.Atoi(scanner.Text())
+	thirdList := make([]int, thirdCnt)
+	for i := 0; i < thirdCnt; i++ {
 		scanner.Scan()
-		c[i], _ = strconv.Atoi(scanner.Text())
+		thirdList[i], _ = strconv.Atoi(scanner.Text())
 	}
 
-	list := getSharedListsNumbers(a, b, c)
-	sList := make([]string, 0, len(list))
-	for _, v := range list {
-		sList = append(sList, strconv.Itoa(v))
+	firstUnique := make(map[int]struct{}, len(firstList))
+	secondUnique := make(map[int]struct{}, len(secondList))
+	thirdUnique := make(map[int]struct{}, len(thirdList))
+
+	for i := 0; i < firstCnt; i++ {
+		firstUnique[firstList[i]] = struct{}{}
 	}
 
-	fmt.Println(strings.Join(sList, " "))
-}
-
-func getSharedListsNumbers(a []int, b []int, c []int) []int {
-	m := make(map[int]int)
-
-	am := make(map[int]struct{})
-	for _, v := range a {
-		if _, ok := am[v]; !ok {
-			am[v] = struct{}{}
-			m[v]++
-		}
+	for i := 0; i < secondCnt; i++ {
+		secondUnique[secondList[i]] = struct{}{}
 	}
 
-	bm := make(map[int]struct{})
-	for _, v := range b {
-		if _, ok := bm[v]; !ok {
-			bm[v] = struct{}{}
-			m[v]++
-		}
+	for i := 0; i < thirdCnt; i++ {
+		thirdUnique[thirdList[i]] = struct{}{}
 	}
 
-	cm := make(map[int]struct{})
-	for _, v := range c {
-		if _, ok := cm[v]; !ok {
-			cm[v] = struct{}{}
-			m[v]++
-		}
+	numCnt := make(map[int]int, firstCnt+secondCnt+thirdCnt)
+
+	for v := range firstUnique {
+		numCnt[v]++
 	}
 
-	l := make([]int, 0)
-	for i, v := range m {
+	for v := range secondUnique {
+		numCnt[v]++
+	}
+
+	for v := range thirdUnique {
+		numCnt[v]++
+	}
+
+	res := make([]any, 0, len(numCnt))
+	for i, v := range numCnt {
 		if v >= 2 {
-			l = append(l, i)
+			res = append(res, i)
 		}
 	}
 
-	slices.Sort(l)
-
-	return l
+	fmt.Println(res...)
 }

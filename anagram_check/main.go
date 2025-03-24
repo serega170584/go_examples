@@ -11,34 +11,35 @@ func main() {
 	scanner.Split(bufio.ScanWords)
 
 	scanner.Scan()
-	a := []rune(scanner.Text())
+	first := scanner.Text()
 
 	scanner.Scan()
-	b := []rune(scanner.Text())
+	second := scanner.Text()
 
-	if len(a) != len(b) {
+	firstSlice := []rune(first)
+	secondSlice := []rune(second)
+
+	if len(firstSlice) != len(secondSlice) {
 		fmt.Println("NO")
 	}
 
-	aMap := make(map[rune]int, len(a))
-	bMap := make(map[rune]int, len(b))
-
-	for i := 0; i < len(a); i++ {
-		aMap[a[i]]++
-		bMap[b[i]]++
+	firstMap := make(map[rune]int, len(firstSlice))
+	for _, v := range firstSlice {
+		firstMap[v]++
 	}
 
-	for _, v := range a {
-		if _, ok := bMap[v]; !ok {
-			fmt.Println("NO")
-			return
-		}
+	secondMap := make(map[rune]int, len(secondSlice))
+	for _, v := range secondSlice {
+		secondMap[v]++
+	}
 
-		if aMap[v] != bMap[v] {
+	for i, v := range firstMap {
+		if v != secondMap[i] {
 			fmt.Println("NO")
 			return
 		}
 	}
 
 	fmt.Println("YES")
+
 }
