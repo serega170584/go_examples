@@ -6,6 +6,17 @@ import (
 	"os"
 )
 
+// coder
+// co   der
+// c o  d er
+//       e  r
+//	e  r
+
+// oderc
+// od    erc
+// o d  e rc
+//
+//	r  c
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Split(bufio.ScanWords)
