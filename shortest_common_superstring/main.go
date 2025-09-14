@@ -140,46 +140,33 @@ func getRunesSuperStringMinLength(runeList [][]rune) int {
 	superString := runeList[0]
 
 	for i := 1; i < len(runeList); i++ {
-		superStringLen := len(superString)
-
 		str := runeList[i]
-		strLen := len(str)
+		var curSuperString []rune
 
-		dp := make([][]int, superStringLen+1)
-		for k := 0; k <= superStringLen; k++ {
-			dp[k] = make([]int, strLen+1)
-		}
-
-		foundCnt := 0
-
-		for sui := 1; sui < superStringLen; sui++ {
-			for si := 1; si <= strLen; si++ {
-				if superString[sui-1] == str[si-1] {
-					dp[sui][si] = dp[sui-1][si-1] + 1
-				}
-				if dp[sui][si] == strLen {
-					foundCnt = strLen
-					break
-				}
+		for ssi := 0; ssi < len(superString); ssi++ {
+			cssi := ssi
+			si := 0
+			for cssi != len(superString) && si != len(str) && superString[cssi] == str[si] {
+				cssi++
+				si++
 			}
 
-			if foundCnt == strLen {
+			if si == len(str) {
+				break
+			}
+
+			if cssi == len(superString) {
+				curSuperString = append(superString, str[si:]...)
 				break
 			}
 		}
 
-		if foundCnt == strLen {
+		if curSuperString == nil {
+			superString = append(superString, str[0:]...)
 			continue
 		}
 
-		for si := 1; si <= strLen; si++ {
-			if superString[superStringLen-1] == str[si-1] {
-				dp[superStringLen][si] = dp[superStringLen-1][si-1] + 1
-				foundCnt = dp[superStringLen][si]
-			}
-		}
-
-		superString = append(superString[0:superStringLen-foundCnt], str...)
+		superString = curSuperString
 	}
 
 	return len(superString)
