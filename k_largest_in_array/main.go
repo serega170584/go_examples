@@ -1,106 +1,36 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"math"
-	"os"
-	"strconv"
+	"sort"
 )
 
-type BinaryHeap struct {
-	list []int
-	cnt  int
-}
-
-func newBinaryHeap(capacity int) *BinaryHeap {
-	heap := &BinaryHeap{}
-	heap.list = make([]int, capacity)
-	return heap
-}
-
-func (heap *BinaryHeap) add(el int) {
-	heap.list[heap.cnt] = el
-	heap.heapify(heap.cnt)
-	heap.cnt++
-}
-
-func (heap *BinaryHeap) heapify(ind int) {
-	for ind != 0 {
-		parentInd := (ind+1)/2 - 1
-		if heap.list[parentInd] > heap.list[ind] {
-			heap.list[parentInd], heap.list[ind] = heap.list[ind], heap.list[parentInd]
-		}
-		ind = parentInd
-	}
-}
-
-func (heap *BinaryHeap) min() int {
-	return heap.list[0]
-}
-
-func (heap *BinaryHeap) push(val int) {
-	pointer := 0
-	heap.list[pointer] = val
-	for true {
-		left := 2*pointer + 1
-		right := 2*pointer + 2
-
-		leftVal := int(math.Inf(1))
-		if left < heap.cnt {
-			leftVal = heap.list[left]
-		}
-
-		rightVal := int(math.Inf(1))
-		if right < heap.cnt {
-			rightVal = heap.list[right]
-		}
-
-		if leftVal >= heap.list[pointer] && heap.list[pointer] <= rightVal {
-			break
-		}
-
-		if leftVal < rightVal {
-			heap.list[pointer], heap.list[left] = heap.list[left], heap.list[pointer]
-			pointer = left
-		} else {
-			heap.list[pointer], heap.list[right] = heap.list[right], heap.list[pointer]
-			pointer = right
-		}
-	}
-}
-
 func main() {
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Split(bufio.ScanWords)
+	fmt.Println(getLargestList([]int{1, 3, 2, 4, 5, 7, 6, 9, 8, 3, 3, 3, 4, 4, 4, 4, 6, 7}, 3))
+}
 
-	scanner.Scan()
-	cnt, _ := strconv.Atoi(scanner.Text())
-
-	scanner.Scan()
-	k, _ := strconv.Atoi(scanner.Text())
-
-	heap := newBinaryHeap(k)
-
-	for i := 0; i < k; i++ {
-		scanner.Scan()
-		val, _ := strconv.Atoi(scanner.Text())
-
-		heap.add(val)
+func getLargestList(arr []int, k int) []int {
+	cntList := make(map[int]int)
+	unique := make([]int, 0)
+	for _, v := range arr {
+		if _, ok := cntList[v]; !ok {
+			unique = append(unique, v)
+		}
+		cntList[v]++
 	}
 
-	min := heap.min()
+	if len(unique) < k {
+		return nil
+	}
 
-	for i := k; i < cnt; i++ {
-		scanner.Scan()
-		val, _ := strconv.Atoi(scanner.Text())
-
-		if val > min {
-			heap.push(val)
+	sort.Slice(unique, func(i, j int) bool {
+		cond := cntList[unique[i]] >= cntList[unique[j]]
+		if cond && cntList[unique[i]] == cntList[unique[j]] {
+			cond = cond && unique[i] < unique[j]
 		}
 
-		min = heap.min()
-	}
+		return cond
+	})
 
-	fmt.Println(min)
+	return unique[:k]
 }

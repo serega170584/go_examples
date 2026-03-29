@@ -6,31 +6,30 @@ import (
 )
 
 func main() {
-	sync.Pool{}
-	cond := sync.NewCond(&sync.Mutex{})
-	data := make(map[string]string, 1)
-	wg := sync.WaitGroup{}
+	var mu sync.Mutex
+	cond := sync.NewCond(&mu)
+	data := "123"
+	var wg sync.WaitGroup
 	wg.Add(2)
-	go listen(data, cond, &wg)
-	go listen(data, cond, &wg)
+	go listen(cond, &data, &wg)
+	go listen(cond, &data, &wg)
 	wg.Wait()
-	wg.Add(1)
-	go func() {
+	wg.Add(3)
+	go func(data *string) {
 		defer wg.Done()
 		cond.L.Lock()
-		data["123"] = "123"
+		*data = "456"
 		cond.Broadcast()
-		wg.Add(2)
 		cond.L.Unlock()
-	}()
+	}(&data)
 	wg.Wait()
 }
 
-func listen(data map[string]string, cond *sync.Cond, wg *sync.WaitGroup) {
+func listen(cond *sync.Cond, data *string, wg *sync.WaitGroup) {
+	defer wg.Done()
 	cond.L.Lock()
 	wg.Done()
 	cond.Wait()
-	fmt.Println(data)
+	fmt.Println(*data)
 	cond.L.Unlock()
-	wg.Done()
 }

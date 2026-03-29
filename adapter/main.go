@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"math"
 	"math/rand"
 	"time"
 )
@@ -10,22 +11,19 @@ import (
 func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
+
 	res, err := adapter(ctx)
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
-	fmt.Println(*res)
-}
 
-func something() int {
-	time.Sleep(time.Duration(rand.Intn(5)) * time.Second)
-	return rand.Intn(10000)
+	math.
+		fmt.Println(*res)
 }
 
 func adapter(ctx context.Context) (*int, error) {
 	ch := make(chan int)
-
 	go func() {
 		ch <- something()
 	}()
@@ -33,7 +31,14 @@ func adapter(ctx context.Context) (*int, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
-	case res := <-ch:
-		return &res, nil
+	case v := <-ch:
+		return &v, nil
+	}
+}
+
+func something() int {
+	select {
+	case <-time.After(time.Duration(rand.Intn(5)) * time.Second):
+		return 123
 	}
 }

@@ -1,11 +1,11 @@
 module go_examples
 
-go 1.23.0
+go 1.26.1
 
 require (
 	github.com/google/uuid v1.6.0
 	github.com/opentracing/opentracing-go v1.2.0
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.11.1
 	github.com/uber/jaeger-client-go v2.30.0+incompatible
 )
 

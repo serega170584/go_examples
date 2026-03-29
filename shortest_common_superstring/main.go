@@ -108,23 +108,51 @@ func main() {
 }
 
 func getIndexPermutations(list []string) [][]int {
-	permutations := [][]int{{0}}
-	for i := 1; i < len(list); i++ {
+	if len(list) == 1 {
+		return [][]int{{0}}
+	}
+
+	permutations := [][]int{}
+
+	leftPermutations := [][]int{{0}}
+	for i := 1; i < len(list)/2; i++ {
 		curPermutations := make([][]int, 0)
-		for _, perm := range permutations {
+		for _, perm := range leftPermutations {
 			curPerm := append(perm, i)
 			curPermutations = append(curPermutations, curPerm)
-			for j := range curPerm {
+			for j := 0; j < len(curPerm)-1; j++ {
 				var addPerm = make([]int, len(curPerm))
 				copy(addPerm, curPerm)
 				addPerm[j], addPerm[len(curPerm)-1] = addPerm[len(curPerm)-1], addPerm[j]
 				curPermutations = append(curPermutations, addPerm)
 			}
 		}
-		permutations = curPermutations
+		leftPermutations = curPermutations
 	}
 
-	return permutations
+	rightPermutations := [][]int{{len(list) / 2}}
+	for i := 1; i < len(list)/2; i++ {
+		curPermutations := make([][]int, 0)
+		for _, perm := range rightPermutations {
+			curPerm := append(perm, i)
+			curPermutations = append(curPermutations, curPerm)
+			for j := 0; j < len(curPerm)-1; j++ {
+				var addPerm = make([]int, len(curPerm))
+				copy(addPerm, curPerm)
+				addPerm[j], addPerm[len(curPerm)-1] = addPerm[len(curPerm)-1], addPerm[j]
+				curPermutations = append(curPermutations, addPerm)
+			}
+		}
+		rightPermutations = curPermutations
+	}
+
+	for _, l := range leftPermutations {
+		for _, r := range rightPermutations {
+			permutations = append(permutations, append(l, r...))
+		}
+	}
+
+	return leftPermutations
 }
 
 func getListSuperStringMInLength(list []string) int {
@@ -141,7 +169,7 @@ func getRunesSuperStringMinLength(runeList [][]rune) int {
 
 	for i := 1; i < len(runeList); i++ {
 		str := runeList[i]
-		var curSuperString []rune
+		isNil := false
 
 		for ssi := 0; ssi < len(superString); ssi++ {
 			cssi := ssi
@@ -152,21 +180,23 @@ func getRunesSuperStringMinLength(runeList [][]rune) int {
 			}
 
 			if si == len(str) {
+				isNil = false
 				break
 			}
 
 			if cssi == len(superString) {
-				curSuperString = append(superString, str[si:]...)
+				isNil = false
+				superString = append(superString, str[si:]...)
 				break
 			}
+
+			isNil = true
 		}
 
-		if curSuperString == nil {
+		if isNil {
 			superString = append(superString, str[0:]...)
 			continue
 		}
-
-		superString = curSuperString
 	}
 
 	return len(superString)
