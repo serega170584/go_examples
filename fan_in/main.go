@@ -28,12 +28,12 @@ func main() {
 	consumer(producers, fanIn, &wg, &counter)
 
 	wg.Add(1)
-	go func(wg *sync.WaitGroup) {
+	go func() {
 		defer wg.Done()
 		for val := range fanIn {
 			fmt.Println("Got sender: ", val.sender, " value: ", val.value)
 		}
-	}(&wg)
+	}()
 
 	go func(counter *int64) {
 		for {
