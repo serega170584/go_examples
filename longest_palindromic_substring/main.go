@@ -3,51 +3,55 @@ package main
 import "fmt"
 
 func main() {
-	str := "abba"
-	v := []rune(str)
-	n := 4
-	dp := make([][]int, n)
-	for i := 0; i < n; i++ {
-		dp[i] = make([]int, n)
+	s := []rune{'c', 'b', 'b', 'd'}
+	if len(s) == 0 {
+		fmt.Println([]rune{})
 	}
 
-	maxPL := 1
+	ms := []rune{s[0]}
 
-	for i := 0; i < n; i++ {
-		for j := 0; j < n-i; j++ {
-			left := j
-			right := i + j
+	for i := 1; i < len(s); i++ {
+		l := i - 1
+		r := i + 1
+		cs := []rune{s[i]}
+		ms = getMaxPalindromicSubstring(s, l, r, cs, ms)
+	}
 
-			if left == right {
-				dp[left][right] = 1
-				continue
+	for i := 1; i < len(s); i++ {
+		l := i - 1
+		r := i
+		var cs []rune
+		ms = getMaxPalindromicSubstring(s, l, r, cs, ms)
+	}
+
+	for i := 0; i < len(s); i++ {
+		l := i
+		r := i + 1
+		var cs []rune
+		ms = getMaxPalindromicSubstring(s, l, r, cs, ms)
+	}
+
+	fmt.Println(string(ms))
+}
+
+func getMaxPalindromicSubstring(s []rune, l int, r int, cs []rune, ms []rune) []rune {
+	func() {
+		for l > 0 && r < len(s) {
+			if s[l] != s[r] {
+				return
 			}
 
-			if right-left == 1 && v[left] == v[right] {
-				dp[left][right] = 2
+			cs = append([]rune{s[l]}, cs...)
+			cs = append(cs, s[r])
+
+			if len(cs) > len(ms) {
+				ms = cs
 			}
 
-			if dp[left][right] > maxPL {
-				maxPL = dp[left][right]
-				continue
-			}
-
-			if dp[left+1][right-1] == 0 {
-				continue
-			}
-
-			if v[left] != v[right] {
-				dp[left][right] = 0
-				continue
-			}
-
-			dp[left][right] = dp[left+1][right-1] + 2
-
-			if dp[left][right] > maxPL {
-				maxPL = dp[left][right]
-			}
+			l--
+			r++
 		}
-	}
+	}()
 
-	fmt.Println(maxPL)
+	return ms
 }
