@@ -1,36 +1,55 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"os"
-	"strconv"
+	"sort"
 )
 
 func main() {
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Split(bufio.ScanWords)
+	// -4 -1 -1 -1 0 1 2
+	nums := []int{-1, -1, -1, -1, -1, 0, 1, 1, 1, 2, -4}
+	sort.Ints(nums)
 
-	scanner.Scan()
-	cnt, _ := strconv.Atoi(scanner.Text())
+	res := [][3]int{}
 
-	arr := make([]int, cnt)
-	for i := 0; i < cnt; i++ {
-		scanner.Scan()
-		arr[i], _ = strconv.Atoi(scanner.Text())
-	}
+	for i := 0; i < len(nums); i++ {
+		if i > 0 && nums[i-1] == nums[i] {
+			continue
+		}
 
-	for i := 0; i < cnt; i++ {
-		seen := make(map[int]struct{}, cnt)
+		l := i + 1
+		r := len(nums) - 1
+		for l < r {
+			if l-1 != i && nums[l-1] == nums[l] {
+				l++
+				continue
+			}
 
-		for j := i; j < cnt; j++ {
-			if i != j {
-				negSum := -arr[i] - arr[j]
-				if _, ok := seen[negSum]; ok {
-					fmt.Println(arr[i], arr[j], negSum)
-				}
-				seen[arr[j]] = struct{}{}
+			if r != len(nums)-1 && nums[r+1] == nums[r] {
+				r--
+				continue
+			}
+
+			s := nums[i] + nums[l] + nums[r]
+
+			if s < 0 {
+				l++
+				continue
+			}
+
+			if s > 0 {
+				r--
+				continue
+			}
+
+			if s == 0 {
+				res = append(res, [3]int{nums[i], nums[l], nums[r]})
+				l++
+				r--
 			}
 		}
 	}
+
+	fmt.Println(res)
+
 }

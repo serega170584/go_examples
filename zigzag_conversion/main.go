@@ -6,6 +6,11 @@ func main() {
 	s := []rune{'P', 'A', 'Y', 'P', 'A', 'L', 'I', 'S', 'H', 'I', 'R', 'I', 'N', 'G'}
 	numRows := 3
 
+	if len(s) == 0 {
+		fmt.Println("")
+		return
+	}
+
 	sl := make([][]rune, numRows)
 	down := true
 	up := false
