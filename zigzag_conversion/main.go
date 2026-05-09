@@ -1,39 +1,35 @@
 package main
 
-import (
-	"fmt"
-	"strings"
-)
+import "fmt"
 
 func main() {
+	s := []rune{'P', 'A', 'Y', 'P', 'A', 'L', 'I', 'S', 'H', 'I', 'R', 'I', 'N', 'G'}
 	numRows := 3
-	str := []rune("PAYPALISHIRING")
 
-	rows := make([]strings.Builder, numRows)
-	currRow := 1
-	isDown := true
-	isUp := false
-	rows[0].WriteRune(str[0])
-	for i := 1; i < len(str); i++ {
-		rows[currRow].WriteRune(str[i])
-		if currRow == numRows-1 || currRow == 0 {
-			isDown = !isDown
-			isUp = !isUp
+	sl := make([][]rune, numRows)
+	down := true
+	up := false
+	sl[0] = []rune{s[0]}
+	csi := 0
+
+	for i := 1; i < len(s); i++ {
+		if down {
+			csi++
 		}
 
-		if isDown {
-			currRow++
+		if up {
+			csi--
 		}
 
-		if isUp {
-			currRow--
+		sl[csi] = append(sl[csi], s[i])
+
+		if csi == numRows-1 || csi == 0 {
+			down = !down
+			up = !up
 		}
 	}
 
-	var res strings.Builder
-	for j := 0; j < numRows; j++ {
-		res.WriteString(rows[j].String())
+	for _, v := range sl {
+		fmt.Println(string(v))
 	}
-
-	fmt.Println(res.String())
 }
