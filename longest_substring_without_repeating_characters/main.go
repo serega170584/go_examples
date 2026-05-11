@@ -3,43 +3,24 @@ package main
 import "fmt"
 
 func main() {
-	s := []rune{'b', 'b', 'b', 'b'}
-
-	if len(s) == 0 {
-		fmt.Println(0)
-		return
-	}
-
-	if len(s) == 1 {
-		fmt.Println(1)
-		return
-	}
-
-	s = append([]rune{'0'}, s...)
+	s := []rune{'a', 'b', 'c', 'a', 'b', 'c', 'b', 'b'}
 
 	im := make(map[rune]int)
-
-	l := 1
-	lv := s[l]
-	im[lv] = l
-
-	r := 2
-
+	im[s[0]] = 0
+	l := 0
 	ml := 1
+	cl := 1
 
-	for r < len(s) {
-		v := s[r]
-		evi := im[v]
-
-		if evi >= l {
-			l = evi + 1
+	for r := 1; r < len(s); r++ {
+		if v, ok := im[s[r]]; ok {
+			if v >= l {
+				l = v + 1
+			}
 		}
+		cl = r - l + 1
+		ml = max(cl, ml)
 
-		length := r - l + 1
-		ml = max(ml, length)
-
-		r++
-		im[v] = r
+		im[s[r]] = r
 	}
 
 	fmt.Println(ml)
