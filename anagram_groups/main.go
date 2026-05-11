@@ -2,36 +2,35 @@ package main
 
 import (
 	"fmt"
-	"slices"
+	"sort"
 )
 
 func main() {
-	groups := []string{"sdad", "adsd", "ewq", "aaaa", "ab", "qwe", "wqe"}
-	anagramGroups := getAnagramGroups(groups)
-	fmt.Println(anagramGroups)
-}
+	strings := []string{"sdad", "adsd", "ewq", "aaaa", "ab", "qwe", "wqe"}
 
-func getAnagramGroups(groups []string) [][]string {
-	gm := make(map[string][]string, len(groups))
-	for _, g := range groups {
-		sl := []rune(g)
-		slices.Sort(sl)
-		gm[string(sl)] = append(gm[string(sl)], g)
+	m := make(map[string][]string)
+	for i := 0; i < len(strings); i++ {
+		str := strings[i]
+		sr := []rune(str)
+		sort.Slice(sr, func(i int, j int) bool {
+			return sr[i] < sr[j]
+		})
+		m[string(sr)] = append(m[string(sr)], str)
 	}
 
-	ag := make([][]string, 0, len(groups))
-	o := make([]string, 0, len(groups))
-	for _, g := range gm {
-		if len(g) > 1 {
-			ag = append(ag, g)
-		} else {
-			o = append(o, g[0])
+	groups := make([][]string, 0, len(strings))
+	oneGroup := make([]string, 0, len(strings))
+
+	for _, v := range m {
+		if len(v) > 1 {
+			groups = append(groups, v)
+			continue
 		}
+
+		oneGroup = append(oneGroup, v[0])
 	}
 
-	if len(o) > 0 {
-		ag = append(ag, o)
-	}
+	groups = append(groups, oneGroup)
 
-	return ag
+	fmt.Println(groups)
 }
