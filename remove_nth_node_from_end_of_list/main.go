@@ -22,30 +22,31 @@ func main() {
 		prev.Next = node
 	}
 
-	n := 1
+	n := 5
 	i := 0
 	node = head
-	for node != nil {
-		if i == n {
-			break
-		}
-		node = node.Next
+	for i < n {
 		i++
+		node = node.Next
 	}
 
-	mainHead := head
+	search := head
 	var prev *ListNode
 	for node != nil {
-		prev = head
-		head = head.Next
 		node = node.Next
+		prev = search
+		search = search.Next
 	}
 
-	prev.Next = head.Next
+	if prev == nil {
+		head = search.Next
+	} else {
+		prev.Next = search.Next
+	}
 
-	node = mainHead
+	node = head
 	for node != nil {
-		fmt.Println(node)
+		fmt.Println(node.Val)
 		node = node.Next
 	}
 }
