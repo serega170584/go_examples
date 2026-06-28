@@ -3,55 +3,49 @@ package main
 import "fmt"
 
 func main() {
-	s := []rune{'c', 'b', 'b', 'd'}
+	s := []rune{'b', 'a', 'b', 'a', 'd'}
 	if len(s) == 0 {
 		fmt.Println([]rune{})
 	}
 
-	ms := []rune{s[0]}
-
+	res := []rune{s[0]}
 	for i := 1; i < len(s); i++ {
-		l := i - 1
-		r := i + 1
-		cs := []rune{s[i]}
-		ms = getMaxPalindromicSubstring(s, l, r, cs, ms)
-	}
-
-	for i := 1; i < len(s); i++ {
-		l := i - 1
-		r := i
-		var cs []rune
-		ms = getMaxPalindromicSubstring(s, l, r, cs, ms)
-	}
-
-	for i := 0; i < len(s); i++ {
-		l := i
-		r := i + 1
-		var cs []rune
-		ms = getMaxPalindromicSubstring(s, l, r, cs, ms)
-	}
-
-	fmt.Println(string(ms))
-}
-
-func getMaxPalindromicSubstring(s []rune, l int, r int, cs []rune, ms []rune) []rune {
-	func() {
-		for l > 0 && r < len(s) {
-			if s[l] != s[r] {
-				return
+		left := i - 1
+		right := i + 1
+		v := []rune{s[i]}
+		for left >= 0 && right < len(s) {
+			if s[left] != s[right] {
+				break
 			}
 
-			cs = append([]rune{s[l]}, cs...)
-			cs = append(cs, s[r])
-
-			if len(cs) > len(ms) {
-				ms = cs
+			v = append([]rune{s[left]}, v...)
+			v = append(v, s[right])
+			if len(v) > len(res) {
+				res = v
 			}
 
-			l--
-			r++
+			left--
+			right++
 		}
-	}()
 
-	return ms
+		left = i - 1
+		right = i
+		v = []rune{}
+		for left >= 0 && right < len(s) {
+			if s[left] != s[right] {
+				break
+			}
+
+			v = append([]rune{s[left]}, v...)
+			v = append(v, s[right])
+			if len(v) > len(res) {
+				res = v
+			}
+
+			left--
+			right++
+		}
+	}
+
+	fmt.Println(string(res))
 }
