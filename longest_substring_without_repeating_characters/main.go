@@ -5,23 +5,24 @@ import "fmt"
 func main() {
 	s := []rune{'a', 'b', 'c', 'a', 'b', 'c', 'b', 'b'}
 
-	im := make(map[rune]int)
-	im[s[0]] = 0
-	l := 0
-	ml := 1
-	cl := 1
-
-	for r := 1; r < len(s); r++ {
-		if v, ok := im[s[r]]; ok {
-			if v >= l {
-				l = v + 1
-			}
-		}
-		cl = r - l + 1
-		ml = max(cl, ml)
-
-		im[s[r]] = r
+	if len(s) <= 1 {
+		fmt.Println(len(s))
 	}
 
-	fmt.Println(ml)
+	left := 0
+	l := 1
+	m := make(map[rune]int)
+	m[s[0]] = 0
+	for right := 1; right < len(s); right++ {
+		v := s[right]
+		if i, ok := m[v]; ok && i >= left {
+			left = i + 1
+		}
+
+		l = max(l, right-left+1)
+
+		m[v] = right
+	}
+
+	fmt.Println(l)
 }
