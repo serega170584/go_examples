@@ -6,35 +6,40 @@ func main() {
 	s := []rune{'P', 'A', 'Y', 'P', 'A', 'L', 'I', 'S', 'H', 'I', 'R', 'I', 'N', 'G'}
 	numRows := 3
 
-	if len(s) == 0 {
-		fmt.Println("")
-		return
+	if numRows == 1 {
+		fmt.Println(s)
 	}
 
+	moveUp := false
+	moveDown := true
 	sl := make([][]rune, numRows)
-	down := true
-	up := false
-	sl[0] = []rune{s[0]}
-	csi := 0
-
-	for i := 1; i < len(s); i++ {
-		if down {
-			csi++
+	ri := 0
+	for i := 0; i < len(s); i++ {
+		if ri == -1 {
+			ri = 1
+			moveUp, moveDown = moveDown, moveUp
 		}
 
-		if up {
-			csi--
+		if ri == numRows {
+			ri = numRows - 2
+			moveUp, moveDown = moveDown, moveUp
 		}
 
-		sl[csi] = append(sl[csi], s[i])
+		sl[ri] = append(sl[ri], s[i])
 
-		if csi == numRows-1 || csi == 0 {
-			down = !down
-			up = !up
+		if moveDown {
+			ri++
+		}
+
+		if moveUp {
+			ri--
 		}
 	}
 
-	for _, v := range sl {
-		fmt.Println(string(v))
+	res := string(sl[0])
+	for i := 1; i < numRows; i++ {
+		res += string(sl[i])
 	}
+
+	fmt.Println(res)
 }
