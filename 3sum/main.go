@@ -9,47 +9,41 @@ func main() {
 	// -4 -1 -1 -1 0 1 2
 	nums := []int{-1, -1, -1, -1, -1, 0, 1, 1, 1, 2, -4}
 	sort.Ints(nums)
-
-	res := [][3]int{}
+	res := make([][3]int, 0)
 
 	for i := 0; i < len(nums); i++ {
-		if i > 0 && nums[i-1] == nums[i] {
+		if i > 0 && nums[i] == nums[i-1] {
 			continue
 		}
 
-		l := i + 1
-		r := len(nums) - 1
-		for l < r {
-			if l-1 != i && nums[l-1] == nums[l] {
-				l++
+		left := i + 1
+		right := len(nums) - 1
+		for left < right {
+			if left > i+1 && nums[left] == nums[left-1] {
+				left++
 				continue
 			}
 
-			if r != len(nums)-1 && nums[r+1] == nums[r] {
-				r--
+			if right < len(nums)-1 && nums[right] == nums[right+1] {
+				right--
 				continue
 			}
 
-			s := nums[i] + nums[l] + nums[r]
-
-			if s < 0 {
-				l++
+			if nums[i]+nums[left]+nums[right] < 0 {
+				left++
 				continue
 			}
 
-			if s > 0 {
-				r--
+			if nums[i]+nums[left]+nums[right] > 0 {
+				right--
 				continue
 			}
 
-			if s == 0 {
-				res = append(res, [3]int{nums[i], nums[l], nums[r]})
-				l++
-				r--
-			}
+			res = append(res, [3]int{nums[i], nums[left], nums[right]})
+			left++
+			right--
 		}
 	}
 
 	fmt.Println(res)
-
 }
