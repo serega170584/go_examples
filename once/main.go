@@ -2,37 +2,26 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"sync"
 )
 
+type LazyFunc func() int
+
+func generateLazy() LazyFunc {
+	var o sync.Once
+	var x int
+	return func() int {
+		o.Do(func() {
+			x = rand.Intn(10000)
+		})
+
+		return x
+	}
+}
+
 func main() {
-	done := make(chan struct{})
-	c := sync.NewCond(&sync.Mutex{})
-	var wg sync.WaitGroup
-	wg.Add(2)
-	data := 123
-	go func() {
-		c.L.Lock()
-		runtime
-		data = 456
-		c.Broadcast()
-		wg.Wait()
-		c.L.Unlock()
-		done <- struct{}{}
-	}()
-	go func() {
-		defer wg.Done()
-		c.L.Lock()
-		c.Wait()
-		fmt.Println(data)
-		c.L.Unlock()
-	}()
-	go func() {
-		defer wg.Done()
-		c.L.Lock()
-		c.Wait()
-		fmt.Println(data)
-		c.L.Unlock()
-	}()
-	<-done
+	f := generateLazy()
+	fmt.Println(f())
+	fmt.Println(f())
 }
