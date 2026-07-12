@@ -7,20 +7,34 @@ func main() {
 }
 
 func mergeSlices(a []int, b []int) []int {
-	al := len(a)
-	bl := len(b)
-	c := make([]int, 0, al+bl)
-	p := 0
-	for _, v := range a {
-		for p != bl && b[p] < v {
-			c = append(c, b[p])
-			p++
+	i := 0
+	j := 0
+	res := make([]int, 0, len(a)+len(b))
+	for i < len(a) && j < len(b) {
+		if a[i] < b[j] {
+			res = append(res, a[i])
+			i++
+			continue
 		}
 
-		if p == bl || v <= b[p] {
-			c = append(c, v)
+		if a[i] > b[j] {
+			res = append(res, b[j])
+			j++
+			continue
 		}
+
+		res = append(res, a[i], b[j])
+		i++
+		j++
 	}
 
-	return c
+	if i < len(a) {
+		res = append(res, a[i:]...)
+	}
+
+	if j < len(b) {
+		res = append(res, b[j:]...)
+	}
+
+	return res
 }
