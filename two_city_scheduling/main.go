@@ -8,22 +8,22 @@ import (
 func main() {
 	a := [][2]int{{1, 3}, {4, 8}, {9, 20}, {15, 60}, {21, 33}}
 	second := 2
+	sum := 0
 	d := make([]int, len(a))
-	s := 0
-	indexes := make([]int, len(a))
-	for i, v := range a {
-		d[i] = v[1] - v[0]
-		s += v[0]
-		indexes[i] = i
+	for i := 0; i < len(a); i++ {
+		sum += a[i][0]
+		d[i] = i
 	}
 
-	sort.Slice(indexes, func(i, j int) bool {
-		return d[i] < d[j]
+	sort.Slice(d, func(i, j int) bool {
+		left := d[i]
+		right := d[j]
+		return a[left][0]-a[left][1] < a[right][0]-a[right][1]
 	})
 
-	for i := len(d) - 1; i > len(d)-1-second; i-- {
-		s += d[i]
+	for i := 0; i < second; i++ {
+		sum -= a[d[i]][0] - a[d[i]][1]
 	}
 
-	fmt.Println(s)
+	fmt.Println(sum)
 }
