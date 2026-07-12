@@ -1,8 +1,11 @@
 package main
 
+import "fmt"
+
 func main() {
 	a := []int{5, 4, 3, 2, 1, 4, 6, 8, 1, 1, 1, 1}
 	sort(a, 0, len(a)-1)
+	fmt.Println(a)
 }
 
 func sort(a []int, low, high int) {
@@ -11,8 +14,8 @@ func sort(a []int, low, high int) {
 	}
 
 	i := partition(a, low, high)
-	sort(a, low, i)
-	sort(a, i, high)
+	sort(a, low, i-1)
+	sort(a, i+1, high)
 }
 
 func partition(a []int, low, high int) int {
