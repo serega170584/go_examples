@@ -5,33 +5,32 @@ import (
 	"sync"
 )
 
+const wpSize = 6
+
 func main() {
-	in := make(chan int, 10000)
-	for i := 0; i < 10000; i++ {
-		in <- i
+	a := make([]int, 1000)
+	for i := 0; i < 1000; i++ {
+		a[i] = i
 	}
-	close(in)
 
-	out := make(chan int)
+	in := make(chan int)
+	go func() {
+		for _, v := range a {
+			in <- v
+		}
+		close(in)
+	}()
 
-	wg := sync.WaitGroup{}
-	wg.Add(4)
-
-	for i := 0; i < 4; i++ {
+	var wg sync.WaitGroup
+	wg.Add(wpSize)
+	for i := 0; i < wpSize; i++ {
 		go func() {
 			defer wg.Done()
 			for v := range in {
-				out <- v
+				fmt.Println(v)
 			}
 		}()
 	}
 
-	go func() {
-		wg.Wait()
-		close(out)
-	}()
-
-	for v := range out {
-		fmt.Println(v)
-	}
+	wg.Wait()
 }
