@@ -9,6 +9,7 @@ func main() {
 	// -4 -1 -1 -1 0 1 2
 	nums := []int{-1, -1, -1, -1, -1, 0, 1, 1, 1, 2, -4}
 	sort.Ints(nums)
+
 	res := make([][3]int, 0)
 
 	for i := 0; i < len(nums); i++ {

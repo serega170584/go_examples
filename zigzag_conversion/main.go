@@ -10,35 +10,37 @@ func main() {
 		fmt.Println(s)
 	}
 
-	moveUp := false
-	moveDown := true
+	down := true
+	up := false
+
+	j := 0
+
 	sl := make([][]rune, numRows)
-	ri := 0
 	for i := 0; i < len(s); i++ {
-		if ri == -1 {
-			ri = 1
-			moveUp, moveDown = moveDown, moveUp
+		sl[j] = append(sl[j], s[i])
+
+		if j == 0 {
+			down = true
+			up = false
 		}
 
-		if ri == numRows {
-			ri = numRows - 2
-			moveUp, moveDown = moveDown, moveUp
+		if j == numRows-1 {
+			down = false
+			up = true
 		}
 
-		sl[ri] = append(sl[ri], s[i])
-
-		if moveDown {
-			ri++
+		if up {
+			j--
 		}
 
-		if moveUp {
-			ri--
+		if down {
+			j++
 		}
 	}
 
-	res := string(sl[0])
-	for i := 1; i < numRows; i++ {
-		res += string(sl[i])
+	res := ""
+	for i := 0; i < len(sl); i++ {
+		res = res + string(sl[i])
 	}
 
 	fmt.Println(res)

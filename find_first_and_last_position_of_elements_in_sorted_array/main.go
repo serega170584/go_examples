@@ -20,6 +20,7 @@ func main() {
 
 	l = 0
 	r = len(nums) - 1
+
 	for l < r {
 		m := (l + r + 1) / 2
 		if nums[m] <= target {
