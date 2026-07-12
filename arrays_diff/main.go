@@ -1,51 +1,31 @@
 package main
 
-import (
-	"bufio"
-	"fmt"
-	"os"
-	"strconv"
-)
+import "fmt"
 
 func main() {
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Split(bufio.ScanWords)
+	a := []int{1, 2, 3, 4, 4, 5, 6, 7, 10}
+	b := []int{8, 8, 8, 9, 9, 10}
 
-	scanner.Scan()
-	cnt1, _ := strconv.Atoi(scanner.Text())
-
-	a := make([]int, cnt1)
-	for i := 0; i < cnt1; i++ {
-		scanner.Scan()
-		a[i], _ = strconv.Atoi(scanner.Text())
-	}
-
-	scanner.Scan()
-	cnt2, _ := strconv.Atoi(scanner.Text())
-
-	b := make([]int, cnt2)
-	for i := 0; i < cnt2; i++ {
-		scanner.Scan()
-		b[i], _ = strconv.Atoi(scanner.Text())
-	}
-
-	fmt.Println(diff(a, b))
-}
-
-func diff(a []int, b []int) []int {
-	al := len(a)
-	c := make([]int, 0, al)
-	bi := 0
-	bl := len(b)
-	for _, v := range a {
-		for bi != bl && b[bi] < v {
-			bi++
+	i := 0
+	j := 0
+	res := make([]int, 0)
+	for i < len(a) && j < len(b) {
+		if a[i] < b[j] {
+			res = append(res, a[i])
+			i++
+			continue
 		}
 
-		if bi == bl || v != b[bi] {
-			c = append(c, v)
+		if a[i] > b[j] {
+			j++
+			continue
+		}
+
+		if a[i] == b[j] {
+			i++
+			j++
 		}
 	}
 
-	return c
+	fmt.Println(res)
 }
