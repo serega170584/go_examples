@@ -1,29 +1,32 @@
 package main
 
-import (
-	"fmt"
-	"math/rand"
-	"sync"
-)
-
-type f func() int
-
-func generator(f1 f) f {
-	a := 1
-	var o sync.Once
-	return func() int {
-		o.Do(func() {
-			a = f1()
-		})
-
-		return a
-	}
-}
 func main() {
-	f2 := generator(func() int {
-		return rand.Intn(10000)
-	})
+	a := []int{5, 4, 3, 2, 1, 4, 6, 8, 1, 1, 1, 1}
+	sort(a, 0, len(a)-1)
+}
 
-	fmt.Println(f2())
-	fmt.Println(f2())
+func sort(a []int, low, high int) {
+	if low >= high {
+		return
+	}
+
+	i := partition(a, low, high)
+	sort(a, low, i)
+	sort(a, i, high)
+}
+
+func partition(a []int, low, high int) int {
+	i := low - 1
+	p := a[high]
+	for j := low; j < high; j++ {
+		if a[j] < p {
+			i++
+			a[i], a[j] = a[j], a[i]
+		}
+	}
+
+	i++
+	a[i], a[high] = a[high], a[i]
+
+	return i
 }
