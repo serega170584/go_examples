@@ -9,19 +9,22 @@ func main() {
 	nums := []int{1, 2, 1, 2, 1, 2, 3, 1, 3, 2, 4, 4, 4, 4, 4}
 	k := 2
 
-	res := make([]int, 0, len(nums))
+	m := make(map[int]int)
+	items := make([]int, 0)
 
-	counts := make(map[int]int)
 	for i := 0; i < len(nums); i++ {
-		if _, ok := counts[nums[i]]; !ok {
-			res = append(res, nums[i])
+		if _, ok := m[nums[i]]; !ok {
+			items = append(items, nums[i])
 		}
-		counts[nums[i]]++
+		m[nums[i]]++
 	}
 
-	sort.Slice(res, func(i int, j int) bool {
-		return counts[res[i]] <= counts[res[j]]
+	sort.Slice(items, func(i, j int) bool {
+		iv := items[i]
+		jv := items[j]
+
+		return m[iv] < m[jv]
 	})
 
-	fmt.Println(res[len(res)-k:])
+	fmt.Println(items[len(items)-k:])
 }
