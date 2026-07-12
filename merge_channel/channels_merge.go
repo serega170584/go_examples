@@ -6,24 +6,23 @@ import (
 )
 
 func main() {
-	ch1 := make(chan int, 2)
-	ch1 <- 1
-	ch1 <- 2
-	close(ch1)
-	ch2 := make(chan int, 3)
-	ch2 <- 3
-	ch2 <- 4
-	ch2 <- 5
-	close(ch2)
-	ch3 := make(chan int, 4)
-	ch3 <- 6
-	ch3 <- 7
-	ch3 <- 8
-	ch3 <- 9
-	close(ch3)
+	a := make(chan int, 3)
+	a <- 1
+	a <- 2
+	a <- 3
+	close(a)
+	b := make(chan int, 3)
+	b <- 4
+	b <- 5
+	b <- 6
+	close(b)
+	c := make(chan int, 3)
+	c <- 7
+	c <- 8
+	c <- 9
+	close(c)
 
-	out := merge(ch1, ch2, ch3)
-
+	out := merge(a, b, c)
 	for v := range out {
 		fmt.Println(v)
 	}
